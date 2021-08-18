@@ -126,8 +126,8 @@ function main() {
 
     # get actions from the workflows in the repos
     $actionsFound = LoadAllActionsFromRepos -repos $repos -userName $userName -PAT $PAT -marketplaceRepo $marketplaceRepo
-    Write-Host "Found [$($actionsFound.actions.Count)] actions"
-    
+    Write-Host "Found [$($actionsFound.actions.Count)] actions" 
+    return $actionsFound   
 }
 
 $actions = main
