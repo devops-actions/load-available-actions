@@ -1,0 +1,37 @@
+name: Testing the action
+
+on: 
+  push: 
+
+  workflow_dispatch:
+    
+jobs:
+  load-all-used-actions:
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+
+      - uses: ./
+        name: Load used actions
+        with: 
+          PAT: ${{ secrets.GITHUB_TOKEN }}
+        id: load-actions
+        
+      - shell: pwsh        
+        run: |
+         Write-Host "Found actions [${{ steps.load-actions.outputs.actions }}]"
+         $content = ${{ steps.load-actions.outputs.actions }}
+         New-Item -Path 'actions.json' -Value $content -Force | Out-Null
+         $actions = $content | ConvertFrom-Json
+         if ($actions.Length -le 0) {
+            throw "No actions found"
+         } 
+         else {
+            Write-Host "Found [$($actions.Length)] actions"
+         }
+            
+      - name: Upload result file as artefact
+        uses: actions/upload-artifact@v2
+        with: 
+          name: actions
+          path: actions.json
