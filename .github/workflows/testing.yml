@@ -20,8 +20,9 @@ jobs:
       - shell: pwsh        
         run: |
          Write-Host "Found actions [${{ steps.load-actions.outputs.actions }}]"
-         $content = '${{ steps.load-actions.outputs.actions }}'
-         New-Item -Path 'actions.json' -Value $content -Force | Out-Null
+         cat ${{ steps.load-actions.outputs.actions }} > 'actions.json'
+         #New-Item -Path 'actions.json' -Value $content -Force | Out-Null
+         $content = Get-Content 'actions.json'
          $actions = $content | ConvertFrom-Json
          if ($actions.actions.Length -le 0) {
             throw "No actions found"
