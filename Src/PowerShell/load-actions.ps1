@@ -43,7 +43,7 @@ function GetFileAvailable {
     else {
         Write-Host "Found file [$fileName]"
         $data = [PSCustomObject]@{        
-            fileExists = $false
+            fileExists = $true
             fileInfo = $info      
         }
         return $data
@@ -88,7 +88,7 @@ function LoadAllActionsFromRepos {
 
         #todo: check for action.yaml as well
         $hasActionFile  = GetFileAvailable -repository $repo.full_name -fileName 'action.yml' -PAT $PAT -userName $userName
-        if ($hasActionFile.fileExists -eq $false){
+        if ($hasActionFile.fileExists -eq $false) {
             #try with action.yaml to be complete, since both files are allowed
             $hasActionFile = GetFileAvailable -repository $repo.full_name -fileName 'action.yaml' -PAT $PAT -userName $userName
         }
