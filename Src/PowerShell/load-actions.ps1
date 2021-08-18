@@ -31,16 +31,25 @@ function GetFileAvailable {
         [string] $PAT,
         [string] $userName
     )
-
+    
     $info = GetFileInfo -repository $repository -fileName $fileName -PAT $PAT -userName $userName
     if ($info -eq "https://docs.github.com/rest/reference/repos#get-repository-content") {
-        return $false
+        Write-Host "Did not find file [$fileName]"
+        $data = [PSCustomObject]@{        
+            fileExists = $false       
+        }
+        return $data
     }
     else {
-        Write-Host "Found yml file!"
-        #Write-Host $info
-        return $true
+        Write-Host "Found file [$fileName]"
+        $data = [PSCustomObject]@{        
+            fileExists = $false
+            fileInfo = $info      
+        }
+        return $data
     }
+
+    return $data
 }
 
 function GetFileInfo {
@@ -73,22 +82,23 @@ function LoadAllActionsFromRepos {
         # add empty line for logs readability
         Write-Host ""
 
-        # check with this call if the repo has a file in the root named 'action.yaml'
+        # check with this call if the repo has a file in the root named 'action.yml' or 'action.yaml'
         # GET https://api.github.com/repos/rajbos/actions-testing/contents/action.yml
         # https://api.github.com/repos/${$repo.full_name}/contents/action.yml
 
         #todo: check for action.yaml as well
         $hasActionFile  = GetFileAvailable -repository $repo.full_name -fileName 'action.yml' -PAT $PAT -userName $userName
+        if ($hasActionFile.fileExists -eq $false){
+            #try with action.yaml to be complete, since both files are allowed
+            $hasActionFile = GetFileAvailable -repository $repo.full_name -fileName 'action.yaml' -PAT $PAT -userName $userName
+        }
         
-        if ($hasActionFile) {
-            Write-Host "Found action.yml in repository [$($repo.full_name)], loading the file contents"
-                                    
-            # todo: fileinfo already called in GetFileAvailable: we should only need one call here
-            $fileInfo = GetFileInfo -repository $repo.full_name -fileName 'action.yml' -PAT $PAT -userName $userName
+        if ($hasActionFile.fileExists) {
+            Write-Host "Found action file in repository [$($repo.full_name)], loading the file contents"
 
-            $repoInfo = GetRawFile -url $fileInfo.download_url
+            $repoInfo = GetRawFile -url $hasActionFile.fileInfo.download_url
             if ($repoInfo) {
-                Write-Host "Loaded action.yml information"     
+                Write-Host "Loaded action information"     
                 
                 $parsedYaml = ConvertFrom-Yaml $repoInfo
 
@@ -104,7 +114,7 @@ function LoadAllActionsFromRepos {
                 $reposWithActions += $repoData
             } 
             else {
-                Write-Host "Cannot load action.yml"
+                Write-Host "Cannot load action file from repo [$($repo.full_name)]"
             }
         }
         else {

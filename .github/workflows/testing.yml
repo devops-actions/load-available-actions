@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     
 jobs:
-  load-all-used-actions:
+  load-all-available-actions:
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
