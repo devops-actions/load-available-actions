@@ -19,7 +19,7 @@ jobs:
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
         id: load-actions
-        
+
       - run: echo ${{ steps.load-actions.outputs.actions }} > 'actions.json'
             
       - name: Upload result file as artefact
@@ -42,9 +42,13 @@ jobs:
 
       - uses: actions/create-release@v1
         id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
+          body: |
+            Release ${{ github.ref }} is available now
           draft: false
           prerelease: false
 
