@@ -24,41 +24,38 @@ if ($null -eq $userName -or "" -eq $userName) {
 
 Write-Host " userName: [$userName]"
 
-function  GetActionsFromWorkflow {
+function GetFileAvailable {
     param (
-        [string] $workflow,
-        [string] $workflowFileName,
-        [string] $repo
+        [string] $repository,
+        [string] $fileName,
+        [string] $PAT,
+        [string] $userName
     )
 
-    # parse the workflow file and extract the actions used in it
-    $parsedYaml = ConvertFrom-Yaml $workflow
-
-    # create hastable
-    $actions = @()
-
-    # go through the parsed yaml
-    foreach ($job in $parsedYaml["jobs"].GetEnumerator()) {
-        Write-Host "  Job found: [$($job.Key)]"
-        $steps=$job.Value.Item("steps")
-        foreach ($step in $steps) {
-            $uses=$step.Item("uses")
-            if ($null -ne $uses) {
-                Write-Host "   Found action used: [$uses]"
-                $actionLink = $uses.Split("@")[0]
-
-                $data = [PSCustomObject]@{
-                    actionLink = $actionLink
-                    workflowFileName = $workflowFileName
-                    repo = $repo
-                }
-
-                $actions += $data
-            }
-        }
+    $info = GetFileInfo -repository $repository -fileName $fileName -PAT $PAT -userName $userName
+    if ($info -eq "https://docs.github.com/rest/reference/repos#get-repository-content") {
+        return $false
     }
+    else {
+        Write-Host "Found yml file!"
+        #Write-Host $info
+        return $true
+    }
+}
 
-    return $actions
+function GetFileInfo {
+    param (
+        [string] $repository,
+        [string] $fileName,
+        [string] $userName,
+        [string] $PAT
+    )
+
+    Write-Host "Checking if the file [$fileName] exists in repository [$repository]"
+    $url = GetGitHubUrl "repos/$repository/contents/$fileName"
+    $info = CallWebRequest -url $url -userName $userName -PAT $PAT -skipWarnings $true
+
+    return $info
 }
 
 function LoadAllActionsFromRepos {
@@ -86,6 +83,7 @@ function LoadAllActionsFromRepos {
         if ($hasActionFile) {
             Write-Host "Found action.yml in repository [$($repo.full_name)], loading the file contents"
                                     
+            # todo: fileinfo already called in GetFileAvailable: we should only need one call here
             $fileInfo = GetFileInfo -repository $repo.full_name -fileName 'action.yml' -PAT $PAT -userName $userName
 
             $repoInfo = GetRawFile -url $fileInfo.download_url
