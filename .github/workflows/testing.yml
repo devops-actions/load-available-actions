@@ -17,19 +17,7 @@ jobs:
           PAT: ${{ secrets.GITHUB_TOKEN }}
         id: load-actions
 
-      - shell: pwsh        
-        run: |
-         Write-Host "Found actions [${{ steps.load-actions.outputs.actions }}]"
-         cat ${{ steps.load-actions.outputs.actions }} > 'actions.json'
-         #New-Item -Path 'actions.json' -Value $content -Force | Out-Null
-         $content = Get-Content 'actions.json'
-         $actions = $content | ConvertFrom-Json
-         if ($actions.actions.Length -le 0) {
-            throw "No actions found"
-         } 
-         else {
-            Write-Host "Found [$($actions.actions.Length)] actions"
-         }
+      - run: echo ${{ steps.load-actions.outputs.actions }} > 'actions.json'
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
