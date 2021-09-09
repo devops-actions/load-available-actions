@@ -2,6 +2,7 @@ import * as core from '@actions/core'
 import {Octokit} from 'octokit'
 
 async function run(): Promise<void> {
+  core.info('Starting')
   try {
     const PAT = core.getInput('PAT') // || process.env.PAT
 
