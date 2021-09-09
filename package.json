@@ -15,12 +15,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/rajbos/github-action-load-available-actions.git"
   },
   "keywords": [
-    "actions",
-    "node",
-    "setup"
+    "GitHub Actions",
+    "load available actions from GitHub organization"
   ],
   "author": "",
   "license": "MIT",

@@ -6,7 +6,16 @@ on:
   workflow_dispatch:
     
 jobs:
-  load-all-available-actions:
+  build: # make sure build/ci work properly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          npm install
+      - run: |
+          npm run all
+
+  load-all-available-actions: # test the action locally without building
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
