@@ -35,6 +35,7 @@ async function run(): Promise<void> {
     core.setFailed(`Error running action: : ${error.message}`)
   }
 
+  //todo: move this function to a separate file, with the corresponding class definition
   async function findAllRepos(
     client: Octokit,
     username: string
