@@ -20,7 +20,7 @@ jobs:
     steps: 
       - uses: actions/checkout@v2
 
-      - uses: ./@typescipt
+      - uses: github-action-load-available-actions/@typescipt
         name: Load used actions
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
