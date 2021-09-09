@@ -40,7 +40,7 @@ async function run(): Promise<void> {
 
     // core.setOutput('time', new Date().toTimeString())
   } catch (error) {
-    core.setFailed('Error running action: ', error.message)
+    core.setFailed(`Error running action: : ${error.message}`)
   }
 
   // async function findAllRepos(
