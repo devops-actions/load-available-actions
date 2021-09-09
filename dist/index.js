@@ -41,22 +41,23 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info('Starting');
         try {
-            const PAT = core.getInput('PAT'); // || process.env.PAT
+            const PAT = core.getInput('PAT') || process.env.PAT;
             if (!PAT || PAT === '') {
                 core.setFailed("Parameter 'PAT' is required to load all private and internal actions from the organization");
                 return;
             }
+            // todo: handle auth issues:
             const octokit = new octokit_1.Octokit({ auth: PAT });
             try {
-                const { data: { login } } = yield octokit.rest.users.getAuthenticated();
-                core.info(`Hello, ${login}`);
+                const user = yield octokit.rest.users.getAuthenticated();
+                core.info(`Hello, ${user.data.login}`);
             }
             catch (error) {
                 core.setFailed(`Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`);
                 return;
             }
-            // let repos = findAllRepos(octokit)
-            findAllRepos(octokit, 'rajbos');
+            const repos = yield findAllRepos(octokit, 'rajbos');
+            core.info(`Found [${repos.length}] repositories`);
             // core.setOutput('time', new Date().toTimeString())
         }
         catch (error) {
@@ -64,16 +65,31 @@ function run() {
         }
         function findAllRepos(client, username) {
             return __awaiter(this, void 0, void 0, function* () {
+                // todo: switch between user and org
+                // todo: add pagination
                 const { data: repos } = yield client.rest.repos.listForUser({
                     username
                 });
-                core.info(`Hello, ${repos.length}`);
-                return;
+                core.info(`Found [${repos.length}] repositories`);
+                // convert to an array of objects we can return
+                const result = [];
+                // eslint disabled: no iterator available
+                // eslint-disable-next-line @typescript-eslint/prefer-for-of
+                for (let num = 0; num < repos.length; num++) {
+                    const repository = new Repository(repos[num].name);
+                    result.push(repository);
+                }
+                return result;
             });
         }
     });
 }
 run();
+class Repository {
+    constructor(name) {
+        this.name = name;
+    }
+}
 //# sourceMappingURL=main.js.map
 
 /***/ }),
