@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {Octokit} from 'octokit'
+//import {Octokit} from 'octokit'
 
 async function run(): Promise<void> {
   core.info('Starting')
@@ -13,13 +13,13 @@ async function run(): Promise<void> {
       return
     }
 
-    const octokit = new Octokit({auth: PAT})
+    // const octokit = new Octokit({auth: PAT})
 
-    const {
-      data: {login}
-    } = await octokit.rest.users.getAuthenticated()
+    // const {
+    //   data: {login}
+    // } = await octokit.rest.users.getAuthenticated()
 
-    core.info(`Hello, ${login}`)
+    // core.info(`Hello, ${login}`)
 
     // let repos = findAllRepos(octokit)
     //findAllRepos(octokit, login)
