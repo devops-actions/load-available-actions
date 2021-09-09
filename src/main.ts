@@ -23,37 +23,30 @@ async function run(): Promise<void> {
       core.info(`Hello, ${login}`)
     } catch (error) {
       core.setFailed(
-        'Could not authenticate with PAT. Please check that it is correct and that it has read access to the organization or user account.'
+        `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
       )
       return
     }
 
     // let repos = findAllRepos(octokit)
-    //findAllRepos(octokit, login)
-
-    // const ms: string = core.getInput('milliseconds')
-    // core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
-
-    // core.debug(new Date().toTimeString())
-    // await wait(parseInt(ms, 10))
-    // core.debug(new Date().toTimeString())
+    findAllRepos(octokit, 'rajbos')
 
     // core.setOutput('time', new Date().toTimeString())
   } catch (error) {
     core.setFailed(`Error running action: : ${error.message}`)
   }
 
-  // async function findAllRepos(
-  //   client: Octokit,
-  //   username: string
-  // ): Promise<void> {
-  //   const {data: repos} = await client.rest.repos.listForUser({
-  //     username
-  //   })
+  async function findAllRepos(
+    client: Octokit,
+    username: string
+  ): Promise<void> {
+    const {data: repos} = await client.rest.repos.listForUser({
+      username
+    })
 
-  //   core.info(`Hello, ${repos.length}`)
-  //   return
-  // }
+    core.info(`Hello, ${repos.length}`)
+    return
+  }
 }
 
 run()
