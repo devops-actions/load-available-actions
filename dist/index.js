@@ -47,8 +47,14 @@ function run() {
                 return;
             }
             const octokit = new octokit_1.Octokit({ auth: PAT });
-            const { data: { login } } = yield octokit.rest.users.getAuthenticated();
-            core.info(`Hello, ${login}`);
+            try {
+                const { data: { login } } = yield octokit.rest.users.getAuthenticated();
+                core.info(`Hello, ${login}`);
+            }
+            catch (error) {
+                core.setFailed('Could not authenticate with PAT. Please check that it is correct and that it has read access to the organization or user account.');
+                return;
+            }
             // let repos = findAllRepos(octokit)
             //findAllRepos(octokit, login)
             // const ms: string = core.getInput('milliseconds')
@@ -59,7 +65,7 @@ function run() {
             // core.setOutput('time', new Date().toTimeString())
         }
         catch (error) {
-            core.setFailed(error.message);
+            core.setFailed(`Error running action: : ${error.message}`);
         }
         // async function findAllRepos(
         //   client: Octokit,
