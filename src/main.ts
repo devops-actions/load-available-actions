@@ -3,7 +3,7 @@ import {Octokit} from 'octokit'
 
 async function run(): Promise<void> {
   try {
-    const PAT = core.getInput('PAT') || process.env.PAT
+    const PAT = core.getInput('PAT') // || process.env.PAT
 
     if (!PAT || PAT === '') {
       core.setFailed(
