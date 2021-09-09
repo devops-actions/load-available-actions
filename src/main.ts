@@ -21,7 +21,7 @@ async function run(): Promise<void> {
     core.info(`Hello, ${login}`)
 
     // let repos = findAllRepos(octokit)
-    findAllRepos(octokit, login)
+    //findAllRepos(octokit, login)
 
     // const ms: string = core.getInput('milliseconds')
     // core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_RUNNER_DEBUG` to true
@@ -35,17 +35,17 @@ async function run(): Promise<void> {
     core.setFailed(error.message)
   }
 
-  async function findAllRepos(
-    client: Octokit,
-    username: string
-  ): Promise<void> {
-    const {data: repos} = await client.rest.repos.listForUser({
-      username
-    })
+  // async function findAllRepos(
+  //   client: Octokit,
+  //   username: string
+  // ): Promise<void> {
+  //   const {data: repos} = await client.rest.repos.listForUser({
+  //     username
+  //   })
 
-    core.info(`Hello, ${repos.length}`)
-    return
-  }
+  //   core.info(`Hello, ${repos.length}`)
+  //   return
+  // }
 }
 
 run()
