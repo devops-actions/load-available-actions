@@ -15,11 +15,18 @@ async function run(): Promise<void> {
 
     const octokit = new Octokit({auth: PAT})
 
-    const {
-      data: {login}
-    } = await octokit.rest.users.getAuthenticated()
+    try {
+      const {
+        data: {login}
+      } = await octokit.rest.users.getAuthenticated()
 
-    core.info(`Hello, ${login}`)
+      core.info(`Hello, ${login}`)
+    } catch (error) {
+      core.setFailed(
+        'Could not authenticate with PAT. Please check that it is correct and that it has read access to the organization or user account.'
+      )
+      return
+    }
 
     // let repos = findAllRepos(octokit)
     //findAllRepos(octokit, login)
@@ -33,7 +40,7 @@ async function run(): Promise<void> {
 
     // core.setOutput('time', new Date().toTimeString())
   } catch (error) {
-    core.setFailed(error.message)
+    core.setFailed('Error running action: ', error.message)
   }
 
   // async function findAllRepos(
