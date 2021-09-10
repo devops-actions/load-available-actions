@@ -58,9 +58,11 @@ function run() {
             }
             const repos = yield findAllRepos(octokit, 'rajbos');
             core.info(`Found [${repos.length}] repositories`);
-            // working here:
-            findAllActions(octokit, repos);
+            const actionFiles = yield findAllActions(octokit, repos);
+            // load the information in the files
+            // output the json we want to output
             // core.setOutput('time', new Date().toTimeString())
+            core.setOutput('actions', actionFiles.toString());
         }
         catch (error) {
             core.setFailed(`Error running action: : ${error.message}`);
@@ -103,16 +105,20 @@ class Content {
 }
 function findAllActions(client, repos) {
     return __awaiter(this, void 0, void 0, function* () {
+        // create array
+        const result = [];
+        // search all repos for actions
         for (const repo of repos) {
-            core.info(`Searching repository for actions: ${repo.name}`);
+            core.debug(`Searching repository for actions: ${repo.name}`);
             const content = yield getActionFile(client, repo);
             if (content && content.name !== '') {
                 core.info(`Found action file in repository: ${repo.name} with filename [${content.name}] download url [${content.downloadUrl}]`);
+                // add to array
+                result.push(content);
             }
         }
-        // if (!action) {
-        //   return
-        // }
+        core.debug(`Found [${result.length}] actions in [${repos.length}]`);
+        return result;
     });
 }
 function getActionFile(client, repo) {
