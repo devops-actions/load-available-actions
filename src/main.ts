@@ -14,7 +14,6 @@ async function run(): Promise<void> {
       return
     }
 
-    // todo: handle auth issues:
     const octokit = new Octokit({auth: PAT})
 
     try {
