@@ -88,24 +88,11 @@ class Repository {
 }
 
 class Content {
-  name: string
-  repo: string
-  downloadUrl: string | null
-  author: string
-  description: string
-  constructor(
-    name: string,
-    repo: string,
-    downloadUrl: string | null,
-    author: string,
-    description: string
-  ) {
-    this.name = name
-    this.repo = repo
-    this.downloadUrl = downloadUrl
-    this.author = author
-    this.description = description
-  }
+  name = ``
+  repo = ``
+  downloadUrl = ``
+  author = ``
+  description = ``
 }
 
 async function findAllActions(
@@ -136,7 +123,7 @@ async function getActionFile(
   client: Octokit,
   repo: Repository
 ): Promise<Content | null> {
-  const result = new Content('', '', '', '', '') //todo: skip constructor setup
+  const result = new Content()
 
   // search for action.yml file in the root of the repo
   try {
@@ -146,10 +133,13 @@ async function getActionFile(
       path: 'action.yml'
     })
 
+    // todo: warning: duplicated code here
     if ('name' in yml && 'download_url' in yml) {
       result.name = yml.name
       result.repo = repo.name
-      result.downloadUrl = yml.download_url
+      if (yml.download_url !== null) {
+        result.downloadUrl = yml.download_url
+      }
     }
   } catch (error) {
     core.debug(`No action.yml file found in repository: ${repo.name}`)
@@ -167,7 +157,9 @@ async function getActionFile(
       if ('name' in yaml && 'download_url' in yaml) {
         result.name = yaml.name
         result.repo = repo.name
-        result.downloadUrl = yaml.download_url
+        if (yaml.download_url !== null) {
+          result.downloadUrl = yaml.download_url
+        }
       }
     } catch (error) {
       core.debug(`No action.yaml file found in repository: ${repo.name}`)

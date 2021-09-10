@@ -106,12 +106,12 @@ class Repository {
     }
 }
 class Content {
-    constructor(name, repo, downloadUrl, author, description) {
-        this.name = name;
-        this.repo = repo;
-        this.downloadUrl = downloadUrl;
-        this.author = author;
-        this.description = description;
+    constructor() {
+        this.name = ``;
+        this.repo = ``;
+        this.downloadUrl = ``;
+        this.author = ``;
+        this.description = ``;
     }
 }
 function findAllActions(client, repos) {
@@ -134,7 +134,7 @@ function findAllActions(client, repos) {
 }
 function getActionFile(client, repo) {
     return __awaiter(this, void 0, void 0, function* () {
-        const result = new Content('', '', '', '', ''); //todo: skip constructor setup
+        const result = new Content();
         // search for action.yml file in the root of the repo
         try {
             const { data: yml } = yield client.rest.repos.getContent({
@@ -142,10 +142,13 @@ function getActionFile(client, repo) {
                 repo: repo.name,
                 path: 'action.yml'
             });
+            // todo: warning: duplicated code here
             if ('name' in yml && 'download_url' in yml) {
                 result.name = yml.name;
                 result.repo = repo.name;
-                result.downloadUrl = yml.download_url;
+                if (yml.download_url !== null) {
+                    result.downloadUrl = yml.download_url;
+                }
             }
         }
         catch (error) {
@@ -162,7 +165,9 @@ function getActionFile(client, repo) {
                 if ('name' in yaml && 'download_url' in yaml) {
                     result.name = yaml.name;
                     result.repo = repo.name;
-                    result.downloadUrl = yaml.download_url;
+                    if (yaml.download_url !== null) {
+                        result.downloadUrl = yaml.download_url;
+                    }
                 }
             }
             catch (error) {
