@@ -58,12 +58,16 @@ function run() {
             }
             const repos = yield findAllRepos(octokit, 'rajbos');
             core.info(`Found [${repos.length}] repositories`);
+            // working here:
+            findAllActions(octokit, repos);
             // core.setOutput('time', new Date().toTimeString())
         }
         catch (error) {
             core.setFailed(`Error running action: : ${error.message}`);
         }
+        //todo: move this function to a separate file, with the corresponding class definition
         function findAllRepos(client, username) {
+            var _a;
             return __awaiter(this, void 0, void 0, function* () {
                 // todo: switch between user and org
                 // todo: add pagination
@@ -76,7 +80,8 @@ function run() {
                 // eslint disabled: no iterator available
                 // eslint-disable-next-line @typescript-eslint/prefer-for-of
                 for (let num = 0; num < repos.length; num++) {
-                    const repository = new Repository(repos[num].name);
+                    const repo = repos[num];
+                    const repository = new Repository(((_a = repo.owner) === null || _a === void 0 ? void 0 : _a.login) || '', repo.name); //todo: handle for orgs
                     result.push(repository);
                 }
                 return result;
@@ -84,12 +89,75 @@ function run() {
         }
     });
 }
-run();
 class Repository {
-    constructor(name) {
+    constructor(owner, name) {
         this.name = name;
+        this.owner = owner;
     }
 }
+class Content {
+    constructor(name, downloadUrl) {
+        this.name = name;
+        this.downloadUrl = downloadUrl;
+    }
+}
+function findAllActions(client, repos) {
+    return __awaiter(this, void 0, void 0, function* () {
+        for (const repo of repos) {
+            core.info(`Searching repository for actions: ${repo.name}`);
+            const content = yield getActionFile(client, repo);
+            if (content && content.name !== '') {
+                core.info(`Found action file in repository: ${repo.name} with filename [${content.name}] download url [${content.downloadUrl}]`);
+            }
+        }
+        // if (!action) {
+        //   return
+        // }
+    });
+}
+function getActionFile(client, repo) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const result = new Content('', '');
+        // search for action.yml file in the root of the repo
+        try {
+            const { data: yml } = yield client.rest.repos.getContent({
+                owner: repo.owner,
+                repo: repo.name,
+                path: 'action.yml'
+            });
+            if ('name' in yml && 'download_url' in yml) {
+                result.name = yml.name;
+                result.downloadUrl = yml.download_url;
+            }
+        }
+        catch (error) {
+            core.debug(`No action.yml file found in repository: ${repo.name}`);
+        }
+        if (result.name === '') {
+            try {
+                // search for the action.yaml, that is also allowed
+                const { data: yaml } = yield client.rest.repos.getContent({
+                    owner: repo.owner,
+                    repo: repo.name,
+                    path: 'action.yaml'
+                });
+                if ('name' in yaml && 'download_url' in yaml) {
+                    result.name = yaml.name;
+                    result.downloadUrl = yaml.download_url;
+                }
+            }
+            catch (error) {
+                core.debug(`No action.yaml file found in repository: ${repo.name}`);
+            }
+        }
+        if (result.name === '') {
+            core.info(`No actions found in repository: ${repo.name}`);
+            return null;
+        }
+        return result;
+    });
+}
+run();
 //# sourceMappingURL=main.js.map
 
 /***/ }),

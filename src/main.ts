@@ -30,6 +30,9 @@ async function run(): Promise<void> {
     const repos = await findAllRepos(octokit, 'rajbos')
     core.info(`Found [${repos.length}] repositories`)
 
+    // working here:
+    findAllActions(octokit, repos)
+
     // core.setOutput('time', new Date().toTimeString())
   } catch (error) {
     core.setFailed(`Error running action: : ${error.message}`)
@@ -55,7 +58,8 @@ async function run(): Promise<void> {
     // eslint disabled: no iterator available
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let num = 0; num < repos.length; num++) {
-      const repository = new Repository(repos[num].name)
+      const repo = repos[num]
+      const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
       result.push(repository)
     }
 
@@ -63,11 +67,89 @@ async function run(): Promise<void> {
   }
 }
 
-run()
-
 class Repository {
   name: string
-  constructor(name: string) {
+  owner: string
+  constructor(owner: string, name: string) {
     this.name = name
+    this.owner = owner
   }
 }
+
+class Content {
+  name: string
+  downloadUrl: string | null
+  constructor(name: string, downloadUrl: string | null) {
+    this.name = name
+    this.downloadUrl = downloadUrl
+  }
+}
+
+async function findAllActions(
+  client: Octokit,
+  repos: Repository[]
+): Promise<void> {
+  for (const repo of repos) {
+    core.info(`Searching repository for actions: ${repo.name}`)
+    const content = await getActionFile(client, repo)
+    if (content && content.name !== '') {
+      core.info(
+        `Found action file in repository: ${repo.name} with filename [${content.name}] download url [${content.downloadUrl}]`
+      )
+    }
+  }
+
+  // if (!action) {
+  //   return
+  // }
+}
+
+async function getActionFile(
+  client: Octokit,
+  repo: Repository
+): Promise<Content | null> {
+  const result = new Content('', '')
+
+  // search for action.yml file in the root of the repo
+  try {
+    const {data: yml} = await client.rest.repos.getContent({
+      owner: repo.owner,
+      repo: repo.name,
+      path: 'action.yml'
+    })
+
+    if ('name' in yml && 'download_url' in yml) {
+      result.name = yml.name
+      result.downloadUrl = yml.download_url
+    }
+  } catch (error) {
+    core.debug(`No action.yml file found in repository: ${repo.name}`)
+  }
+
+  if (result.name === '') {
+    try {
+      // search for the action.yaml, that is also allowed
+      const {data: yaml} = await client.rest.repos.getContent({
+        owner: repo.owner,
+        repo: repo.name,
+        path: 'action.yaml'
+      })
+
+      if ('name' in yaml && 'download_url' in yaml) {
+        result.name = yaml.name
+        result.downloadUrl = yaml.download_url
+      }
+    } catch (error) {
+      core.debug(`No action.yaml file found in repository: ${repo.name}`)
+    }
+  }
+
+  if (result.name === '') {
+    core.info(`No actions found in repository: ${repo.name}`)
+    return null
+  }
+
+  return result
+}
+
+run()

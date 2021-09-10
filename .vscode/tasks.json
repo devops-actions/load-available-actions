@@ -7,6 +7,14 @@
 			"group": "build",
 			"problemMatcher": [],
 			"label": "npm: run all",
+			"detail": "run all"
+		},
+		{
+			"type": "npm",
+			"script": "all",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "npm: build",
 			"detail": "tsc"
 		}
 	]
