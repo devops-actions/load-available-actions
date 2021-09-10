@@ -34,8 +34,18 @@ async function run(): Promise<void> {
     // load the information in the files
 
     // output the json we want to output
+    const output: {
+      lastUpdated: string
+      actions: Content[]
+    } = {
+      lastUpdated: new Date().toISOString(),
+      actions: actionFiles
+    }
+
     // core.setOutput('time', new Date().toTimeString())
-    core.setOutput('actions', JSON.stringify(actionFiles))
+    //actionFiles.forEach(item => (Object[item.name] = item.name))
+    const json = JSON.stringify(output)
+    core.setOutput('actions', JSON.stringify(json))
   } catch (error) {
     core.setFailed(`Error running action: : ${error.message}`)
   }
@@ -80,9 +90,11 @@ class Repository {
 
 class Content {
   name: string
+  repo: string
   downloadUrl: string | null
-  constructor(name: string, downloadUrl: string | null) {
+  constructor(name: string, repo: string, downloadUrl: string | null) {
     this.name = name
+    this.repo = repo
     this.downloadUrl = downloadUrl
   }
 }
@@ -115,7 +127,7 @@ async function getActionFile(
   client: Octokit,
   repo: Repository
 ): Promise<Content | null> {
-  const result = new Content('', '')
+  const result = new Content('', '', '') //todo: step constructor setup
 
   // search for action.yml file in the root of the repo
   try {
@@ -127,6 +139,7 @@ async function getActionFile(
 
     if ('name' in yml && 'download_url' in yml) {
       result.name = yml.name
+      result.repo = repo.name
       result.downloadUrl = yml.download_url
     }
   } catch (error) {
@@ -144,6 +157,7 @@ async function getActionFile(
 
       if ('name' in yaml && 'download_url' in yaml) {
         result.name = yaml.name
+        result.repo = repo.name
         result.downloadUrl = yaml.download_url
       }
     } catch (error) {

@@ -61,8 +61,14 @@ function run() {
             const actionFiles = yield findAllActions(octokit, repos);
             // load the information in the files
             // output the json we want to output
+            const output = {
+                lastUpdated: new Date().toISOString(),
+                actions: actionFiles
+            };
             // core.setOutput('time', new Date().toTimeString())
-            core.setOutput('actions', JSON.stringify(actionFiles));
+            //actionFiles.forEach(item => (Object[item.name] = item.name))
+            const json = JSON.stringify(output);
+            core.setOutput('actions', JSON.stringify(json));
         }
         catch (error) {
             core.setFailed(`Error running action: : ${error.message}`);
@@ -98,8 +104,9 @@ class Repository {
     }
 }
 class Content {
-    constructor(name, downloadUrl) {
+    constructor(name, repo, downloadUrl) {
         this.name = name;
+        this.repo = repo;
         this.downloadUrl = downloadUrl;
     }
 }
@@ -123,7 +130,7 @@ function findAllActions(client, repos) {
 }
 function getActionFile(client, repo) {
     return __awaiter(this, void 0, void 0, function* () {
-        const result = new Content('', '');
+        const result = new Content('', '', ''); //todo: step constructor setup
         // search for action.yml file in the root of the repo
         try {
             const { data: yml } = yield client.rest.repos.getContent({
@@ -133,6 +140,7 @@ function getActionFile(client, repo) {
             });
             if ('name' in yml && 'download_url' in yml) {
                 result.name = yml.name;
+                result.repo = repo.name;
                 result.downloadUrl = yml.download_url;
             }
         }
@@ -149,6 +157,7 @@ function getActionFile(client, repo) {
                 });
                 if ('name' in yaml && 'download_url' in yaml) {
                     result.name = yaml.name;
+                    result.repo = repo.name;
                     result.downloadUrl = yaml.download_url;
                 }
             }
