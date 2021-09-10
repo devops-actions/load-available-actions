@@ -61,7 +61,7 @@ function run() {
                 return;
             }
             const repos = yield findAllRepos(octokit, 'rajbos');
-            core.info(`Found [${repos.length}] repositories`);
+            console.log(`Found [${repos.length}] repositories`);
             let actionFiles = yield findAllActions(octokit, repos);
             // load the information in the files
             actionFiles = yield enrichActionFiles(octokit, actionFiles);
@@ -70,8 +70,6 @@ function run() {
                 lastUpdated: new Date().toISOString(),
                 actions: actionFiles
             };
-            // core.setOutput('time', new Date().toTimeString())
-            //actionFiles.forEach(item => (Object[item.name] = item.name))
             const json = JSON.stringify(output);
             core.setOutput('actions', JSON.stringify(json));
         }
@@ -131,7 +129,7 @@ function findAllActions(client, repos) {
                 result.push(content);
             }
         }
-        core.info(`Found [${result.length}] actions in [${repos.length}]`);
+        console.log(`Found [${result.length}] actions in [${repos.length}] repos`);
         return result;
     });
 }

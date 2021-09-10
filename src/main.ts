@@ -29,7 +29,7 @@ async function run(): Promise<void> {
     }
 
     const repos = await findAllRepos(octokit, 'rajbos')
-    core.info(`Found [${repos.length}] repositories`)
+    console.log(`Found [${repos.length}] repositories`)
 
     let actionFiles = await findAllActions(octokit, repos)
     // load the information in the files
@@ -44,8 +44,6 @@ async function run(): Promise<void> {
       actions: actionFiles
     }
 
-    // core.setOutput('time', new Date().toTimeString())
-    //actionFiles.forEach(item => (Object[item.name] = item.name))
     const json = JSON.stringify(output)
     core.setOutput('actions', JSON.stringify(json))
   } catch (error) {
@@ -131,7 +129,7 @@ async function findAllActions(
     }
   }
 
-  core.info(`Found [${result.length}] actions in [${repos.length}]`)
+  console.log(`Found [${result.length}] actions in [${repos.length}] repos`)
   return result
 }
 
