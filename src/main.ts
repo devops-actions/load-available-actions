@@ -35,7 +35,7 @@ async function run(): Promise<void> {
 
     // output the json we want to output
     // core.setOutput('time', new Date().toTimeString())
-    core.setOutput('actions', actionFiles.toString())
+    core.setOutput('actions', JSON.stringify(actionFiles))
   } catch (error) {
     core.setFailed(`Error running action: : ${error.message}`)
   }
@@ -107,7 +107,7 @@ async function findAllActions(
     }
   }
 
-  core.debug(`Found [${result.length}] actions in [${repos.length}]`)
+  core.info(`Found [${result.length}] actions in [${repos.length}]`)
   return result
 }
 
