@@ -81,8 +81,7 @@ function run() {
             var _a;
             return __awaiter(this, void 0, void 0, function* () {
                 // todo: switch between user and org
-                // todo: add pagination
-                const { data: repos } = yield client.rest.repos.listForUser({
+                const repos = yield client.paginate(client.rest.repos.listForUser, {
                     username
                 });
                 core.info(`Found [${repos.length}] repositories`);

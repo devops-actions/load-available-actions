@@ -57,8 +57,7 @@ async function run(): Promise<void> {
   ): Promise<Repository[]> {
     // todo: switch between user and org
 
-    // todo: add pagination
-    const {data: repos} = await client.rest.repos.listForUser({
+    const repos = await client.paginate(client.rest.repos.listForUser, {
       username
     })
 
