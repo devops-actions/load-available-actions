@@ -26,7 +26,8 @@ jobs:
           PAT: ${{ secrets.PAT }}
         id: load-actions
 
-      - run: echo ${{ steps.load-actions.outputs.actions }} > 'actions.json'
+      - name: Store output in result file
+        run: echo ${{ steps.load-actions.outputs.actions }} > 'actions.json'
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
