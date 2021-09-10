@@ -1,5 +1,6 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
+import YAML from 'yaml'
 
 async function run(): Promise<void> {
   core.info('Starting')
@@ -30,8 +31,9 @@ async function run(): Promise<void> {
     const repos = await findAllRepos(octokit, 'rajbos')
     core.info(`Found [${repos.length}] repositories`)
 
-    const actionFiles = await findAllActions(octokit, repos)
+    let actionFiles = await findAllActions(octokit, repos)
     // load the information in the files
+    actionFiles = await enrichActionFiles(octokit, actionFiles)
 
     // output the json we want to output
     const output: {
@@ -92,10 +94,20 @@ class Content {
   name: string
   repo: string
   downloadUrl: string | null
-  constructor(name: string, repo: string, downloadUrl: string | null) {
+  author: string
+  description: string
+  constructor(
+    name: string,
+    repo: string,
+    downloadUrl: string | null,
+    author: string,
+    description: string
+  ) {
     this.name = name
     this.repo = repo
     this.downloadUrl = downloadUrl
+    this.author = author
+    this.description = description
   }
 }
 
@@ -127,7 +139,7 @@ async function getActionFile(
   client: Octokit,
   repo: Repository
 ): Promise<Content | null> {
-  const result = new Content('', '', '') //todo: step constructor setup
+  const result = new Content('', '', '', '', '') //todo: skip constructor setup
 
   // search for action.yml file in the root of the repo
   try {
@@ -171,6 +183,24 @@ async function getActionFile(
   }
 
   return result
+}
+
+async function enrichActionFiles(
+  client: Octokit,
+  actionFiles: Content[]
+): Promise<Content[]> {
+  for (const action of actionFiles) {
+    // download the file in it and parse it
+    if (action.downloadUrl !== null) {
+      const {data: content} = await client.request({url: action.downloadUrl})
+      // parse the yaml
+      const parsed = YAML.parse(content)
+      action.name = parsed.name
+      action.author = parsed.author
+      action.description = parsed.description
+    }
+  }
+  return actionFiles
 }
 
 run()
