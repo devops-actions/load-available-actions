@@ -6,10 +6,19 @@ async function run(): Promise<void> {
   core.info('Starting')
   try {
     const PAT = core.getInput('PAT') || process.env.PAT
+    const user = core.getInput('user') || process.env.GITHUB_USER
+    const organization = core.getInput('organization') || process.env.GITHUB_ORGANIZATION
 
     if (!PAT || PAT === '') {
       core.setFailed(
-        "Parameter 'PAT' is required to load all private and internal actions from the organization"
+        "Parameter 'PAT' is required to load all actions from the organization or user account"
+      )
+      return
+    }
+
+    if (!user || user === '' || !organization || organization === '') {
+      core.setFailed(
+        "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
       )
       return
     }
@@ -17,9 +26,9 @@ async function run(): Promise<void> {
     const octokit = new Octokit({auth: PAT})
 
     try {
-      const user = await octokit.rest.users.getAuthenticated()
+      const currentUser = await octokit.rest.users.getAuthenticated()
 
-      core.info(`Hello, ${user.data.login}`)
+      core.info(`Hello, ${currentUser.data.login}`)
     } catch (error) {
       core.setFailed(
         `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
@@ -27,7 +36,7 @@ async function run(): Promise<void> {
       return
     }
 
-    const repos = await findAllRepos(octokit, 'rajbos')
+    const repos = await findAllRepos(octokit, user, organization)
     console.log(`Found [${repos.length}] repositories`)
 
     let actionFiles = await findAllActions(octokit, repos)
@@ -52,29 +61,52 @@ async function run(): Promise<void> {
   //todo: move this function to a separate file, with the corresponding class definition
   async function findAllRepos(
     client: Octokit,
-    username: string
+    username: string,
+    organization: string
   ): Promise<Repository[]> {
     // todo: switch between user and org
-
-    const repos = await client.paginate(client.rest.repos.listForUser, {
-      username
-    })
-
-    core.info(`Found [${repos.length}] repositories`)
 
     // convert to an array of objects we can return
     const result: Repository[] = []
 
-    // eslint disabled: no iterator available
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let num = 0; num < repos.length; num++) {
-      const repo = repos[num]
-      const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
-      result.push(repository)
+    if (username !== '') {
+      const repos = await client.paginate(client.rest.repos.listForUser, {
+        username
+      })
+
+      console.log(`Found [${organization}] as orgname parameter`)
+      console.log(`repos type = [${typeof repos}]`)
+      core.info(`Found [${repos.length}] repositories`)
+
+      // eslint disabled: no iterator available
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let num = 0; num < repos.length; num++) {
+        const repo = repos[num]
+        const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
+        result.push(repository)
+      }
+
+    }
+
+    if (organization !== '') {
+      const repos = await client.paginate(client.rest.repos.listForOrg, {
+        org: organization
+      })
+
+      console.log(`Found [${organization}] as orgname parameter`)
+      console.log(`repos type = [${typeof repos}]`)
+      core.info(`Found [${repos.length}] repositories`)
+
+      // eslint disabled: no iterator available
+      // eslint-disable-next-line @typescript-eslint/prefer-for-of
+      for (let num = 0; num < repos.length; num++) {
+        const repo = repos[num]
+        const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
+        result.push(repository)
+      }
     }
 
     return result
-  }
 }
 
 class Repository {

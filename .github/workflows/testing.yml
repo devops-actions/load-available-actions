@@ -15,7 +15,7 @@ jobs:
       - run: |
           npm run all
 
-  test-load-all-available-actions: # test the action locally without building
+  test-load-from-user: # test the action for the user space
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
@@ -24,13 +24,35 @@ jobs:
         name: Load used actions
         with: 
           PAT: ${{ secrets.PAT }}
+          user: rajbos
         id: load-actions
 
       - name: Store output in result file
-        run: echo ${{ steps.load-actions.outputs.actions }} > 'actions.json'
+        run: echo ${{ steps.load-actions.outputs.actions }} > 'actions-user.json'
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
         with: 
           name: actions
-          path: actions.json
+          path: actions-user.json
+  
+  test-load-from-organization: # test the action for the organization space
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+
+      - uses: ./
+        name: Load used actions
+        with: 
+          PAT: ${{ secrets.PAT }}
+          organization: rajbos-actions
+        id: load-actions
+
+      - name: Store output in result file
+        run: echo ${{ steps.load-actions.outputs.actions }} > 'actions-organization.json'
+            
+      - name: Upload result file as artefact
+        uses: actions/upload-artifact@v2
+        with: 
+          name: actions
+          path: actions-organization.json

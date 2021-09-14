@@ -40,7 +40,7 @@ with:
     PAT: ${{ secrets.GITHUB_TOKEN }}
 ```
 Note: the default GITHUB_TOKEN might only have read access to the current repository, depending on the setup. Create a new token with `repo` scope to have full read-only access to the organization and use that as a parameter.  
--[ ] todo: check the scope and update above if needed
+- [] todo: check the scope and update above if needed
 
 ## Full example
 This example shows how to use the action to get a json file with all the available actions in an organization. The json file is uploaded as an artefact in the third step.
