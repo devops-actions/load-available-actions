@@ -1,6 +1,7 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
 import YAML from 'yaml'
+import moment from 'moment'
 
 async function run(): Promise<void> {
   core.info('Starting')
@@ -49,7 +50,7 @@ async function run(): Promise<void> {
       lastUpdated: string
       actions: Content[]
     } = {
-      lastUpdated: new Date().toISOString(),
+      lastUpdated: GetDateFormatted(new Date()),
       actions: actionFiles
     }
 
@@ -58,6 +59,10 @@ async function run(): Promise<void> {
   } catch (error) {
     core.setFailed(`Error running action: : ${error.message}`)
   }
+}
+
+export function GetDateFormatted(date: Date): string {
+  return moment(date).format('YYYYMMDD_HHmm')
 }
 
 //todo: move this function to a separate file, with the corresponding class definition

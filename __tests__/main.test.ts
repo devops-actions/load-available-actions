@@ -1,8 +1,7 @@
 import {wait} from '../src/wait'
-import * as process from 'process'
-import * as cp from 'child_process'
-import * as path from 'path'
 import {expect, test} from '@jest/globals'
+import {GetDateFormatted} from '../src/main'
+import exp from 'constants'
 
 test('throws invalid number', async () => {
   const input = parseInt('foo', 10)
@@ -17,13 +16,10 @@ test('wait 500 ms', async () => {
   expect(delta).toBeGreaterThan(450)
 })
 
-// shows how the runner will run a javascript action with env / stdout protocol
-// test('test runs', () => {
-//   process.env['INPUT_MILLISECONDS'] = '500'
-//   const np = process.execPath
-//   const ip = path.join(__dirname, '..', 'lib', 'main.js')
-//   const options: cp.ExecFileSyncOptions = {
-//     env: process.env
-//   }
-//   console.log(cp.execFileSync(np, [ip], options).toString())
-// })
+test(`check dateformat string`, () => {
+  const date = new Date(2021, 0, 16, 11, 43, 0, 0)
+  const result = GetDateFormatted(date)
+
+  expect(result).toHaveLength(13)
+  expect(result).toMatch('20210116_1143')
+})
