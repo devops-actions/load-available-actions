@@ -5,7 +5,7 @@
   "description": "GitHub Action to load all available actions for an organization or user",
   "main": "lib/main.js",
   "scripts": {
-    "esbuild": "esbuild src/main.ts --bundle --outdir=dist --platform=node --external:vscode --external:@vscode/test-electron --external:jest --sourcemap",
+    "esbuild": "esbuild src/main.ts --bundle --outdir=dist --platform=node --external:vscode --external:@vscode/test-electron --external:jest",
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
