@@ -46,21 +46,26 @@ function run() {
         core.info('Starting');
         try {
             const PAT = core.getInput('PAT') || process.env.PAT;
+            const user = core.getInput('user') || process.env.GITHUB_USER;
+            const organization = core.getInput('organization') || process.env.GITHUB_ORGANIZATION;
             if (!PAT || PAT === '') {
-                core.setFailed("Parameter 'PAT' is required to load all private and internal actions from the organization");
+                core.setFailed("Parameter 'PAT' is required to load all actions from the organization or user account");
                 return;
             }
-            // todo: handle auth issues:
+            if (!user || user === '' || !organization || organization === '') {
+                core.setFailed("Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them.");
+                return;
+            }
             const octokit = new octokit_1.Octokit({ auth: PAT });
             try {
-                const user = yield octokit.rest.users.getAuthenticated();
-                core.info(`Hello, ${user.data.login}`);
+                const currentUser = yield octokit.rest.users.getAuthenticated();
+                core.info(`Hello, ${currentUser.data.login}`);
             }
             catch (error) {
                 core.setFailed(`Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`);
                 return;
             }
-            const repos = yield findAllRepos(octokit, 'rajbos');
+            const repos = yield findAllRepos(octokit, user, organization);
             console.log(`Found [${repos.length}] repositories`);
             let actionFiles = yield findAllActions(octokit, repos);
             // load the information in the files
@@ -76,27 +81,46 @@ function run() {
         catch (error) {
             core.setFailed(`Error running action: : ${error.message}`);
         }
-        //todo: move this function to a separate file, with the corresponding class definition
-        function findAllRepos(client, username) {
-            var _a;
-            return __awaiter(this, void 0, void 0, function* () {
-                // todo: switch between user and org
-                const repos = yield client.paginate(client.rest.repos.listForUser, {
-                    username
-                });
-                core.info(`Found [${repos.length}] repositories`);
-                // convert to an array of objects we can return
-                const result = [];
-                // eslint disabled: no iterator available
-                // eslint-disable-next-line @typescript-eslint/prefer-for-of
-                for (let num = 0; num < repos.length; num++) {
-                    const repo = repos[num];
-                    const repository = new Repository(((_a = repo.owner) === null || _a === void 0 ? void 0 : _a.login) || '', repo.name); //todo: handle for orgs
-                    result.push(repository);
-                }
-                return result;
+    });
+}
+//todo: move this function to a separate file, with the corresponding class definition
+function findAllRepos(client, username, organization) {
+    var _a, _b;
+    return __awaiter(this, void 0, void 0, function* () {
+        // todo: switch between user and org
+        // convert to an array of objects we can return
+        const result = [];
+        if (username !== '') {
+            const repos = yield client.paginate(client.rest.repos.listForUser, {
+                username
             });
+            console.log(`Found [${organization}] as orgname parameter`);
+            console.log(`repos type = [${typeof repos}]`);
+            core.info(`Found [${repos.length}] repositories`);
+            // eslint disabled: no iterator available
+            // eslint-disable-next-line @typescript-eslint/prefer-for-of
+            for (let num = 0; num < repos.length; num++) {
+                const repo = repos[num];
+                const repository = new Repository(((_a = repo.owner) === null || _a === void 0 ? void 0 : _a.login) || '', repo.name); //todo: handle for orgs
+                result.push(repository);
+            }
         }
+        if (organization !== '') {
+            const repos = yield client.paginate(client.rest.repos.listForOrg, {
+                org: organization
+            });
+            console.log(`Found [${organization}] as orgname parameter`);
+            console.log(`repos type = [${typeof repos}]`);
+            core.info(`Found [${repos.length}] repositories`);
+            // eslint disabled: no iterator available
+            // eslint-disable-next-line @typescript-eslint/prefer-for-of
+            for (let num = 0; num < repos.length; num++) {
+                const repo = repos[num];
+                const repository = new Repository(((_b = repo.owner) === null || _b === void 0 ? void 0 : _b.login) || '', repo.name); //todo: handle for orgs
+                result.push(repository);
+            }
+        }
+        return result;
     });
 }
 class Repository {

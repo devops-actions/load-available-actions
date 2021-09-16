@@ -7,7 +7,8 @@ async function run(): Promise<void> {
   try {
     const PAT = core.getInput('PAT') || process.env.PAT
     const user = core.getInput('user') || process.env.GITHUB_USER
-    const organization = core.getInput('organization') || process.env.GITHUB_ORGANIZATION
+    const organization =
+      core.getInput('organization') || process.env.GITHUB_ORGANIZATION
 
     if (!PAT || PAT === '') {
       core.setFailed(
@@ -57,56 +58,56 @@ async function run(): Promise<void> {
   } catch (error) {
     core.setFailed(`Error running action: : ${error.message}`)
   }
+}
 
-  //todo: move this function to a separate file, with the corresponding class definition
-  async function findAllRepos(
-    client: Octokit,
-    username: string,
-    organization: string
-  ): Promise<Repository[]> {
-    // todo: switch between user and org
+//todo: move this function to a separate file, with the corresponding class definition
+async function findAllRepos(
+  client: Octokit,
+  username: string,
+  organization: string
+): Promise<Repository[]> {
+  // todo: switch between user and org
 
-    // convert to an array of objects we can return
-    const result: Repository[] = []
+  // convert to an array of objects we can return
+  const result: Repository[] = []
 
-    if (username !== '') {
-      const repos = await client.paginate(client.rest.repos.listForUser, {
-        username
-      })
+  if (username !== '') {
+    const repos = await client.paginate(client.rest.repos.listForUser, {
+      username
+    })
 
-      console.log(`Found [${organization}] as orgname parameter`)
-      console.log(`repos type = [${typeof repos}]`)
-      core.info(`Found [${repos.length}] repositories`)
+    console.log(`Found [${organization}] as orgname parameter`)
+    console.log(`repos type = [${typeof repos}]`)
+    core.info(`Found [${repos.length}] repositories`)
 
-      // eslint disabled: no iterator available
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let num = 0; num < repos.length; num++) {
-        const repo = repos[num]
-        const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
-        result.push(repository)
-      }
-
+    // eslint disabled: no iterator available
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let num = 0; num < repos.length; num++) {
+      const repo = repos[num]
+      const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
+      result.push(repository)
     }
+  }
 
-    if (organization !== '') {
-      const repos = await client.paginate(client.rest.repos.listForOrg, {
-        org: organization
-      })
+  if (organization !== '') {
+    const repos = await client.paginate(client.rest.repos.listForOrg, {
+      org: organization
+    })
 
-      console.log(`Found [${organization}] as orgname parameter`)
-      console.log(`repos type = [${typeof repos}]`)
-      core.info(`Found [${repos.length}] repositories`)
+    console.log(`Found [${organization}] as orgname parameter`)
+    console.log(`repos type = [${typeof repos}]`)
+    core.info(`Found [${repos.length}] repositories`)
 
-      // eslint disabled: no iterator available
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
-      for (let num = 0; num < repos.length; num++) {
-        const repo = repos[num]
-        const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
-        result.push(repository)
-      }
+    // eslint disabled: no iterator available
+    // eslint-disable-next-line @typescript-eslint/prefer-for-of
+    for (let num = 0; num < repos.length; num++) {
+      const repo = repos[num]
+      const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
+      result.push(repository)
     }
+  }
 
-    return result
+  return result
 }
 
 class Repository {

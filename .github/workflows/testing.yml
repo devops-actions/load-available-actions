@@ -54,5 +54,5 @@ jobs:
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
         with: 
-          name: actions
+          name: actions-organization
           path: actions-organization.json
