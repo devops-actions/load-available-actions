@@ -1,11 +1,11 @@
 {
-  "name": "typescript-action",
-  "version": "0.0.0",
-  "private": true,
-  "description": "TypeScript template action",
+  "name": "load-available-actions",
+  "version": "0.0.1",
+  "private": false,
+  "description": "GitHub Action to load all available actions for an organization or user",
   "main": "lib/main.js",
   "scripts": {
-    "esbuild": "esbuild --bundle --outdir=dist --format=cjs --platform=node",
+    "esbuild": "esbuild src/main.ts --bundle --outdir=dist --platform=node --external:vscode --external:@vscode/test-electron --external:jest",
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
@@ -22,7 +22,7 @@
     "GitHub Actions",
     "load available actions from GitHub organization"
   ],
-  "author": "",
+  "author": "@rajbos",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.4.0",

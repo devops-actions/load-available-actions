@@ -20,4 +20,4 @@ outputs:
     description: 'List of all actions available in the organization or user space'  
 runs:
   using: 'node12'
-  main: 'dist/index.js'
+  main: 'dist/main.js'
