@@ -5,12 +5,12 @@
   "description": "GitHub Action to load all available actions for an organization or user",
   "main": "lib/main.js",
   "scripts": {
-    "esbuild": "esbuild src/main.ts --bundle --outdir=dist --platform=node --external:vscode --external:@vscode/test-electron --external:jest",
+    "esbuild": "esbuild src/main.ts --bundle --outdir=dist --platform=node --external:vscode --external:@vscode/test-electron --external:jest --sourcemap",
     "build": "tsc",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "lint": "eslint src/**/*.ts",
-    "package": "ncc build --source-map --license licenses.txt",
+    "package": "esbuild build",
     "test": "jest",
     "all": "npm run build && npm run format && npm run lint && npm run package && npm test"
   },
