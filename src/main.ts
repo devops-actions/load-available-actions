@@ -17,7 +17,7 @@ async function run(): Promise<void> {
       return
     }
 
-    if (!user || user === '' || !organization || organization === '') {
+    if (user === '' && organization === '') {
       core.setFailed(
         "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
       )
@@ -37,7 +37,7 @@ async function run(): Promise<void> {
       return
     }
 
-    const repos = await findAllRepos(octokit, user, organization)
+    const repos = await findAllRepos(octokit, user || '', organization || '')
     console.log(`Found [${repos.length}] repositories`)
 
     let actionFiles = await findAllActions(octokit, repos)

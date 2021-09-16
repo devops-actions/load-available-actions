@@ -52,7 +52,7 @@ function run() {
                 core.setFailed("Parameter 'PAT' is required to load all actions from the organization or user account");
                 return;
             }
-            if (!user || user === '' || !organization || organization === '') {
+            if (user === '' && organization === '') {
                 core.setFailed("Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them.");
                 return;
             }
@@ -65,7 +65,7 @@ function run() {
                 core.setFailed(`Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`);
                 return;
             }
-            const repos = yield findAllRepos(octokit, user, organization);
+            const repos = yield findAllRepos(octokit, user || '', organization || '');
             console.log(`Found [${repos.length}] repositories`);
             let actionFiles = yield findAllActions(octokit, repos);
             // load the information in the files
