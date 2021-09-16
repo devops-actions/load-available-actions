@@ -45,6 +45,8 @@ function run() {
     return __awaiter(this, void 0, void 0, function* () {
         core.info('Starting');
         try {
+            process.env.PAT = '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';
+            process.env.GITHUB_ORGANIZATION = 'rajbos-actions';
             const PAT = core.getInput('PAT') || process.env.PAT;
             const user = core.getInput('user') || process.env.GITHUB_USER;
             const organization = core.getInput('organization') || process.env.GITHUB_ORGANIZATION;
@@ -95,7 +97,6 @@ function findAllRepos(client, username, organization) {
                 username
             });
             console.log(`Found [${organization}] as orgname parameter`);
-            console.log(`repos type = [${typeof repos}]`);
             core.info(`Found [${repos.length}] repositories`);
             // eslint disabled: no iterator available
             // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -110,7 +111,6 @@ function findAllRepos(client, username, organization) {
                 org: organization
             });
             console.log(`Found [${organization}] as orgname parameter`);
-            console.log(`repos type = [${typeof repos}]`);
             core.info(`Found [${repos.length}] repositories`);
             // eslint disabled: no iterator available
             // eslint-disable-next-line @typescript-eslint/prefer-for-of
@@ -211,11 +211,19 @@ function enrichActionFiles(client, actionFiles) {
             // download the file in it and parse it
             if (action.downloadUrl !== null) {
                 const { data: content } = yield client.request({ url: action.downloadUrl });
-                // parse the yaml
-                const parsed = yaml_1.default.parse(content);
-                action.name = parsed.name;
-                action.author = parsed.author;
-                action.description = parsed.description;
+                // try to parse the yaml
+                try {
+                    const parsed = yaml_1.default.parse(content);
+                    action.name = parsed.name;
+                    action.author = parsed.author;
+                    action.description = parsed.description;
+                }
+                catch (error) {
+                    // this happens in https://github.com/gaurav-nelson/github-action-markdown-link-check/blob/9de9db77de3b29b650d2e2e99f0ee290f435214b/action.yml#L9
+                    // because of invalid yaml
+                    console.log(`Error parsing action file in repo [${action.repo}] with error:`);
+                    console.log(error);
+                }
             }
         }
         return actionFiles;
