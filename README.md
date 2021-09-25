@@ -6,6 +6,7 @@ The output is stored with the name `actions`, which can be retrieved in another 
 ## Inputs
 |Name|Description|
 |---|---|
+|user|The user to load actions from.|
 |organization|The name of the organization to run on.|
 |PAT|The Personal Access Token to use for the API calls.|
 
@@ -61,6 +62,7 @@ jobs:
         name: Load used actions
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
+          user: rajbos
         id: load-actions
 
       - shell: pwsh        
