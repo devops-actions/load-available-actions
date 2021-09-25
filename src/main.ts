@@ -6,10 +6,13 @@ import GetDateFormatted from './utils'
 async function run(): Promise<void> {
   core.info('Starting')
   try {
-    // used during local running
-    process.env.PAT = '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'
+    /*
+    !! Don't forget to load the default values for local testing
+       Set these before starting VsCode
+    
+    process.env.PAT = ''
     process.env.GITHUB_USER = 'rajbos'
-
+    */
     const PAT = core.getInput('PAT') || process.env.PAT || ''
     const user = core.getInput('user') || process.env.GITHUB_USER || ''
     const organization =
