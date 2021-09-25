@@ -21405,8 +21405,6 @@ function run() {
   return __async(this, null, function* () {
     core.info("Starting");
     try {
-      process.env.PAT = "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";
-      process.env.GITHUB_USER = "rajbos";
       const PAT = core.getInput("PAT") || process.env.PAT || "";
       const user = core.getInput("user") || process.env.GITHUB_USER || "";
       const organization = core.getInput("organization") || process.env.GITHUB_ORGANIZATION || "";
