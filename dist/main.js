@@ -21449,7 +21449,6 @@ function findAllRepos(client, username, organization) {
       const repos = yield client.paginate(client.rest.repos.listForUser, {
         username
       });
-      console.log(`Found [${organization}] as orgname parameter`);
       core.info(`Found [${repos.length}] repositories`);
       for (let num = 0; num < repos.length; num++) {
         const repo = repos[num];

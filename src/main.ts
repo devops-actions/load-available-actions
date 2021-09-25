@@ -7,8 +7,8 @@ async function run(): Promise<void> {
   core.info('Starting')
   try {
     // used during local running
-    //process.env.PAT = ''
-    //process.env.GITHUB_USER = 'rajbos'
+    process.env.PAT = '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'
+    process.env.GITHUB_USER = 'rajbos'
 
     const PAT = core.getInput('PAT') || process.env.PAT || ''
     const user = core.getInput('user') || process.env.GITHUB_USER || ''
@@ -81,7 +81,6 @@ async function findAllRepos(
       username
     })
 
-    console.log(`Found [${organization}] as orgname parameter`)
     core.info(`Found [${repos.length}] repositories`)
 
     // eslint disabled: no iterator available
