@@ -2,17 +2,14 @@ import * as core from '@actions/core'
 import {Octokit} from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
+import dotenv from 'dotenv'
+
+// always import the config
+dotenv.config()
 
 async function run(): Promise<void> {
   core.info('Starting')
   try {
-    /*
-    !! Don't forget to load the default values for local testing
-       Set these before starting VsCode
-    
-    process.env.PAT = ''
-    process.env.GITHUB_USER = 'rajbos'
-    */
     const PAT = core.getInput('PAT') || process.env.PAT || ''
     const user = core.getInput('user') || process.env.GITHUB_USER || ''
     const organization =
