@@ -18,6 +18,7 @@ jobs:
         name: Load used actions
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
+          user: rajbos
         id: load-actions
 
       - run: echo ${{ steps.load-actions.outputs.actions }} > 'actions.json'
