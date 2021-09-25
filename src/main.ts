@@ -231,6 +231,9 @@ async function enrichActionFiles(
           `Error parsing action file in repo [${action.repo}] with error:`
         )
         console.log(error)
+        console.log(
+          `The parsing error is informational, seaching for actions has continued`
+        )
       }
     }
   }
