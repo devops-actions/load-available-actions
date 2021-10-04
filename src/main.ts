@@ -52,10 +52,14 @@ async function run(): Promise<void> {
     // output the json we want to output
     const output: {
       lastUpdated: string
+      organization: string
+      user: string
       actions: Content[]
     } = {
       lastUpdated: GetDateFormatted(new Date()),
-      actions: actionFiles
+      actions: actionFiles,
+      organization,
+      user
     }
 
     const json = JSON.stringify(output)

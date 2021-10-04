@@ -21508,13 +21508,11 @@ function run() {
       actionFiles = yield enrichActionFiles(octokit, actionFiles);
       const output = {
         lastUpdated: GetDateFormatted(new Date()),
-        actions: actionFiles
+        actions: actionFiles,
+        organization,
+        user
       };
       const json = JSON.stringify(output);
-      core.info(`json content:`);
-      core.info(`---------------------------------------------------------`);
-      core.info(`${json}`);
-      core.info(`---------------------------------------------------------`);
       core.setOutput("actions", json);
     } catch (error) {
       core.setFailed(`Error running action: : ${error.message}`);
