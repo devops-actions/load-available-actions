@@ -21515,11 +21515,7 @@ function run() {
       core.info(`---------------------------------------------------------`);
       core.info(`${json}`);
       core.info(`---------------------------------------------------------`);
-      core.info(`raw output:`);
-      core.info(`---------------------------------------------------------`);
-      core.info(`${output}`);
-      core.info(`---------------------------------------------------------`);
-      core.setOutput("actions", JSON.stringify(json));
+      core.setOutput("actions", json);
     } catch (error) {
       core.setFailed(`Error running action: : ${error.message}`);
     }

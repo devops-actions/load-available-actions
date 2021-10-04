@@ -59,15 +59,7 @@ async function run(): Promise<void> {
     }
 
     const json = JSON.stringify(output)
-    core.info(`json content:`)
-    core.info(`---------------------------------------------------------`)
-    core.info(`${json}`)
-    core.info(`---------------------------------------------------------`)
-    core.info(`raw output:`)
-    core.info(`---------------------------------------------------------`)
-    core.info(`${output}`)
-    core.info(`---------------------------------------------------------`)
-    core.setOutput('actions', JSON.stringify(json))
+    core.setOutput('actions', json)
   } catch (error) {
     core.setFailed(`Error running action: : ${error.message}`)
   }
