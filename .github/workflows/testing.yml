@@ -49,7 +49,7 @@ jobs:
         id: load-actions
 
       - name: Store output in result file
-        run: echo ${{ steps.load-actions.outputs.actions }} > 'actions-organization.json'
+        run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-organization.json'
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
