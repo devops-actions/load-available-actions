@@ -2,6 +2,7 @@ name: Publishing the action to the marketplace
 
 on:   
   push:
+    branches: [ main ]
     tags:
       - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
 
@@ -17,7 +18,7 @@ jobs:
       - uses: ./
         name: Load used actions
         with: 
-          PAT: ${{ secrets.GITHUB_TOKEN }}
+          PAT: ${{ secrets.PAT }}
           user: rajbos
         id: load-actions
 
@@ -44,7 +45,7 @@ jobs:
       - uses: actions/create-release@v1
         id: create_release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+          GITHUB_TOKEN: ${{ secrets.PAT }} 
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
