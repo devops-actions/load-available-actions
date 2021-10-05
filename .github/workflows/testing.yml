@@ -6,7 +6,16 @@ on:
   workflow_dispatch:
     
 jobs:
-  load-all-available-actions:
+  build: # make sure build/ci work properly
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          npm install
+      - run: |
+          npm run all
+
+  test-load-from-user: # test the action for the user space
     runs-on: ubuntu-latest
     steps: 
       - uses: actions/checkout@v2
@@ -14,13 +23,36 @@ jobs:
       - uses: ./
         name: Load used actions
         with: 
-          PAT: ${{ secrets.GITHUB_TOKEN }}
+          PAT: ${{ secrets.PAT }}
+          user: rajbos
         id: load-actions
 
-      - run: echo ${{ steps.load-actions.outputs.actions }} > 'actions.json'
+      - name: Store output in result file
+        run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-user.json'
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
         with: 
           name: actions
-          path: actions.json
+          path: actions-user.json
+  
+  test-load-from-organization: # test the action for the organization space
+    runs-on: ubuntu-latest
+    steps: 
+      - uses: actions/checkout@v2
+
+      - uses: ./
+        name: Load used actions
+        with: 
+          PAT: ${{ secrets.PAT }}
+          organization: rajbos-actions
+        id: load-actions
+
+      - name: Store output in result file
+        run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-organization.json'
+            
+      - name: Upload result file as artefact
+        uses: actions/upload-artifact@v2
+        with: 
+          name: actions-organization
+          path: actions-organization.json

@@ -1,23 +1,23 @@
 # action.yml
 name: 'Load available actions'
 author: 'Rob Bos'
-description: 'Load an overview of all available actions in a GitHub Organization (or user account)'
+description: 'Load an overview of all available actions in a GitHub Organization (or user account) by looking and parsing for the action.yml/yaml files.'
 branding:
   icon : alert-circle
   color: blue
 inputs:
   organization:
-    description: 'Slug of the organization to analyze. Leave empty for current organization'
+    description: 'Slug of the organization to analyze. Either this or the user slug needs to have a value'
+    required: false
+  user:
+    description: 'Slug of the user space to analyze. Either this or the organization slug needs to have a value'
     required: false
   PAT:
     description: 'Personal access token to use for analysis. Leaving this empty will use the default GITHUB_TOKEN that could have limited access rights'
     required: true 
 outputs:
   actions:
-    description: 'List of all actions available in the organization'  
+    description: 'List of all actions available in the organization or user space'  
 runs:
-  using: 'docker'
-  image: 'Dockerfile'
-  args: 
-    - '${{ inputs.organization }}' 
-    - '${{ inputs.PAT }}' 
+  using: 'node12'
+  main: 'dist/main.js'
