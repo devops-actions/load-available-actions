@@ -44,7 +44,7 @@ jobs:
       - uses: ./
         name: Load used actions
         with: 
-          PAT: ${{ secrets.PAT }}
+          PAT: ${{ secrets.GITHUB_TOKEN }}
           organization: rajbos-actions
         id: load-actions
 
