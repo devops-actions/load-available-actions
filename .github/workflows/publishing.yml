@@ -38,7 +38,7 @@ jobs:
 
       # build it
       - run: |
-          npm install
+          npm ci
           npm run all
 
       # get tag for this release
