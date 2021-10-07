@@ -24,7 +24,8 @@ jobs:
       - uses: ./
         name: Load used actions
         with: 
-          PAT: ${{ secrets.PAT }}
+          PAT: ${{ secrets.PAT }} # really not clear why GITHUB_TOKEN is not working
+          # see docs here: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#example-1-passing-the-github_token-as-an-input
           user: rajbos
         id: load-actions
 
