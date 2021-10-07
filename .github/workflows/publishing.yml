@@ -17,7 +17,7 @@ jobs:
       - uses: ./
         name: Load used actions
         with: 
-          PAT: ${{ secrets.GITHUB_TOKEN }}
+          PAT: ${{ secrets.PAT }}
           user: rajbos
         id: load-actions
 
