@@ -17,7 +17,7 @@ jobs:
       - uses: ./
         name: Load used actions
         with: 
-          PAT: ${{ secrets.PAT }}
+          PAT: ${{ secrets.GITHUB_TOKEN }}
           user: rajbos
         id: load-actions
 
@@ -44,10 +44,10 @@ jobs:
       # get tag for this release
       - name: Get tag value
         id: tag
-        uses: dawidd6/action-get-tag@v1   
+        uses: rajbos-actions/action-get-tag@v1   
 
       # publish a release with the build assets
-      - uses: softprops/action-gh-release@v1
+      - uses: rajbos-actions/action-gh-release@v1
         id: publish
         with:
           name: Release ${{ steps.tag.outputs.tag }}
@@ -61,7 +61,7 @@ jobs:
         env:
           url: ${{ steps.publish.outputs.url }}
 
-      - uses: act10ns/slack@v1
+      - uses: rajbos-actions/slack@v1
         with: 
           status: ${{ job.status }}
         env:
