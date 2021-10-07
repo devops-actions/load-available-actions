@@ -58,7 +58,7 @@ jobs:
 
       - run: |
           echo "$url"
-        with:
+        env:
           url: ${{ steps.publish.outputs.url }}
 
       - uses: act10ns/slack@v1
