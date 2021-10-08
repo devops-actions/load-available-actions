@@ -13,7 +13,7 @@ The output is stored with the name `actions`, which can be retrieved in another 
 ## Outputs
 actions: a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
 ``` json
-[
+{
     "lastUpdated": "20210818_1534"
     "actions": [
         {
@@ -24,7 +24,7 @@ actions: a compressed json string with all the actions used in the workflows in 
         },
         { etc }
     ]
-]
+}
 ```
 Properties:
 |Name|Description|
