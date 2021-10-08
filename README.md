@@ -12,25 +12,24 @@ The output is stored with the name `actions`, which can be retrieved in another 
 
 ## Outputs
 actions: a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
-``` json
+``` 
 {
-    "lastUpdated": "20210818_1534"
+    "lastUpdated": "20210818_1534",
     "actions": [
         {
             "repoName": "rajbos/actions-marketplace",
-            "action: "action.name",
-            "author": "action.author",
-            "description": "action.description"
-        },
-        { etc }
+            "action: "action name",
+            "author": "action author",
+            "description": "action description"
+        }
     ]
 }
 ```
 Properties:
 |Name|Description|
 |----|-----------|
-|lastUpdated|The date and time this action list was created.|
-|actions|The list of actions available in the workflows in the organization. Format = YYYYMMDD_HHmm|
+|lastUpdated|The date and time this action list was created. Format = YYYYMMDD_HHmm|
+|actions|The list of actions available in the workflows in the organization.|
 
 ## Example usage
 Minimal uses expression to use this action:
