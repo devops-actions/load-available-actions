@@ -1,2 +1,4 @@
 paths:
   - src
+  - packages.json
+  - package-lock.json
