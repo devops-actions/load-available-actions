@@ -1,4 +1,4 @@
-# github-action-load-available-actions
+# load-available-actions
 Load all actions stored in the current organization, by calling the REST API with a Personal Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
 
 The output is stored with the name `actions`, which can be retrieved in another action with `${{ steps.<step id>.outputs.actions }}`.
@@ -35,7 +35,7 @@ Properties:
 Minimal uses expression to use this action:
 
 ``` yaml
-uses: rajbos/github-action-load-available-actions@main`
+uses: devops-actions/load-available-actions@main`
 with: 
     PAT: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -57,7 +57,7 @@ jobs:
   load-all-used-actions:
     runs-on: ubuntu-latest
     steps: 
-      - uses: rajbos/github-action-load-used-actions@main
+      - uses: devops-actions/load-used-actions@main
         name: Load used actions
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
