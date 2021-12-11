@@ -1,0 +1,12 @@
+on:
+  push:
+
+jobs:
+  security-test:
+    runs-on: ubuntu-latest
+    steps:
+    -  run: |
+         echo "Security"
+         echo "env: ${{ env.GITHUB_TOKEN }}"
+         echo "direct: $GITHUB_TOKEN"
+    - uses: hmarr/debug-action@v2
