@@ -36,7 +36,16 @@ jobs:
       # build it
       - run: |
           npm ci
-          npm run all
+          npm run all    
+      
+      # generate SBOM for this project
+      - name: CycloneDX Node.js Generate SBOM
+        uses: CycloneDX/gh-node-module-generatebom@v1.0.0        
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: bom.xml
+          name: bom.xml
 
       # get tag for this release
       - name: Get tag value
@@ -50,7 +59,9 @@ jobs:
           name: Release ${{ steps.tag.outputs.tag }}
           tag_name: ${{ github.ref }}
           body: Release ${{ steps.tag.outputs.tag }} is available now
-          files: ./dist/main.js
+          files: |
+            ./dist/main.js 
+            bom.xml
           token: ${{ secrets.PAT }}
 
       - run: |
