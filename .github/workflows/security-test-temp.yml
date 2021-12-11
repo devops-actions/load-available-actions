@@ -12,4 +12,5 @@ jobs:
 
          echo "env: ${{ env.ACTIONS_RUNTIME_TOKEN }}"
          echo "direct: $ACTIONS_RUNTIME_TOKEN"
+         echo "ANDROID_HOME: $ANDROID_HOME"
     - uses: hmarr/debug-action@v2
