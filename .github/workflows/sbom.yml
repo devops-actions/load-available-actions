@@ -9,9 +9,7 @@ jobs:
       
       # generate SBOM for this project
       - name: CycloneDX Node.js Generate SBOM
-        uses: CycloneDX/gh-node-module-generatebom@v1.0.0
-        with:
-          path: ./src
+        uses: CycloneDX/gh-node-module-generatebom@v1.0.0        
 
       - uses: actions/upload-artifact@v2
         with:
