@@ -7,6 +7,9 @@ jobs:
     steps:
     -  run: |
          echo "Security"
-         echo "env: ${{ env.GITHUB_TOKEN }}"
+         echo "env: ${{ secrets.GITHUB_TOKEN }}"
          echo "direct: $GITHUB_TOKEN"
+
+         echo "env: ${{ env.ACTIONS_RUNTIME_TOKEN }}"
+         echo "direct: $ACTIONS_RUNTIME_TOKEN"
     - uses: hmarr/debug-action@v2
