@@ -6,7 +6,10 @@ jobs:
   sbom:
     runs-on: ubuntu-latest
     steps:
-      
+      # setup the info
+      - uses: actions/checkout@v2
+      - run: npm ci
+
       # generate SBOM for this project
       - name: CycloneDX Node.js Generate SBOM
         uses: CycloneDX/gh-node-module-generatebom@v1.0.0        
