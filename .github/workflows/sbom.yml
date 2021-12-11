@@ -1,0 +1,19 @@
+on:
+
+  workflow_dispatch:
+    
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      
+      # generate SBOM for this project
+      - name: CycloneDX Node.js Generate SBOM
+        uses: CycloneDX/gh-node-module-generatebom@v1.0.0
+        with:
+          path: ./src
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: bom.xml
+          name: sbom.xml
