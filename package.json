@@ -17,11 +17,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rajbos/github-action-load-available-actions.git"
+    "url": "git+https://github.com/devops-actions/load-available-actions.git"
   },
   "keywords": [
     "GitHub Actions",
-    "load available actions from GitHub organization"
+    "Load available actions from a GitHub organization or user space"
   ],
   "author": "@rajbos",
   "license": "MIT",

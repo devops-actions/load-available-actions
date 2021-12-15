@@ -3,34 +3,6 @@ Load all actions stored in the current organization, by calling the REST API wit
 
 The output is stored with the name `actions`, which can be retrieved in another action with `${{ steps.<step id>.outputs.actions }}`.
 
-## Inputs
-|Name|Description|
-|---|---|
-|user|The user to load actions from.|
-|organization|The name of the organization to run on.|
-|PAT|The Personal Access Token to use for the API calls.|
-
-## Outputs
-actions: a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
-``` 
-{
-    "lastUpdated": "20210818_1534",
-    "actions": [
-        {
-            "repoName": "rajbos/actions-marketplace",
-            "action: "action name",
-            "author": "action author",
-            "description": "action description"
-        }
-    ]
-}
-```
-Properties:
-|Name|Description|
-|----|-----------|
-|lastUpdated|The date and time this action list was created. Format = YYYYMMDD_HHmm|
-|actions|The list of actions available in the workflows in the organization.|
-
 ## Example usage
 Minimal uses expression to use this action:
 
@@ -39,8 +11,7 @@ uses: devops-actions/load-available-actions@main`
 with: 
     PAT: ${{ secrets.GITHUB_TOKEN }}
 ```
-Note: the default GITHUB_TOKEN might only have read access to the current repository, depending on the setup. Create a new token with `repo` scope to have full read-only access to the organization and use that as a parameter.  
-- [] todo: check the scope and update above if needed
+Note: the default GITHUB_TOKEN might only have read access to the current (public) repository, depending on the setup. For example to check internal or private repos, create a new access token with `repo` scope to have full read-only access to the organization and use that as a parameter.  
 
 ## Full example
 This example shows how to use the action to get a json file with all the available actions in an organization. The json file is uploaded as an artefact in the third step.
@@ -74,3 +45,31 @@ jobs:
           name: actions
           path: actions.json
 ```
+
+## Inputs
+|Name|Description|
+|---|---|
+|user|The user to load actions from.|
+|organization|The name of the organization to run on.|
+|PAT|The Personal Access Token to use for the API calls.|
+
+## Outputs
+actions: a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
+``` 
+{
+    "lastUpdated": "20210818_1534",
+    "actions": [
+        {
+            "repoName": "rajbos/actions-marketplace",
+            "action: "action name",
+            "author": "action author",
+            "description": "action description"
+        }
+    ]
+}
+```
+Properties:
+|Name|Description|
+|----|-----------|
+|lastUpdated|The date and time this action list was created. Format = YYYYMMDD_HHmm|
+|actions|The list of actions available in the workflows in the organization.|
