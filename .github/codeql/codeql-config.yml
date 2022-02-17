@@ -2,3 +2,6 @@ paths:
   - src
   - packages.json
   - package-lock.json
+queries:
+  - uses: security-and-quality
+  - uses: security-extended
