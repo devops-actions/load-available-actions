@@ -28,11 +28,11 @@ jobs:
           user: rajbos
         id: load-actions
 
-      - name: Store output in result file
-        if: 1 == 2
-        run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-user.json'
+      #- name: Store output in result file
+      #  if: 1 == 2
+      #  run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-user.json'
        
-      - uses: devops-actions/json-to-file@97145f60f3535b7f016205e5f79934bf5bdcbd41
+      - uses: devops-actions/json-to-file@main
         with: 
           #json: ${{ steps.load-actions.outputs.actions }}'
           #filename: 'actions-user.json'
