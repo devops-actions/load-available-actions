@@ -35,7 +35,7 @@ jobs:
       - uses: devops-actions/json-to-file@main
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
-          filename: 'actions-user.json'
+          filename: actions-user.json
           milliseconds: 10
         
       - name: Upload result file as artefact
