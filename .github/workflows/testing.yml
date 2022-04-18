@@ -32,10 +32,10 @@ jobs:
         if: 1 == 2
         run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-user.json'
        
-      - uses: devops-actions/json-to-file@main
+      - uses: devops-actions/json-to-file@97145f60f3535b7f016205e5f79934bf5bdcbd41
         with: 
-          json: ${{ steps.load-actions.outputs.actions }}'
-          filename: 'actions-user.json'
+          #json: ${{ steps.load-actions.outputs.actions }}'
+          #filename: 'actions-user.json'
           milliseconds: 10
         
       - name: Upload result file as artefact
