@@ -36,7 +36,6 @@ jobs:
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions-user.json
-          milliseconds: 10
         
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
@@ -57,8 +56,13 @@ jobs:
           organization: rajbos-actions
         id: load-actions
 
-      - name: Store output in result file
-        run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-organization.json'
+      #- name: Store output in result file
+      #  run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-organization.json'
+
+      - uses: devops-actions/json-to-file@main
+        with: 
+          json: ${{ steps.load-actions.outputs.actions }}
+          filename: actions-organization.json
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
