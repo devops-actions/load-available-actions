@@ -10,15 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' # don't run on PRs
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: npm ci
       - run: npm run all
 
   test-load-from-user: # test the action for the user space
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' # don't run on PRs
+    #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: ./
         name: Load used actions
@@ -28,9 +28,15 @@ jobs:
           user: rajbos
         id: load-actions
 
-      - name: Store output in result file
-        run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-user.json'
-            
+      #- name: Store output in result file
+      #  if: 1 == 2
+      #  run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-user.json'
+       
+      - uses: devops-actions/json-to-file@v1.0.0
+        with: 
+          json: ${{ steps.load-actions.outputs.actions }}
+          filename: actions-user.json
+        
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
         with: 
@@ -39,9 +45,9 @@ jobs:
   
   test-load-from-organization: # test the action for the organization space
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' # don't run on PRs
+    #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: ./
         name: Load used actions
@@ -50,8 +56,13 @@ jobs:
           organization: rajbos-actions
         id: load-actions
 
-      - name: Store output in result file
-        run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-organization.json'
+      #- name: Store output in result file
+      #  run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-organization.json'
+
+      - uses: devops-actions/json-to-file@v1.0.0
+        with: 
+          json: ${{ steps.load-actions.outputs.actions }}
+          filename: actions-organization.json
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
