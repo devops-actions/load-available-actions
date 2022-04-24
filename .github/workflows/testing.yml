@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' # don't run on PRs
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - run: npm ci
       - run: npm run all
 
@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: ./
         name: Load used actions
@@ -32,7 +32,7 @@ jobs:
       #  if: 1 == 2
       #  run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-user.json'
        
-      - uses: devops-actions/json-to-file@main
+      - uses: devops-actions/json-to-file@v1.0.0
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions-user.json
@@ -47,7 +47,7 @@ jobs:
     runs-on: ubuntu-latest
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - uses: ./
         name: Load used actions
@@ -59,7 +59,7 @@ jobs:
       #- name: Store output in result file
       #  run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-organization.json'
 
-      - uses: devops-actions/json-to-file@main
+      - uses: devops-actions/json-to-file@v1.0.0
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions-organization.json
