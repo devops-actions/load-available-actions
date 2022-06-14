@@ -12,3 +12,11 @@ jobs:
       - uses: actions/checkout@v2
       - run: npm ci
       - run: npm run all
+      
+  dependency-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: 'Dependency Review'
+        uses: actions/dependency-review-action@v1
