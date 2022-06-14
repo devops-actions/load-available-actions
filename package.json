@@ -37,7 +37,7 @@
     "@vercel/ncc": "^0.34.0",
     "ansi-regex": ">=5.0.1",
     "dotenv": "^16.0.1",
-    "esbuild": "^0.14.42",
+    "esbuild": "^0.14.43",
     "eslint": "^8.17.0",
     "eslint-plugin-github": "^4.3.6",
     "eslint-plugin-jest": "^26.5.3",
