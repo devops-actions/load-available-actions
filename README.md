@@ -57,7 +57,7 @@ jobs:
   load-all-used-actions:
     runs-on: ubuntu-latest
     steps: 
-      - uses: devops-actions/load-used-actions@main
+      - uses: devops-actions/load-available-actions@main
         name: Load used actions
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
