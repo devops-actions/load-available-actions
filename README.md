@@ -54,11 +54,11 @@ This example shows how to use the action to get a json file with all the availab
 
 ``` yaml
 jobs:
-  load-all-used-actions:
+  load-all-available-actions:
     runs-on: ubuntu-latest
     steps: 
-      - uses: devops-actions/load-used-actions@main
-        name: Load used actions
+      - uses: devops-actions/load-available-actions@main
+        name: Load available actions
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
           user: rajbos
