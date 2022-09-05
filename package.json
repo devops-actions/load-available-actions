@@ -38,7 +38,7 @@
     "ansi-regex": ">=5.0.1",
     "dotenv": "^16.0.2",
     "esbuild": "^0.14.54",
-    "eslint": "^8.21.0",
+    "eslint": "^8.23.0",
     "eslint-plugin-github": "^4.3.6",
     "eslint-plugin-jest": "^26.7.0",
     "jest": "^27.5.1",
