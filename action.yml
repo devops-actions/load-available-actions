@@ -19,5 +19,5 @@ outputs:
   actions:
     description: 'List of all actions available in the organization or user space'  
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'dist/main.js'
