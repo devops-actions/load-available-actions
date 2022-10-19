@@ -14,6 +14,8 @@ async function run(): Promise<void> {
     const user = core.getInput('user') || process.env.GITHUB_USER || ''
     const organization =
       core.getInput('organization') || process.env.GITHUB_ORGANIZATION || ''
+    
+    const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com'
 
     if (!PAT || PAT === '') {
       core.setFailed(
@@ -29,7 +31,10 @@ async function run(): Promise<void> {
       return
     }
 
-    const octokit = new Octokit({auth: PAT})
+    const octokit = new Octokit({
+      auth: PAT,
+      baseUrl: baseUrl
+    })
 
     try {
       const currentUser = await octokit.rest.users.getAuthenticated()
