@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {Octokit} from 'octokit'
+import { Octokit } from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
@@ -14,7 +14,7 @@ async function run(): Promise<void> {
     const user = core.getInput('user') || process.env.GITHUB_USER || ''
     const organization =
       core.getInput('organization') || process.env.GITHUB_ORGANIZATION || ''
-    
+
     const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com'
 
     if (!PAT || PAT === '') {
@@ -96,7 +96,7 @@ async function findAllRepos(
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let num = 0; num < repos.length; num++) {
       const repo = repos[num]
-      const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
+      const repository = new Repository(repo.owner?.login || '', repo.name, repo.visibility) //todo: handle for orgs
       result.push(repository)
     }
   }
@@ -113,7 +113,7 @@ async function findAllRepos(
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let num = 0; num < repos.length; num++) {
       const repo = repos[num]
-      const repository = new Repository(repo.owner?.login || '', repo.name) //todo: handle for orgs
+      const repository = new Repository(repo.owner?.login || '', repo.name, repo.visibility) //todo: handle for orgs
       result.push(repository)
     }
   }
@@ -124,9 +124,11 @@ async function findAllRepos(
 class Repository {
   name: string
   owner: string
-  constructor(owner: string, name: string) {
+  visibility: string
+  constructor(owner: string, name: string, visibility: string) {
     this.name = name
     this.owner = owner
+    this.visibility = visibility
   }
 }
 
@@ -151,8 +153,26 @@ async function findAllActions(
     const content = await getActionFile(client, repo)
     if (content && content.name !== '') {
       core.info(
-        `Found action file in repository: ${repo.name} with filename [${content.name}] download url [${content.downloadUrl}]`
+        `Found action file in repository: ${repo.name} with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is ${repo.visibility}`
       )
+
+      // Check and exclude the Work in progress actions if its internal
+      if (repo.visibility == 'internal') {
+        core.debug(`Get Access settings for repository ${repo.owner}/${repo.name}..............`)
+
+        const { data: accessSettings } = await client.rest.actions.getWorkflowAccessToRepository({
+          owner: repo.owner,
+          repo: repo.name,
+        })
+        if (accessSettings.access_level == 'none') {
+          core.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`)
+          continue
+        }
+      } else if (repo.visibility == 'private') {
+        core.info(`${repo.owner}/${repo.name} is private repo.`)
+        continue
+      }
+
       // add to array
       result.push(content)
     }
@@ -170,7 +190,7 @@ async function getActionFile(
 
   // search for action.yml file in the root of the repo
   try {
-    const {data: yml} = await client.rest.repos.getContent({
+    const { data: yml } = await client.rest.repos.getContent({
       owner: repo.owner,
       repo: repo.name,
       path: 'action.yml'
@@ -191,7 +211,7 @@ async function getActionFile(
   if (result.name === '') {
     try {
       // search for the action.yaml, that is also allowed
-      const {data: yaml} = await client.rest.repos.getContent({
+      const { data: yaml } = await client.rest.repos.getContent({
         owner: repo.owner,
         repo: repo.name,
         path: 'action.yaml'
@@ -224,7 +244,7 @@ async function enrichActionFiles(
   for (const action of actionFiles) {
     // download the file in it and parse it
     if (action.downloadUrl !== null) {
-      const {data: content} = await client.request({url: action.downloadUrl})
+      const { data: content } = await client.request({ url: action.downloadUrl })
 
       // try to parse the yaml
       try {
