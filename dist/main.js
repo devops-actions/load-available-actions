@@ -26636,7 +26636,7 @@ function findAllRepos(client, username, organization) {
       core.info(`Found [${repos.length}] repositories`);
       for (let num = 0; num < repos.length; num++) {
         const repo = repos[num];
-        const repository = new Repository(((_a = repo.owner) == null ? void 0 : _a.login) || "", repo.name);
+        const repository = new Repository(((_a = repo.owner) == null ? void 0 : _a.login) || "", repo.name, repo.visibility);
         result.push(repository);
       }
     }
@@ -26648,7 +26648,7 @@ function findAllRepos(client, username, organization) {
       core.info(`Found [${repos.length}] repositories`);
       for (let num = 0; num < repos.length; num++) {
         const repo = repos[num];
-        const repository = new Repository(((_b = repo.owner) == null ? void 0 : _b.login) || "", repo.name);
+        const repository = new Repository(((_b = repo.owner) == null ? void 0 : _b.login) || "", repo.name, repo.visibility);
         result.push(repository);
       }
     }
@@ -26656,9 +26656,10 @@ function findAllRepos(client, username, organization) {
   });
 }
 var Repository = class {
-  constructor(owner, name) {
+  constructor(owner, name, visibility) {
     this.name = name;
     this.owner = owner;
+    this.visibility = visibility;
   }
 };
 var Content = class {
@@ -26678,8 +26679,22 @@ function findAllActions(client, repos) {
       const content = yield getActionFile(client, repo);
       if (content && content.name !== "") {
         core.info(
-          `Found action file in repository: ${repo.name} with filename [${content.name}] download url [${content.downloadUrl}]`
+          `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
         );
+        if (repo.visibility == "internal") {
+          core.debug(`Get cccess settings for repository [${repo.owner}/${repo.name}] ..............`);
+          const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
+            owner: repo.owner,
+            repo: repo.name
+          });
+          if (accessSettings.access_level == "none") {
+            core.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`);
+            continue;
+          }
+        } else if (repo.visibility == "private") {
+          core.info(`[${repo.owner}/${repo.name}] is a private repo.`);
+          continue;
+        }
         result.push(content);
       }
     }
