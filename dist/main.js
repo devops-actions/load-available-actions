@@ -26627,7 +26627,7 @@ function run() {
 }
 function findAllRepos(client, username, organization) {
   return __async(this, null, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d;
     const result = [];
     if (username !== "") {
       const repos = yield client.paginate(client.rest.repos.listForUser, {
@@ -26636,7 +26636,7 @@ function findAllRepos(client, username, organization) {
       core.info(`Found [${repos.length}] repositories`);
       for (let num = 0; num < repos.length; num++) {
         const repo = repos[num];
-        const repository = new Repository(((_a = repo.owner) == null ? void 0 : _a.login) || "", repo.name, repo.visibility);
+        const repository = new Repository(((_a = repo.owner) == null ? void 0 : _a.login) || "", repo.name, (_b = repo.visibility) != null ? _b : "");
         result.push(repository);
       }
     }
@@ -26648,7 +26648,7 @@ function findAllRepos(client, username, organization) {
       core.info(`Found [${repos.length}] repositories`);
       for (let num = 0; num < repos.length; num++) {
         const repo = repos[num];
-        const repository = new Repository(((_b = repo.owner) == null ? void 0 : _b.login) || "", repo.name, repo.visibility);
+        const repository = new Repository(((_c = repo.owner) == null ? void 0 : _c.login) || "", repo.name, (_d = repo.visibility) != null ? _d : "");
         result.push(repository);
       }
     }
@@ -26746,6 +26746,7 @@ function getActionFile(client, repo) {
       var searchResultforRepository = yield client.request("GET /search/code", {
         q: searchQuery
       });
+      yield new Promise((r) => setTimeout(r, 2e3));
       if (Object.keys(searchResultforRepository.data.items).length > 0) {
         for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
           var element = searchResultforRepository.data.items[index].path;
