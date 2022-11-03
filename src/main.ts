@@ -3,6 +3,7 @@ import { Octokit } from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
+import { wait } from './wait'
 
 // always import the config
 dotenv.config()
@@ -241,8 +242,11 @@ async function getActionFile(
     var waitTime = resetTime.getTime() - new Date().getTime()
     core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
     if (waitTime < 0) {
-      // if the reset time is in the past, wait 1 second
-      waitTime = 1000
+      // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
+      waitTime = 2500
+    } else {
+      // back off a bit more to be more certain
+      waitTime = waitTime + 1000
     }
     await new Promise(r => setTimeout(r, waitTime));
   }
