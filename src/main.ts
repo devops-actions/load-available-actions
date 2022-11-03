@@ -239,14 +239,18 @@ async function getActionFile(
       q: searchQuery
     });
 
-    // wait 2 seconds after this call, to prevent the search API rate limit
-    core.info(`Waiting 2 seconds to prevent the search API rate limit`)
-    await new Promise(r => setTimeout(r, 2000));
+    // search API has a strict rate limit, prevent errors
     var ratelimit = await client.rest.rateLimit.get()
     core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`)
-    // show the reset time
-    var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-    core.info(`Search API reset time: ${resetTime}`)
+    if (ratelimit.data.resources.search.remaining < 1) {
+        // show the reset time
+      var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+      core.info(`Search API reset time: ${resetTime}`)
+      // wait until the reset time
+      var waitTime = resetTime.getTime() - new Date().getTime()
+      core.info(`Waiting ${waitTime} milliseconds to prevent the search API rate limit`)
+      await new Promise(r => setTimeout(r, waitTime));
+    }
 
     if (Object.keys(searchResultforRepository.data.items).length > 0) {
 
