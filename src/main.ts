@@ -153,12 +153,12 @@ async function findAllActions(
     const content = await getActionFile(client, repo)
     if (content && content.name !== '') {
       core.info(
-        `Found action file in repository: ${repo.name} with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is ${repo.visibility}`
+        `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
       )
 
       // Check and exclude the Work in progress actions if its internal
       if (repo.visibility == 'internal') {
-        core.debug(`Get Access settings for repository ${repo.owner}/${repo.name}..............`)
+        core.debug(`Get access settings for repository ${repo.owner}/${repo.name}..............`)
 
         const { data: accessSettings } = await client.rest.actions.getWorkflowAccessToRepository({
           owner: repo.owner,
