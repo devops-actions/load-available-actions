@@ -96,7 +96,7 @@ async function findAllRepos(
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let num = 0; num < repos.length; num++) {
       const repo = repos[num]
-      const repository = new Repository(repo.owner?.login || '', repo.name, repo.visibility) //todo: handle for orgs
+      const repository = new Repository(repo.owner?.login || '', repo.name, repo.visibility ?? "") //todo: handle for orgs
       result.push(repository)
     }
   }
@@ -113,7 +113,7 @@ async function findAllRepos(
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let num = 0; num < repos.length; num++) {
       const repo = repos[num]
-      const repository = new Repository(repo.owner?.login || '', repo.name, repo.visibility) //todo: handle for orgs
+      const repository = new Repository(repo.owner?.login || '', repo.name, repo.visibility ?? "") //todo: handle for orgs
       result.push(repository)
     }
   }
@@ -238,6 +238,8 @@ async function getActionFile(
       q: searchQuery
     });
 
+    // wait 2 seconds after this call, to prevent the search API rate limit
+    await new Promise(r => setTimeout(r, 2000));
 
     if (Object.keys(searchResultforRepository.data.items).length > 0) {
 

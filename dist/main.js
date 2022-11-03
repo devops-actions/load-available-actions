@@ -26627,7 +26627,7 @@ function run() {
 }
 function findAllRepos(client, username, organization) {
   return __async(this, null, function* () {
-    var _a, _b;
+    var _a, _b, _c, _d;
     const result = [];
     if (username !== "") {
       const repos = yield client.paginate(client.rest.repos.listForUser, {
@@ -26636,7 +26636,7 @@ function findAllRepos(client, username, organization) {
       core.info(`Found [${repos.length}] repositories`);
       for (let num = 0; num < repos.length; num++) {
         const repo = repos[num];
-        const repository = new Repository(((_a = repo.owner) == null ? void 0 : _a.login) || "", repo.name, repo.visibility);
+        const repository = new Repository(((_a = repo.owner) == null ? void 0 : _a.login) || "", repo.name, (_b = repo.visibility) != null ? _b : "");
         result.push(repository);
       }
     }
@@ -26648,7 +26648,7 @@ function findAllRepos(client, username, organization) {
       core.info(`Found [${repos.length}] repositories`);
       for (let num = 0; num < repos.length; num++) {
         const repo = repos[num];
-        const repository = new Repository(((_b = repo.owner) == null ? void 0 : _b.login) || "", repo.name, repo.visibility);
+        const repository = new Repository(((_c = repo.owner) == null ? void 0 : _c.login) || "", repo.name, (_d = repo.visibility) != null ? _d : "");
         result.push(repository);
       }
     }
@@ -26682,7 +26682,7 @@ function findAllActions(client, repos) {
           `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
         );
         if (repo.visibility == "internal") {
-          core.debug(`Get Access settings for repository ${repo.owner}/${repo.name}..............`);
+          core.debug(`Get access settings for repository ${repo.owner}/${repo.name}..............`);
           const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
             owner: repo.owner,
             repo: repo.name
@@ -26692,7 +26692,7 @@ function findAllActions(client, repos) {
             continue;
           }
         } else if (repo.visibility == "private") {
-          core.debug(`[${repo.owner}/${repo.name}] is private repo.`);
+          core.debug(`${repo.owner}/${repo.name} is private repo.`);
           continue;
         }
         result.push(content);
@@ -26746,6 +26746,7 @@ function getActionFile(client, repo) {
       var searchResultforRepository = yield client.request("GET /search/code", {
         q: searchQuery
       });
+      yield new Promise((r) => setTimeout(r, 2e3));
       if (Object.keys(searchResultforRepository.data.items).length > 0) {
         for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
           var element = searchResultforRepository.data.items[index].path;

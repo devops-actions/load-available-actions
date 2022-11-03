@@ -18,7 +18,10 @@ jobs:
           user: rajbos
         id: load-actions
 
-      - run: echo ${{ steps.load-actions.outputs.actions }} > 'actions.json'
+      - uses: devops-actions/json-to-file@v1.0.0
+        with: 
+          json: ${{ steps.load-actions.outputs.actions }}
+          filename: actions.json
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@v2
