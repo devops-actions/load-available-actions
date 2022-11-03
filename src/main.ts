@@ -239,6 +239,7 @@ async function getActionFile(
     });
 
     // wait 2 seconds after this call, to prevent the search API rate limit
+    core.info(`Waiting 2 seconds to prevent the search API rate limit`)
     await new Promise(r => setTimeout(r, 2000));
 
     if (Object.keys(searchResultforRepository.data.items).length > 0) {

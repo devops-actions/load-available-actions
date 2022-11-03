@@ -26746,6 +26746,7 @@ function getActionFile(client, repo) {
       var searchResultforRepository = yield client.request("GET /search/code", {
         q: searchQuery
       });
+      core.info(`Waiting 2 seconds to prevent the search API rate limit`);
       yield new Promise((r) => setTimeout(r, 2e3));
       if (Object.keys(searchResultforRepository.data.items).length > 0) {
         for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
