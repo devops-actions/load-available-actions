@@ -12,7 +12,7 @@ updates:
   # Enable version updates for actions
   - package-ecosystem: 'github-actions'
     # Look for `package.json` and `lock` files in the `root` directory
-    directory: '.github/workflows/'
+    directory: '/'
     # Check the npm registry for updates every week
     schedule:
       interval: 'monthly'

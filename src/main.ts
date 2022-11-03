@@ -3,6 +3,7 @@ import { Octokit } from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
+import { wait } from './wait'
 
 // always import the config
 dotenv.config()
@@ -164,6 +165,7 @@ async function findAllActions(
           owner: repo.owner,
           repo: repo.name,
         })
+
         if (accessSettings.access_level == 'none') {
           core.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`)
           continue
@@ -229,6 +231,26 @@ async function getActionFile(
     }
   }
 
+  // search API has a strict rate limit, prevent errors
+  var ratelimit = await client.rest.rateLimit.get()
+  core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`)
+  if (ratelimit.data.resources.search.remaining <= 1) {
+      // show the reset time
+    var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+    core.info(`Search API reset time: ${resetTime}`)
+    // wait until the reset time
+    var waitTime = resetTime.getTime() - new Date().getTime()
+    core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
+    if (waitTime < 0) {
+      // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
+      waitTime = 2500
+    } else {
+      // back off a bit more to be more certain
+      waitTime = waitTime + 1000
+    }
+    await new Promise(r => setTimeout(r, waitTime));
+  }
+
   if (result.name === '') {
     core.info(`No actions found at root level in repository: ${repo.name}`)
     core.info(`Checking subdirectories in repository: ${repo.name}`)
@@ -237,9 +259,6 @@ async function getActionFile(
     var searchResultforRepository = await client.request("GET /search/code", {
       q: searchQuery
     });
-
-    // wait 2 seconds after this call, to prevent the search API rate limit
-    await new Promise(r => setTimeout(r, 2000));
 
     if (Object.keys(searchResultforRepository.data.items).length > 0) {
 
