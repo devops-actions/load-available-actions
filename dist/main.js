@@ -26679,10 +26679,10 @@ function findAllActions(client, repos) {
       const content = yield getActionFile(client, repo);
       if (content && content.name !== "") {
         core.info(
-          `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
+          `Found action file in repository: ${repo.name} with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is ${repo.visibility}`
         );
         if (repo.visibility == "internal") {
-          core.debug(`Get cccess settings for repository [${repo.owner}/${repo.name}] ..............`);
+          core.debug(`Get Access settings for repository ${repo.owner}/${repo.name}..............`);
           const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
             owner: repo.owner,
             repo: repo.name
@@ -26692,7 +26692,7 @@ function findAllActions(client, repos) {
             continue;
           }
         } else if (repo.visibility == "private") {
-          core.info(`[${repo.owner}/${repo.name}] is a private repo.`);
+          core.debug(`${repo.owner}/${repo.name} is private repo.`);
           continue;
         }
         result.push(content);
@@ -26740,6 +26740,30 @@ function getActionFile(client, repo) {
       }
     }
     if (result.name === "") {
+      core.info(`No actions found at root level in repository: ${repo.name}`);
+      core.info(`Checking subdirectories in repository: ${repo.name}`);
+      var searchQuery = "+filename:action+language:YAML+repo:" + repo.owner + "/" + repo.name;
+      var searchResultforRepository = yield client.request("GET /search/code", {
+        q: searchQuery
+      });
+      if (Object.keys(searchResultforRepository.data.items).length > 0) {
+        for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
+          var element = searchResultforRepository.data.items[index].path;
+          const { data: yaml } = yield client.rest.repos.getContent({
+            owner: repo.owner,
+            repo: repo.name,
+            path: element
+          });
+          if ("name" in yaml && "download_url" in yaml) {
+            result.name = yaml.name;
+            result.repo = repo.name;
+            if (yaml.download_url !== null) {
+              result.downloadUrl = yaml.download_url;
+            }
+          }
+        }
+        return result;
+      }
       core.info(`No actions found in repository: ${repo.name}`);
       return null;
     }
