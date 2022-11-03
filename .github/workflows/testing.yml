@@ -41,7 +41,7 @@ jobs:
           filename: actions-user.json
         
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with: 
           name: actions
           path: actions-user.json
@@ -70,7 +70,7 @@ jobs:
           filename: actions-organization.json
             
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with: 
           name: actions-organization
           path: actions-organization.json
