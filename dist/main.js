@@ -26740,15 +26740,9 @@ function getActionFile(client, repo) {
       }
     }
     var ratelimit = yield client.rest.rateLimit.get();
-    core.info(`Limit search API calls: ${ratelimit.data.resources.search.limit}`);
-    core.info(`Reset search API calls: ${ratelimit.data.resources.search.reset}`);
-    core.info(`Used search API calls: ${ratelimit.data.resources.search.used}`);
-    core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`);
-    var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-    core.info(`Search API reset time: ${resetTime}`);
-    if (ratelimit.data.resources.search.remaining <= 1) {
+    if (ratelimit.data.resources.search.remaining <= 2) {
       var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-      core.info(`Search API reset time: ${resetTime}`);
+      core.debug(`Search API reset time: ${resetTime}`);
       var waitTime = resetTime.getTime() - new Date().getTime();
       if (waitTime < 0) {
         waitTime = 2500;
@@ -26765,11 +26759,6 @@ function getActionFile(client, repo) {
       var searchResultforRepository = yield client.request("GET /search/code", {
         q: searchQuery
       });
-      var ratelimit = yield client.rest.rateLimit.get();
-      core.info(`Limit search API calls: ${ratelimit.data.resources.search.limit}`);
-      core.info(`Reset search API calls: ${ratelimit.data.resources.search.reset}`);
-      core.info(`Used search API calls: ${ratelimit.data.resources.search.used}`);
-      core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`);
       if (Object.keys(searchResultforRepository.data.items).length > 0) {
         for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
           var element = searchResultforRepository.data.items[index].path;

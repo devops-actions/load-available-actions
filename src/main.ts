@@ -233,16 +233,10 @@ async function getActionFile(
 
   // search API has a strict rate limit, prevent errors
   var ratelimit = await client.rest.rateLimit.get()
-  core.info(`Limit search API calls: ${ratelimit.data.resources.search.limit}`)
-  core.info(`Reset search API calls: ${ratelimit.data.resources.search.reset}`)
-  core.info(`Used search API calls: ${ratelimit.data.resources.search.used}`)
-  core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`)
-  var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-    core.info(`Search API reset time: ${resetTime}`)
-  if (ratelimit.data.resources.search.remaining <= 1) {
-      // show the reset time
+  if (ratelimit.data.resources.search.remaining <= 2) {
+    // show the reset time
     var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-    core.info(`Search API reset time: ${resetTime}`)
+    core.debug(`Search API reset time: ${resetTime}`)
     // wait until the reset time
     var waitTime = resetTime.getTime() - new Date().getTime()
     if (waitTime < 0) {
@@ -264,16 +258,6 @@ async function getActionFile(
     var searchResultforRepository = await client.request("GET /search/code", {
       q: searchQuery
     });
-
-    // temp to validate
-    
-    var ratelimit = await client.rest.rateLimit.get()
-    core.info(`Limit search API calls: ${ratelimit.data.resources.search.limit}`)
-    core.info(`Reset search API calls: ${ratelimit.data.resources.search.reset}`)
-    core.info(`Used search API calls: ${ratelimit.data.resources.search.used}`)
-    core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`)
-  
-    // temp to validate
 
     if (Object.keys(searchResultforRepository.data.items).length > 0) {
 
