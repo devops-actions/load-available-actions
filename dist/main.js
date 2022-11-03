@@ -26682,7 +26682,7 @@ function findAllActions(client, repos) {
           `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
         );
         if (repo.visibility == "internal") {
-          core.debug(`Get access settings for repository ${repo.owner}/${repo.name}..............`);
+          core.debug(`Get access settings for repository [${repo.owner}/${repo.name}]..............`);
           const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
             owner: repo.owner,
             repo: repo.name
@@ -26692,7 +26692,7 @@ function findAllActions(client, repos) {
             continue;
           }
         } else if (repo.visibility == "private") {
-          core.debug(`${repo.owner}/${repo.name} is private repo.`);
+          core.debug(`[${repo.owner}/${repo.name}] is private repo, skipping.`);
           continue;
         }
         result.push(content);
@@ -26740,17 +26740,22 @@ function getActionFile(client, repo) {
       }
     }
     var ratelimit = yield client.rest.rateLimit.get();
+    core.info(`Limit search API calls: ${ratelimit.data.resources.search.limit}`);
+    core.info(`Reset search API calls: ${ratelimit.data.resources.search.reset}`);
+    core.info(`Used search API calls: ${ratelimit.data.resources.search.used}`);
     core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`);
+    var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+    core.info(`Search API reset time: ${resetTime}`);
     if (ratelimit.data.resources.search.remaining <= 1) {
       var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
       core.info(`Search API reset time: ${resetTime}`);
       var waitTime = resetTime.getTime() - new Date().getTime();
-      core.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
       if (waitTime < 0) {
         waitTime = 2500;
       } else {
         waitTime = waitTime + 1e3;
       }
+      core.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
       yield new Promise((r) => setTimeout(r, waitTime));
     }
     if (result.name === "") {
@@ -26760,6 +26765,11 @@ function getActionFile(client, repo) {
       var searchResultforRepository = yield client.request("GET /search/code", {
         q: searchQuery
       });
+      var ratelimit = yield client.rest.rateLimit.get();
+      core.info(`Limit search API calls: ${ratelimit.data.resources.search.limit}`);
+      core.info(`Reset search API calls: ${ratelimit.data.resources.search.reset}`);
+      core.info(`Used search API calls: ${ratelimit.data.resources.search.used}`);
+      core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`);
       if (Object.keys(searchResultforRepository.data.items).length > 0) {
         for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
           var element = searchResultforRepository.data.items[index].path;

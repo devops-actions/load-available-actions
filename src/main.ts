@@ -159,7 +159,7 @@ async function findAllActions(
 
       // Check and exclude the Work in progress actions if its internal
       if (repo.visibility == 'internal') {
-        core.debug(`Get access settings for repository ${repo.owner}/${repo.name}..............`)
+        core.debug(`Get access settings for repository [${repo.owner}/${repo.name}]..............`)
 
         const { data: accessSettings } = await client.rest.actions.getWorkflowAccessToRepository({
           owner: repo.owner,
@@ -171,7 +171,7 @@ async function findAllActions(
           continue
         }
       } else if (repo.visibility == 'private') {
-        core.debug(`${repo.owner}/${repo.name} is private repo.`)
+        core.debug(`[${repo.owner}/${repo.name}] is private repo, skipping.`)
         continue
       }
 
@@ -245,7 +245,6 @@ async function getActionFile(
     core.info(`Search API reset time: ${resetTime}`)
     // wait until the reset time
     var waitTime = resetTime.getTime() - new Date().getTime()
-    core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
     if (waitTime < 0) {
       // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
       waitTime = 2500
@@ -253,6 +252,7 @@ async function getActionFile(
       // back off a bit more to be more certain
       waitTime = waitTime + 1000
     }
+    core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
     await new Promise(r => setTimeout(r, waitTime));
   }
 
@@ -264,6 +264,16 @@ async function getActionFile(
     var searchResultforRepository = await client.request("GET /search/code", {
       q: searchQuery
     });
+
+    // temp to validate
+    
+    var ratelimit = await client.rest.rateLimit.get()
+    core.info(`Limit search API calls: ${ratelimit.data.resources.search.limit}`)
+    core.info(`Reset search API calls: ${ratelimit.data.resources.search.reset}`)
+    core.info(`Used search API calls: ${ratelimit.data.resources.search.used}`)
+    core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`)
+  
+    // temp to validate
 
     if (Object.keys(searchResultforRepository.data.items).length > 0) {
 
