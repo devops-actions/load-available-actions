@@ -26741,7 +26741,7 @@ function getActionFile(client, repo) {
     }
     var ratelimit = yield client.rest.rateLimit.get();
     core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`);
-    if (ratelimit.data.resources.search.remaining < 1) {
+    if (ratelimit.data.resources.search.remaining <= 1) {
       var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
       core.info(`Search API reset time: ${resetTime}`);
       var waitTime = resetTime.getTime() - new Date().getTime();
