@@ -26739,6 +26739,15 @@ function getActionFile(client, repo) {
         core.debug(`No action.yaml file found in repository: ${repo.name}`);
       }
     }
+    var ratelimit = yield client.rest.rateLimit.get();
+    core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`);
+    if (ratelimit.data.resources.search.remaining < 1) {
+      var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+      core.info(`Search API reset time: ${resetTime}`);
+      var waitTime = resetTime.getTime() - new Date().getTime();
+      core.info(`Waiting ${waitTime} milliseconds to prevent the search API rate limit`);
+      yield new Promise((r) => setTimeout(r, waitTime));
+    }
     if (result.name === "") {
       core.info(`No actions found at root level in repository: ${repo.name}`);
       core.info(`Checking subdirectories in repository: ${repo.name}`);
@@ -26746,15 +26755,6 @@ function getActionFile(client, repo) {
       var searchResultforRepository = yield client.request("GET /search/code", {
         q: searchQuery
       });
-      var ratelimit = yield client.rest.rateLimit.get();
-      core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`);
-      if (ratelimit.data.resources.search.remaining < 1) {
-        var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-        core.info(`Search API reset time: ${resetTime}`);
-        var waitTime = resetTime.getTime() - new Date().getTime();
-        core.info(`Waiting ${waitTime} milliseconds to prevent the search API rate limit`);
-        yield new Promise((r) => setTimeout(r, waitTime));
-      }
       if (Object.keys(searchResultforRepository.data.items).length > 0) {
         for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
           var element = searchResultforRepository.data.items[index].path;

@@ -230,6 +230,19 @@ async function getActionFile(
     }
   }
 
+  // search API has a strict rate limit, prevent errors
+  var ratelimit = await client.rest.rateLimit.get()
+  core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`)
+  if (ratelimit.data.resources.search.remaining < 1) {
+      // show the reset time
+    var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+    core.info(`Search API reset time: ${resetTime}`)
+    // wait until the reset time
+    var waitTime = resetTime.getTime() - new Date().getTime()
+    core.info(`Waiting ${waitTime} milliseconds to prevent the search API rate limit`)
+    await new Promise(r => setTimeout(r, waitTime));
+  }
+
   if (result.name === '') {
     core.info(`No actions found at root level in repository: ${repo.name}`)
     core.info(`Checking subdirectories in repository: ${repo.name}`)
@@ -238,19 +251,6 @@ async function getActionFile(
     var searchResultforRepository = await client.request("GET /search/code", {
       q: searchQuery
     });
-
-    // search API has a strict rate limit, prevent errors
-    var ratelimit = await client.rest.rateLimit.get()
-    core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`)
-    if (ratelimit.data.resources.search.remaining < 1) {
-        // show the reset time
-      var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-      core.info(`Search API reset time: ${resetTime}`)
-      // wait until the reset time
-      var waitTime = resetTime.getTime() - new Date().getTime()
-      core.info(`Waiting ${waitTime} milliseconds to prevent the search API rate limit`)
-      await new Promise(r => setTimeout(r, waitTime));
-    }
 
     if (Object.keys(searchResultforRepository.data.items).length > 0) {
 
