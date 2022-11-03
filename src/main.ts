@@ -164,6 +164,7 @@ async function findAllActions(
           owner: repo.owner,
           repo: repo.name,
         })
+
         if (accessSettings.access_level == 'none') {
           core.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`)
           continue
@@ -241,6 +242,11 @@ async function getActionFile(
     // wait 2 seconds after this call, to prevent the search API rate limit
     core.info(`Waiting 2 seconds to prevent the search API rate limit`)
     await new Promise(r => setTimeout(r, 2000));
+    var ratelimit = await client.rest.rateLimit.get()
+    core.info(`Remaining search API calls: ${ratelimit.data.resources.search.remaining}`)
+    // show the reset time
+    var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+    core.info(`Search API reset time: ${resetTime}`)
 
     if (Object.keys(searchResultforRepository.data.items).length > 0) {
 
