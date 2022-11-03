@@ -26682,7 +26682,7 @@ function findAllActions(client, repos) {
           `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
         );
         if (repo.visibility == "internal") {
-          core.debug(`Get Access settings for repository ${repo.owner}/${repo.name}..............`);
+          core.debug(`Get access settings for repository ${repo.owner}/${repo.name}..............`);
           const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
             owner: repo.owner,
             repo: repo.name
@@ -26692,7 +26692,7 @@ function findAllActions(client, repos) {
             continue;
           }
         } else if (repo.visibility == "private") {
-          core.debug(`[${repo.owner}/${repo.name}] is private repo.`);
+          core.debug(`${repo.owner}/${repo.name} is private repo.`);
           continue;
         }
         result.push(content);
