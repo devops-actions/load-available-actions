@@ -239,7 +239,11 @@ async function getActionFile(
     core.info(`Search API reset time: ${resetTime}`)
     // wait until the reset time
     var waitTime = resetTime.getTime() - new Date().getTime()
-    core.info(`Waiting ${waitTime} milliseconds to prevent the search API rate limit`)
+    core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
+    if (waitTime < 0) {
+      // if the reset time is in the past, wait 1 second
+      waitTime = 1000
+    }
     await new Promise(r => setTimeout(r, waitTime));
   }
 

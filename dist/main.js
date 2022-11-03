@@ -26745,7 +26745,10 @@ function getActionFile(client, repo) {
       var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
       core.info(`Search API reset time: ${resetTime}`);
       var waitTime = resetTime.getTime() - new Date().getTime();
-      core.info(`Waiting ${waitTime} milliseconds to prevent the search API rate limit`);
+      core.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
+      if (waitTime < 0) {
+        waitTime = 1e3;
+      }
       yield new Promise((r) => setTimeout(r, waitTime));
     }
     if (result.name === "") {
