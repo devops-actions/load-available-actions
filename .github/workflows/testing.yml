@@ -11,27 +11,30 @@ jobs:
     if: github.ref == 'refs/heads/main' # don't run on PRs
     steps:
       - uses: actions/checkout@v3
-      - run: npm ci
-      - run: npm run all
+      - name: Compile with NPM
+        run: | 
+          npm ci
+          npm run all
 
   test-load-from-user: # test the action for the user space
     runs-on: ubuntu-latest
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
       - uses: actions/checkout@v3
+      # make sure we have a new build, in case the dist folder was not updated
+      - name: Compile with NPM
+        run: | 
+          npm ci
+          npm run all
 
+      # run the test
       - uses: ./
         name: Load used actions
         with: 
-          PAT: ${{ secrets.PAT }} # really not clear why GITHUB_TOKEN is not working
-          # see docs here: https://docs.github.com/en/actions/security-guides/automatic-token-authentication#example-1-passing-the-github_token-as-an-input
+          PAT: ${{ secrets.PAT }} 
           user: rajbos
         id: load-actions
 
-      #- name: Store output in result file
-      #  if: 1 == 2
-      #  run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-user.json'
-       
       - uses: devops-actions/json-to-file@v1.0.0
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
@@ -48,16 +51,18 @@ jobs:
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
       - uses: actions/checkout@v3
-
+      # make sure we have a new build, in case the dist folder was not updated
+      - name: Compile with NPM
+        run: | 
+          npm ci
+          npm run all
+      # run the test
       - uses: ./
         name: Load used actions
         with: 
           PAT: ${{ secrets.PAT }}
           organization: rajbos-actions
         id: load-actions
-
-      #- name: Store output in result file
-      #  run: echo '${{ steps.load-actions.outputs.actions }}' > 'actions-organization.json'
 
       - uses: devops-actions/json-to-file@v1.0.0
         with: 
