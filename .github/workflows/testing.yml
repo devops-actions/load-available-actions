@@ -18,6 +18,7 @@ jobs:
 
   test-load-from-user: # test the action for the user space
     runs-on: ubuntu-latest
+    concurrency: single-run
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
       - uses: actions/checkout@v3
@@ -48,6 +49,7 @@ jobs:
   
   test-load-from-organization: # test the action for the organization space
     runs-on: ubuntu-latest
+    concurrency: single-run
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
       - uses: actions/checkout@v3
