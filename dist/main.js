@@ -26583,6 +26583,7 @@ function run() {
       const user = core.getInput("user") || process.env.GITHUB_USER || "";
       const organization = core.getInput("organization") || process.env.GITHUB_ORGANIZATION || "";
       const baseUrl = process.env.GITHUB_API_URL || "https://api.github.com";
+      const isEnterpriseServer = baseUrl !== "https://api.github.com";
       if (!PAT || PAT === "") {
         core.setFailed(
           "Parameter 'PAT' is required to load all actions from the organization or user account"
@@ -26610,7 +26611,7 @@ function run() {
       }
       const repos = yield findAllRepos(octokit, user, organization);
       console.log(`Found [${repos.length}] repositories`);
-      let actionFiles = yield findAllActions(octokit, repos);
+      let actionFiles = yield findAllActions(octokit, repos, isEnterpriseServer);
       actionFiles = yield enrichActionFiles(octokit, actionFiles);
       const output = {
         lastUpdated: GetDateFormatted(new Date()),
@@ -26671,12 +26672,12 @@ var Content = class {
     this.description = ``;
   }
 };
-function findAllActions(client, repos) {
+function findAllActions(client, repos, isEnterpriseServer) {
   return __async(this, null, function* () {
     const result = [];
     for (const repo of repos) {
       core.debug(`Searching repository for actions: ${repo.name}`);
-      const content = yield getActionFile(client, repo);
+      const content = yield getActionFile(client, repo, isEnterpriseServer);
       if (content && content.name !== "") {
         core.info(
           `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
@@ -26702,7 +26703,7 @@ function findAllActions(client, repos) {
     return result;
   });
 }
-function getActionFile(client, repo) {
+function getActionFile(client, repo, isEnterpriseServer) {
   return __async(this, null, function* () {
     const result = new Content();
     try {
@@ -26739,18 +26740,20 @@ function getActionFile(client, repo) {
         core.debug(`No action.yaml file found in repository: ${repo.name}`);
       }
     }
-    var ratelimit = yield client.rest.rateLimit.get();
-    if (ratelimit.data.resources.search.remaining <= 2) {
-      var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-      core.debug(`Search API reset time: ${resetTime}`);
-      var waitTime = resetTime.getTime() - new Date().getTime();
-      if (waitTime < 0) {
-        waitTime = 2500;
-      } else {
-        waitTime = waitTime + 1e3;
+    if (!isEnterpriseServer) {
+      var ratelimit = yield client.rest.rateLimit.get();
+      if (ratelimit.data.resources.search.remaining <= 2) {
+        var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+        core.debug(`Search API reset time: ${resetTime}`);
+        var waitTime = resetTime.getTime() - new Date().getTime();
+        if (waitTime < 0) {
+          waitTime = 2500;
+        } else {
+          waitTime = waitTime + 1e3;
+        }
+        core.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
+        yield new Promise((r) => setTimeout(r, waitTime));
       }
-      core.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
-      yield new Promise((r) => setTimeout(r, waitTime));
     }
     if (result.name === "") {
       core.info(`No actions found at root level in repository: ${repo.name}`);

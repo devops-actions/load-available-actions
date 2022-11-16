@@ -13,10 +13,10 @@ async function run(): Promise<void> {
   try {
     const PAT = core.getInput('PAT') || process.env.PAT || ''
     const user = core.getInput('user') || process.env.GITHUB_USER || ''
-    const organization =
-      core.getInput('organization') || process.env.GITHUB_ORGANIZATION || ''
+    const organization = core.getInput('organization') || process.env.GITHUB_ORGANIZATION || ''
 
     const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com'
+    const isEnterpriseServer = baseUrl !== 'https://api.github.com'
 
     if (!PAT || PAT === '') {
       core.setFailed(
@@ -51,7 +51,7 @@ async function run(): Promise<void> {
     const repos = await findAllRepos(octokit, user, organization)
     console.log(`Found [${repos.length}] repositories`)
 
-    let actionFiles = await findAllActions(octokit, repos)
+    let actionFiles = await findAllActions(octokit, repos, isEnterpriseServer)
     // load the information in the files
     actionFiles = await enrichActionFiles(octokit, actionFiles)
 
@@ -143,7 +143,8 @@ class Content {
 
 async function findAllActions(
   client: Octokit,
-  repos: Repository[]
+  repos: Repository[],
+  isEnterpriseServer: boolean
 ): Promise<Content[]> {
   // create array
   const result: Content[] = []
@@ -151,7 +152,7 @@ async function findAllActions(
   // search all repos for actions
   for (const repo of repos) {
     core.debug(`Searching repository for actions: ${repo.name}`)
-    const content = await getActionFile(client, repo)
+    const content = await getActionFile(client, repo, isEnterpriseServer)
     if (content && content.name !== '') {
       core.info(
         `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
@@ -186,7 +187,8 @@ async function findAllActions(
 
 async function getActionFile(
   client: Octokit,
-  repo: Repository
+  repo: Repository,
+  isEnterpriseServer: boolean
 ): Promise<Content | null> {
   const result = new Content()
 
@@ -231,23 +233,27 @@ async function getActionFile(
     }
   }
 
-  // search API has a strict rate limit, prevent errors
-  var ratelimit = await client.rest.rateLimit.get()
-  if (ratelimit.data.resources.search.remaining <= 2) {
-    // show the reset time
-    var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-    core.debug(`Search API reset time: ${resetTime}`)
-    // wait until the reset time
-    var waitTime = resetTime.getTime() - new Date().getTime()
-    if (waitTime < 0) {
-      // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
-      waitTime = 2500
-    } else {
-      // back off a bit more to be more certain
-      waitTime = waitTime + 1000
+  // todo: ratelimiting can be enabled on GHES as well, but is off by default
+  // we can probably load it from an api call and see if it is enabled, or try .. catch 
+  if (!isEnterpriseServer) {
+    // search API has a strict rate limit, prevent errors
+    var ratelimit = await client.rest.rateLimit.get()
+    if (ratelimit.data.resources.search.remaining <= 2) {
+      // show the reset time
+      var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+      core.debug(`Search API reset time: ${resetTime}`)
+      // wait until the reset time
+      var waitTime = resetTime.getTime() - new Date().getTime()
+      if (waitTime < 0) {
+        // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
+        waitTime = 2500
+      } else {
+        // back off a bit more to be more certain
+        waitTime = waitTime + 1000
+      }
+      core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
+      await new Promise(r => setTimeout(r, waitTime));
     }
-    core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
-    await new Promise(r => setTimeout(r, waitTime));
   }
 
   if (result.name === '') {
