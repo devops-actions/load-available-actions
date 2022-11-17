@@ -26793,9 +26793,10 @@ function enrichActionFiles(client, actionFiles) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         try {
           const parsed = import_yaml.default.parse(content);
-          action.name = parsed.name;
-          action.author = parsed.author;
-          action.description = parsed.description;
+          const defaultValue = "undefined";
+          action.name = parsed.name ? parsed.name : defaultValue;
+          action.author = parsed.author ? parsed.author : defaultValue;
+          action.description = parsed.description ? parsed.description : defaultValue;
         } catch (error) {
           console.log(
             `Error parsing action file in repo [${action.repo}] with error:`
