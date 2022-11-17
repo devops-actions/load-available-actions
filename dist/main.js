@@ -26793,7 +26793,7 @@ function enrichActionFiles(client, actionFiles) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         try {
           const parsed = import_yaml.default.parse(content);
-          const defaultValue = "undefined";
+          const defaultValue = "Undefined";
           action.name = parsed.name ? parsed.name : defaultValue;
           action.author = parsed.author ? parsed.author : defaultValue;
           action.description = parsed.description ? parsed.description : defaultValue;
