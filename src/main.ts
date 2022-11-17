@@ -304,7 +304,7 @@ async function enrichActionFiles(
       // try to parse the yaml
       try {
         const parsed = YAML.parse(content)
-        const defaultValue = "undefined" // Default value for json fields is not defined
+        const defaultValue = "Undefined" // Default value when json field is not defined
         action.name = parsed.name ? parsed.name : defaultValue
         action.author = parsed.author ? parsed.author : defaultValue
         action.description = parsed.description ? parsed.description : defaultValue
