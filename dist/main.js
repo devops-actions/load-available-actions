@@ -26601,8 +26601,6 @@ function run() {
         baseUrl
       });
       try {
-        const currentUser = yield octokit.rest.users.getAuthenticated();
-        core.info(`Hello, ${currentUser.data.login}`);
       } catch (error) {
         core.setFailed(
           `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
@@ -26684,12 +26682,17 @@ function findAllActions(client, repos, isEnterpriseServer) {
         );
         if (repo.visibility == "internal") {
           core.debug(`Get access settings for repository [${repo.owner}/${repo.name}]..............`);
-          const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
-            owner: repo.owner,
-            repo: repo.name
-          });
-          if (accessSettings.access_level == "none") {
-            core.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`);
+          try {
+            const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
+              owner: repo.owner,
+              repo: repo.name
+            });
+            if (accessSettings.access_level == "none") {
+              core.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`);
+              continue;
+            }
+          } catch (error) {
+            core.info(`Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope.`);
             continue;
           }
         } else if (repo.visibility == "private") {

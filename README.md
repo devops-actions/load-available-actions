@@ -1,5 +1,5 @@
 # load-available-actions
-Load all actions stored in the current organization, by calling the REST API with a Personal Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
+Load all actions stored in the current organization, by calling the REST API with an  Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
 
 The output is stored with the name `actions`, which can be retrieved in another action with `${{ steps.<step id>.outputs.actions }}`.
 
@@ -8,7 +8,13 @@ The output is stored with the name `actions`, which can be retrieved in another 
 |---|---|
 |user|The user to load actions from.|
 |organization|The name of the organization to run on.|
-|PAT|The Personal Access Token to use for the API calls.|
+|PAT|The Access Token to use for the API calls.|
+
+### Scopes needed for the access token
+Repo permissions needed for the access token:
+- Actions: Read
+- Administration: Read
+- Contents: Read
 
 ## Outputs
 actions: a compressed json string with all the actions used in the workflows in the organization. The json is in the format:

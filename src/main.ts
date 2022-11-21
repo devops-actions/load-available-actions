@@ -38,9 +38,9 @@ async function run(): Promise<void> {
     })
 
     try {
-      const currentUser = await octokit.rest.users.getAuthenticated()
-
-      core.info(`Hello, ${currentUser.data.login}`)
+      // this call fails from an app, so we need a better way to validate this
+      //const currentUser = await octokit.rest.users.getAuthenticated()
+      //core.info(`Hello, ${currentUser.data.login}`)
     } catch (error) {
       core.setFailed(
         `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
@@ -158,17 +158,21 @@ async function findAllActions(
         `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
       )
 
-      // Check and exclude the Work in progress actions if its internal
+      // Check the actions if its internal for the workflow access settings:
       if (repo.visibility == 'internal') {
         core.debug(`Get access settings for repository [${repo.owner}/${repo.name}]..............`)
+        try {
+          const { data: accessSettings } = await client.rest.actions.getWorkflowAccessToRepository({
+            owner: repo.owner,
+            repo: repo.name,
+          })
 
-        const { data: accessSettings } = await client.rest.actions.getWorkflowAccessToRepository({
-          owner: repo.owner,
-          repo: repo.name,
-        })
-
-        if (accessSettings.access_level == 'none') {
-          core.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`)
+          if (accessSettings.access_level == 'none') {
+            core.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`)
+            continue
+          }
+        } catch (error) {
+          core.info(`Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope. Error: ${error.message}`)
           continue
         }
       } else if (repo.visibility == 'private') {
