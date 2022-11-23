@@ -57,7 +57,6 @@ This example shows how to use the action to get a json file with all the availab
 |2|Store json file|Output the json value from the output of the action in step 1, by using the id of step 1 in `${{ steps.<step id>.outputs.actions }}`|
 |3|Upload result file as artefact|Upload the json file as an artefact|
 
-
 ``` yaml
 jobs:
   load-all-available-actions:
