@@ -207,7 +207,7 @@ async function getActionFile(
     // todo: warning: duplicated code here
     if ('name' in yml && 'download_url' in yml) {
       result.name = yml.name
-      result.repo = repo.name
+      result.repo = repo.owner+'/'+repo.name
       if (yml.download_url !== null) {
         result.downloadUrl = yml.download_url
       }
@@ -227,7 +227,7 @@ async function getActionFile(
 
       if ('name' in yaml && 'download_url' in yaml) {
         result.name = yaml.name
-        result.repo = repo.name
+        result.repo = repo.owner+'/'+repo.name
         if (yaml.download_url !== null) {
           result.downloadUrl = yaml.download_url
         }

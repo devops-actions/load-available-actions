@@ -26692,7 +26692,7 @@ function findAllActions(client, repos, isEnterpriseServer) {
               continue;
             }
           } catch (error) {
-            core.info(`Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope.`);
+            core.info(`Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope. Error: ${error.message}`);
             continue;
           }
         } else if (repo.visibility == "private") {
@@ -26717,7 +26717,7 @@ function getActionFile(client, repo, isEnterpriseServer) {
       });
       if ("name" in yml && "download_url" in yml) {
         result.name = yml.name;
-        result.repo = repo.name;
+        result.repo = repo.owner + "/" + repo.name;
         if (yml.download_url !== null) {
           result.downloadUrl = yml.download_url;
         }
@@ -26734,7 +26734,7 @@ function getActionFile(client, repo, isEnterpriseServer) {
         });
         if ("name" in yaml && "download_url" in yaml) {
           result.name = yaml.name;
-          result.repo = repo.name;
+          result.repo = repo.owner + "/" + repo.name;
           if (yaml.download_url !== null) {
             result.downloadUrl = yaml.download_url;
           }
