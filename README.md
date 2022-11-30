@@ -23,7 +23,8 @@ actions: a compressed json string with all the actions used in the workflows in 
     "lastUpdated": "20210818_1534",
     "actions": [
         {
-            "repoName": "rajbos/actions-marketplace",
+            "name": "actions-marketplace",
+            "owner": "rajbos",
             "action: "action name",
             "author": "action author",
             "description": "action description"
@@ -63,7 +64,7 @@ jobs:
   load-all-available-actions:
     runs-on: ubuntu-latest
     steps: 
-      - uses: devops-actions/load-available-actions@main
+      - uses: devops-actions/load-available-actions@v1.2.21
         name: Load available actions
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
