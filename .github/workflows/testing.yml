@@ -11,7 +11,6 @@ permissions: read-all
 jobs:
   build: # make sure build/ci work properly
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' # don't run on PRs
     steps:
       - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
       - name: Compile with NPM
