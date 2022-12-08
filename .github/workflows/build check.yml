@@ -4,6 +4,9 @@ on:
   pull_request: 
 
   workflow_dispatch:
+
+# Declare default GITHUB_TOKEN permissions as read only.
+permissions: read-all
     
 jobs:
   build: # make sure build/ci work properly
