@@ -21,7 +21,7 @@ updates:
   - package-ecosystem: docker
     directory: /
     schedule:
-      interval: daily
+      interval: monthly
 
   - package-ecosystem: npm
     directory: /
