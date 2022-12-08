@@ -12,7 +12,7 @@ jobs:
   test-local-action:
     runs-on: ubuntu-latest
     steps: 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
 
       - uses: ./
         name: Load used actions
@@ -21,13 +21,13 @@ jobs:
           user: rajbos
         id: load-actions
 
-      - uses: devops-actions/json-to-file@v1.0.0
+      - uses: devops-actions/json-to-file@5984382751b07b0575aff49fe6717a021780ad07 # v1.0.0
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions.json
             
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3.1.1
         with: 
           name: actions
           path: actions.json
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # get code
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
 
       # build it
       - run: |
@@ -47,10 +47,10 @@ jobs:
       # get tag for this release
       - name: Get tag value
         id: tag
-        uses: rajbos-actions/action-get-tag@v1   
+        uses: rajbos-actions/action-get-tag@12319896edaa290b27558e34a177804e9b8d077b # v1   
 
       # publish a release with the build assets
-      - uses: rajbos-actions/action-gh-release@v1
+      - uses: rajbos-actions/action-gh-release@6034af24fba4e5a8e975aaa6056554efe4c794d0 # v1
         id: publish
         with:
           name: Release ${{ steps.tag.outputs.tag }}
@@ -64,7 +64,7 @@ jobs:
         env:
           url: ${{ steps.publish.outputs.url }}
 
-      - uses: rajbos-actions/slack@v1
+      - uses: rajbos-actions/slack@e4e71685b9b239384b0f676a63c32367f59c2522 # v1.2.2
         with: 
           status: ${{ job.status }}
         env:
