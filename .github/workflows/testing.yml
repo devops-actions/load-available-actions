@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' # don't run on PRs
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
       - name: Compile with NPM
         run: | 
           npm ci
@@ -24,7 +24,7 @@ jobs:
     concurrency: single-run
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -39,13 +39,13 @@ jobs:
           user: rajbos
         id: load-actions
 
-      - uses: devops-actions/json-to-file@v1.0.0
+      - uses: devops-actions/json-to-file@5984382751b07b0575aff49fe6717a021780ad07 # v1.0.0
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions-user.json
         
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3.1.1
         with: 
           name: actions
           path: actions-user.json
@@ -55,7 +55,7 @@ jobs:
     concurrency: single-run
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -69,13 +69,13 @@ jobs:
           organization: rajbos-actions
         id: load-actions
 
-      - uses: devops-actions/json-to-file@v1.0.0
+      - uses: devops-actions/json-to-file@5984382751b07b0575aff49fe6717a021780ad07 # v1.0.0
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions-organization.json
             
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@83fd05a356d7e2593de66fc9913b3002723633cb # v3.1.1
         with: 
           name: actions-organization
           path: actions-organization.json

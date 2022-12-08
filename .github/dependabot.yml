@@ -16,3 +16,14 @@ updates:
     # Check the npm registry for updates every week
     schedule:
       interval: 'monthly'
+
+
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: daily
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: daily
