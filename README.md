@@ -12,6 +12,8 @@ The output is stored with the name `actions`, which can be retrieved in another 
 |user|The user to load actions from.|
 |organization|The name of the organization to run on.|
 |PAT|The Access Token to use for the API calls.|
+|_removeToken (optional)_|Removes token from remote url.|
+|_fetchReadmes (optional_)|Adds readmes of repositories to json in a base64 format.|
 
 ### Scopes needed for the access token
 Repo permissions needed for the access token:
@@ -26,11 +28,12 @@ Actions: a compressed json string with all the actions used in the workflows in 
     "lastUpdated": "20210818_1534",
     "actions": [
         {
-            "name": "actions-marketplace",
-            "owner": "rajbos",
-            "action: "action name",
-            "author": "action author",
-            "description": "action description"
+          "name": "Get Action Data",
+          "repo": "actions-marketplace",
+          "downloadUrl": "<raw url>?token=***",
+          "author": "actions author",
+          "description": "actions description",
+          "readme": "base64 encoded readme"    #optional
         }
     ]
 }
