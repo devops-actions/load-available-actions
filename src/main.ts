@@ -1,24 +1,29 @@
 import * as core from '@actions/core'
-import { Octokit } from 'octokit'
+import {Octokit} from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
-import { wait } from './wait'
-
+import {wait} from './wait'
+import {removeToken, getReadmeLink} from './optionalActions'
 // always import the config
 dotenv.config()
+
+const getInputOrEnv = (input: string) =>
+  core.getInput(input) || process.env.input || ''
+//Optional values
+const removeTokenSetting = getInputOrEnv('removeToken')
+const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
 
 async function run(): Promise<void> {
   core.info('Starting')
   try {
-    const PAT = core.getInput('PAT') || process.env.PAT || ''
-    const user = core.getInput('user') || process.env.GITHUB_USER || ''
-    const organization = core.getInput('organization') || process.env.GITHUB_ORGANIZATION || ''
-
+    const PAT = getInputOrEnv('PAT')
+    const user = getInputOrEnv('user')
+    const organization = getInputOrEnv('organization')
     const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com'
     const isEnterpriseServer = baseUrl !== 'https://api.github.com'
 
-    if (!PAT || PAT === '') {
+    if (!PAT) {
       core.setFailed(
         "Parameter 'PAT' is required to load all actions from the organization or user account"
       )
@@ -86,7 +91,7 @@ async function findAllRepos(
   // convert to an array of objects we can return
   const result: Repository[] = []
 
-  if (username !== '') {
+  if (username) {
     const repos = await client.paginate(client.rest.repos.listForUser, {
       username
     })
@@ -122,7 +127,7 @@ async function findAllRepos(
   return result
 }
 
-class Repository {
+export class Repository {
   name: string
   owner: string
   visibility: string
@@ -133,13 +138,14 @@ class Repository {
   }
 }
 
-class Content {
-  name = ``
-  owner = ``
-  repo = ``
-  downloadUrl = ``
-  author = ``
-  description = ``
+export class Content {
+  name: string | undefined
+  owner: string | undefined
+  repo: string | undefined
+  downloadUrl: string | undefined
+  author: string | undefined
+  description: string | undefined
+  readme: string | undefined
 }
 
 async function findAllActions(
@@ -147,14 +153,22 @@ async function findAllActions(
   repos: Repository[],
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
-  // create array
   const result: Content[] = []
 
   // search all repos for actions
   for (const repo of repos) {
     core.debug(`Searching repository for actions: ${repo.name}`)
-    const content = await getActionFile(client, repo, isEnterpriseServer)
-    if (content && content.name !== '') {
+    let content = await getActionFile(client, repo, isEnterpriseServer)
+    if (removeTokenSetting && content) {
+      content = removeToken(content)
+    }
+    if (fetchReadmesSetting && content) {
+      const readmeLink = await getReadmeLink(client, repo)
+      if (readmeLink) {
+        content.readme = readmeLink
+      }
+    }
+    if (content && content.name) {
       core.info(
         `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
       )
@@ -181,7 +195,6 @@ async function findAllActions(
         continue
       }
 
-      // add to array
       result.push(content)
     }
   }
@@ -210,7 +223,7 @@ async function getActionFile(
       result.name = yml.name
       result.owner = repo.owner
       result.repo = repo.name
-      
+
       if (yml.download_url !== null) {
         result.downloadUrl = yml.download_url
       }
@@ -263,8 +276,7 @@ async function getActionFile(
       await new Promise(r => setTimeout(r, waitTime));
     }
   }
-
-  if (result.name === '') {
+  if (!result.name) {
     core.info(`No actions found at root level in repository: ${repo.name}`)
     core.info(`Checking subdirectories in repository: ${repo.name}`)
     var searchQuery = '+filename:action+language:YAML+repo:' + repo.owner + '/' + repo.name;
