@@ -78,9 +78,7 @@ async function run(): Promise<void> {
 async function findAllRepos(
   client: Octokit,
   username: string,
-  organization: string,
-  OWNER: string,
-  REPO: string
+  organization: string
 ): Promise<Repository[]> {
   // todo: switch between user and org
 
@@ -91,9 +89,6 @@ async function findAllRepos(
     const repos = await client.paginate(client.rest.repos.listForUser, {
       username
     })
-
-    //console.log(repos)
-
     core.info(`Found [${repos.length}] repositories`)
 
     // eslint disabled: no iterator available
@@ -109,9 +104,7 @@ async function findAllRepos(
     const repos = await client.paginate(client.rest.repos.listForOrg, {
       org: organization
     })
-
     console.log(`Found [${organization}] as orgname parameter`)
-
     core.info(`Found [${repos.length}] repositories`)
 
     // eslint disabled: no iterator available
@@ -207,9 +200,9 @@ async function getActionFile(
     repo: repo.name
   })
   let parentinfo = ''
-   if(repoinfo.parent?.full_name){
+  if (repoinfo.parent?.full_name) {
     parentinfo = repoinfo.parent.full_name
-   }
+  }
 
   // search for action.yml file in the root of the repo
   try {
@@ -219,7 +212,7 @@ async function getActionFile(
       path: 'action.yml'
     })
 
- 
+
 
     // todo: warning: duplicated code here
     if ('name' in yml && 'download_url' in yml) {
@@ -227,8 +220,6 @@ async function getActionFile(
       result.owner = repo.owner
       result.repo = repo.name
       result.forkedfrom = parentinfo
-
-      
       if (yml.download_url !== null) {
         result.downloadUrl = yml.download_url
       }
@@ -279,7 +270,7 @@ async function getActionFile(
         // back off a bit more to be more certain
         waitTime = waitTime + 1000
       }
-      core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
+      core.info(`Waiting ${waitTime / 1000} seconds to prevent the search API rate limit`)
       await new Promise(r => setTimeout(r, waitTime));
     }
   }
