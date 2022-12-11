@@ -1,6 +1,6 @@
 # load-available-actions
 
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions/badge)](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions/badge)](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions) [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/6813/badge)](https://bestpractices.coreinfrastructure.org/projects/6813)
 
 Load all actions stored in the current organization, by calling the REST API with an  Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
 
