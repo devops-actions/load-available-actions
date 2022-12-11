@@ -20,7 +20,7 @@ Repo permissions needed for the access token:
 - Contents: Read
 
 ## Outputs
-actions: a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
+Actions: a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
 ``` 
 {
     "lastUpdated": "20210818_1534",
@@ -45,12 +45,12 @@ Properties:
 Minimal uses expression to use this action:
 
 ``` yaml
-uses: devops-actions/load-available-actions@main`
+uses: devops-actions/load-available-actions@6ff0cdddb24a91bfe889faa29e8d7a97e521f2c3 # v1.2.23`
 with: 
     PAT: ${{ secrets.GITHUB_TOKEN }}
 ```
-Note: the default GITHUB_TOKEN might only have read access to the current repository, depending on the setup. Create a new token with `repo` scope to have full read-only access to the organization and use that as a parameter.  
-- [] todo: check the scope and update above if needed
+
+Note: the default GITHUB_TOKEN might only has **read** access to the current repository, depending on the setup. Create a new token with `repo` scope to have full read-only access to the organization and use that as a parameter.
 
 ## Full example
 This example shows how to use the action to get a json file with all the available actions in an organization. The json file is uploaded as an artefact in the third step.
