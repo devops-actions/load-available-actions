@@ -3,7 +3,6 @@ import {Octokit} from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
-import {wait} from './wait'
 import {removeToken, getReadmeContent} from './optionalActions'
 // always import the config
 dotenv.config()
