@@ -15,6 +15,12 @@ inputs:
   PAT:
     description: 'Personal access token to use for analysis. Leaving this empty will use the default GITHUB_TOKEN that could have limited access rights'
     required: true 
+  removeToken: 
+    description: 'Remove hardcoded token before returning'
+    required: false
+  fetchReadmes:
+    description: 'Fetch readmes of actions'
+    required: false
 outputs:
   actions:
     description: 'List of all actions available in the organization or user space'  
