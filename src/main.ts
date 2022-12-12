@@ -72,6 +72,7 @@ async function run(): Promise<void> {
       organization,
       user
     }
+
     const json = JSON.stringify(output)
     core.setOutput('actions', json)
   } catch (error) {
@@ -94,6 +95,7 @@ async function findAllRepos(
     const repos = await client.paginate(client.rest.repos.listForUser, {
       username
     })
+
     core.info(`Found [${repos.length}] repositories`)
 
     // eslint disabled: no iterator available
@@ -109,6 +111,7 @@ async function findAllRepos(
     const repos = await client.paginate(client.rest.repos.listForOrg, {
       org: organization
     })
+
     console.log(`Found [${organization}] as orgname parameter`)
     core.info(`Found [${repos.length}] repositories`)
 
@@ -135,14 +138,14 @@ export class Repository {
   }
 }
 
-class Content {
-  name = ``
-  owner = ``
-  repo = ``
-  downloadUrl = ``
-  author = ``
-  description = ``
-  forkedfrom = ``
+export class Content {
+  name: string | undefined
+  owner: string | undefined
+  repo: string | undefined
+  downloadUrl: string | undefined
+  author: string | undefined
+  description: string | undefined
+  readme: string | undefined
 }
 
 async function findAllActions(
@@ -207,15 +210,6 @@ async function getActionFile(
 ): Promise<Content | null> {
   const result = new Content()
 
-  const { data: repoinfo } = await client.rest.repos.get({
-    owner: repo.owner,
-    repo: repo.name
-  })
-  let parentinfo = ''
-  if (repoinfo.parent?.full_name) {
-    parentinfo = repoinfo.parent.full_name
-  }
-
   // search for action.yml file in the root of the repo
   try {
     const { data: yml } = await client.rest.repos.getContent({
@@ -224,14 +218,12 @@ async function getActionFile(
       path: 'action.yml'
     })
 
-
-
     // todo: warning: duplicated code here
     if ('name' in yml && 'download_url' in yml) {
       result.name = yml.name
       result.owner = repo.owner
       result.repo = repo.name
-      result.forkedfrom = parentinfo
+
       if (yml.download_url !== null) {
         result.downloadUrl = yml.download_url
       }
@@ -253,8 +245,6 @@ async function getActionFile(
         result.name = yaml.name
         result.owner = repo.owner
         result.repo = repo.name
-        result.forkedfrom = parentinfo
-
         if (yaml.download_url !== null) {
           result.downloadUrl = yaml.download_url
         }
@@ -282,7 +272,7 @@ async function getActionFile(
         // back off a bit more to be more certain
         waitTime = waitTime + 1000
       }
-      core.info(`Waiting ${waitTime / 1000} seconds to prevent the search API rate limit`)
+      core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
       await new Promise(r => setTimeout(r, waitTime));
     }
   }
@@ -307,7 +297,6 @@ async function getActionFile(
         if ('name' in yaml && 'download_url' in yaml) {
           result.name = yaml.name
           result.repo = repo.name
-          result.forkedfrom = parentinfo
           if (yaml.download_url !== null) {
             result.downloadUrl = yaml.download_url
           }
@@ -356,3 +345,4 @@ async function enrichActionFiles(
 }
 
 run()
+
