@@ -145,6 +145,7 @@ export class Content {
   downloadUrl: string | undefined
   author: string | undefined
   description: string | undefined
+  forkedfrom: string | undefined
   readme: string | undefined
 }
 
@@ -210,6 +211,15 @@ async function getActionFile(
 ): Promise<Content | null> {
   const result = new Content()
 
+  const { data: repoinfo } = await client.rest.repos.get({
+    owner: repo.owner,
+    repo: repo.name
+  })
+  let parentinfo = ''
+  if (repoinfo.parent?.full_name) {
+    parentinfo = repoinfo.parent.full_name
+  }
+
   // search for action.yml file in the root of the repo
   try {
     const { data: yml } = await client.rest.repos.getContent({
@@ -223,6 +233,7 @@ async function getActionFile(
       result.name = yml.name
       result.owner = repo.owner
       result.repo = repo.name
+      result.forkedfrom = parentinfo
 
       if (yml.download_url !== null) {
         result.downloadUrl = yml.download_url
@@ -245,6 +256,7 @@ async function getActionFile(
         result.name = yaml.name
         result.owner = repo.owner
         result.repo = repo.name
+        result.forkedfrom = parentinfo
         if (yaml.download_url !== null) {
           result.downloadUrl = yaml.download_url
         }
@@ -297,6 +309,7 @@ async function getActionFile(
         if ('name' in yaml && 'download_url' in yaml) {
           result.name = yaml.name
           result.repo = repo.name
+          result.forkedfrom = parentinfo
           if (yaml.download_url !== null) {
             result.downloadUrl = yaml.download_url
           }
