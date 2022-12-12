@@ -9,7 +9,7 @@ export const removeToken = (content: Content | null) => {
   return content
 }
 
-export async function getReadmeLink(
+export async function getReadmeContent(
   client: Octokit,
   repo: Repository
 ): Promise<string | undefined> {

@@ -4,7 +4,7 @@ import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
 import {wait} from './wait'
-import {removeToken, getReadmeLink} from './optionalActions'
+import {removeToken, getReadmeContent} from './optionalActions'
 // always import the config
 dotenv.config()
 
@@ -163,7 +163,7 @@ async function findAllActions(
       content = removeToken(content)
     }
     if (fetchReadmesSetting && content) {
-      const readmeLink = await getReadmeLink(client, repo)
+      const readmeLink = await getReadmeContent(client, repo)
       if (readmeLink) {
         content.readme = readmeLink
       }
