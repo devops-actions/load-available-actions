@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
 import YAML from 'yaml'
-import GetDateFormatted from './utils'
+import GetDateFormatted, {fetchYaml} from './utils'
 import dotenv from 'dotenv'
 
 import {removeToken, getReadmeContent} from './optionalActions'
@@ -170,44 +170,13 @@ async function getActionFile(
   repo: Repository,
   isEnterpriseServer: boolean
 ): Promise<Content | null> {
-  const result = new Content()
-
-  const {data: repoinfo} = await client.rest.repos.get({
-    owner: repo.owner,
-    repo: repo.name
-  })
-  let parentinfo: string | undefined
-  if (repoinfo.parent?.full_name) {
-    parentinfo = repoinfo.parent.full_name
-  }
-
-  let actionData: any
-
+  let result: any
   // search for action.yml file in the root of the repo
   try {
-    actionData = await client.rest.repos.getContent({
-      owner: repo.owner,
-      repo: repo.name,
-      path: 'action.yml'
-    })
+    result = await fetchYaml(repo, client, 'action.yml')
 
-    if (!result.name) {
-      // search for the action.yaml, that is also allowed
-      actionData = await client.rest.repos.getContent({
-        owner: repo.owner,
-        repo: repo.name,
-        path: 'action.yaml'
-      })
-    }
-
-    if ('name' in actionData && 'download_url' in actionData) {
-      result.name = actionData.name
-      result.owner = repo.owner
-      result.repo = repo.name
-      result.forkedfrom = parentinfo
-      if (actionData.download_url !== null) {
-        result.downloadUrl = actionData.download_url
-      }
+    if (!result) {
+      result = await fetchYaml(repo, client, 'action.yaml')
     }
   } catch (error) {
     core.debug(`No action.yml file found in repository: ${repo.name}`)
@@ -255,20 +224,8 @@ async function getActionFile(
         index < Object.keys(searchResultforRepository.data.items).length;
         index++
       ) {
-        var element = searchResultforRepository.data.items[index].path
-        const {data: yaml} = await client.rest.repos.getContent({
-          owner: repo.owner,
-          repo: repo.name,
-          path: element
-        })
-        if ('name' in yaml && 'download_url' in yaml) {
-          result.name = yaml.name
-          result.repo = repo.name
-          result.forkedfrom = parentinfo
-          if (yaml.download_url !== null) {
-            result.downloadUrl = yaml.download_url
-          }
-        }
+        const pathElement = searchResultforRepository.data.items[index].path
+        result = fetchYaml(repo, client, pathElement)
       }
       return result
     }
