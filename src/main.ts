@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
 import YAML from 'yaml'
-import GetDateFormatted, {fetchYaml} from './utils'
+import GetDateFormatted, {fetchYaml, searchForActionYaml} from './utils'
 import dotenv from 'dotenv'
 
 import {removeToken, getReadmeContent} from './optionalActions'
@@ -211,27 +211,11 @@ async function getActionFile(
   if (!result.name) {
     core.info(`No actions found at root level in repository: ${repo.name}`)
     core.info(`Checking subdirectories in repository: ${repo.name}`)
-    const searchQuery =
-      '+filename:action+language:YAML+repo:' + repo.owner + '/' + repo.name
-
-    const searchResultforRepository = await client.request('GET /search/code', {
-      q: searchQuery
-    })
-
-    if (Object.keys(searchResultforRepository.data.items).length > 0) {
-      for (
-        let index = 0;
-        index < Object.keys(searchResultforRepository.data.items).length;
-        index++
-      ) {
-        const pathElement = searchResultforRepository.data.items[index].path
-        result = fetchYaml(repo, client, pathElement)
-      }
-      return result
+    result = searchForActionYaml(repo, client)
+    if (!result) {
+      core.info(`No actions found in repository: ${repo.name}`)
+      return null
     }
-
-    core.info(`No actions found in repository: ${repo.name}`)
-    return null
   }
 
   return result

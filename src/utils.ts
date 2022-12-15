@@ -5,7 +5,7 @@ import {Repository, Content} from './main'
 export default function GetDateFormatted(date: Date): string {
   return moment(date).format('YYYYMMDD_HHmm')
 }
-async function fetchParentInfo(client: Octokit, repo: Repository) {
+async function fetchParentInfo(repo: Repository, client: Octokit) {
   const {data: repoinfo} = await client.rest.repos.get({
     owner: repo.owner,
     repo: repo.name
@@ -20,7 +20,7 @@ export async function fetchYaml(
   pathElement: string
 ) {
   const result = new Content()
-  const parentinfo = await fetchParentInfo(client, repo)
+  const parentinfo = await fetchParentInfo(repo, client)
   const {data: yaml} = await client.rest.repos.getContent({
     owner: repo.owner,
     repo: repo.name,
@@ -33,4 +33,26 @@ export async function fetchYaml(
     result.downloadUrl = yaml.download_url || undefined
   }
   return result
+}
+
+export async function searchForActionYaml(repo: Repository, client: Octokit) {
+  let result: any
+  const searchQuery =
+    '+filename:action+language:YAML+repo:' + repo.owner + '/' + repo.name
+
+  const searchResultforRepository = await client.request('GET /search/code', {
+    q: searchQuery
+  })
+
+  if (Object.keys(searchResultforRepository.data.items).length > 0) {
+    for (
+      let index = 0;
+      index < Object.keys(searchResultforRepository.data.items).length;
+      index++
+    ) {
+      const pathElement = searchResultforRepository.data.items[index].path
+      result = fetchYaml(repo, client, pathElement)
+    }
+    return result
+  }
 }
