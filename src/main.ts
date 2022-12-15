@@ -3,8 +3,10 @@ import {Octokit} from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
+
 import {removeToken, getReadmeContent} from './optionalActions'
-// always import the config
+import {findAllRepos} from './coreFunctions'
+
 dotenv.config()
 
 const getInputOrEnv = (input: string) =>
@@ -79,53 +81,6 @@ async function run(): Promise<void> {
   }
 }
 
-//todo: move this function to a separate file, with the corresponding class definition
-async function findAllRepos(
-  client: Octokit,
-  username: string,
-  organization: string
-): Promise<Repository[]> {
-  // todo: switch between user and org
-
-  // convert to an array of objects we can return
-  const result: Repository[] = []
-
-  if (username) {
-    const repos = await client.paginate(client.rest.repos.listForUser, {
-      username
-    })
-
-    core.info(`Found [${repos.length}] repositories`)
-
-    // eslint disabled: no iterator available
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let num = 0; num < repos.length; num++) {
-      const repo = repos[num]
-      const repository = new Repository(repo.owner?.login || '', repo.name, repo.visibility ?? "") //todo: handle for orgs
-      result.push(repository)
-    }
-  }
-
-  if (organization !== '') {
-    const repos = await client.paginate(client.rest.repos.listForOrg, {
-      org: organization
-    })
-
-    console.log(`Found [${organization}] as orgname parameter`)
-    core.info(`Found [${repos.length}] repositories`)
-
-    // eslint disabled: no iterator available
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let num = 0; num < repos.length; num++) {
-      const repo = repos[num]
-      const repository = new Repository(repo.owner?.login || '', repo.name, repo.visibility ?? "") //todo: handle for orgs
-      result.push(repository)
-    }
-  }
-
-  return result
-}
-
 export class Repository {
   name: string
   owner: string
@@ -175,19 +130,26 @@ async function findAllActions(
 
       // Check the actions if its internal for the workflow access settings:
       if (repo.visibility == 'internal') {
-        core.debug(`Get access settings for repository [${repo.owner}/${repo.name}]..............`)
+        core.debug(
+          `Get access settings for repository [${repo.owner}/${repo.name}]..............`
+        )
         try {
-          const { data: accessSettings } = await client.rest.actions.getWorkflowAccessToRepository({
-            owner: repo.owner,
-            repo: repo.name,
-          })
+          const {data: accessSettings} =
+            await client.rest.actions.getWorkflowAccessToRepository({
+              owner: repo.owner,
+              repo: repo.name
+            })
 
           if (accessSettings.access_level == 'none') {
-            core.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`)
+            core.info(
+              `Access to use action [${repo.owner}/${repo.name}] is disabled`
+            )
             continue
           }
         } catch (error) {
-          core.info(`Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope. Error: ${error.message}`)
+          core.info(
+            `Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope. Error: ${error.message}`
+          )
           continue
         }
       } else if (repo.visibility == 'private') {
@@ -210,7 +172,7 @@ async function getActionFile(
 ): Promise<Content | null> {
   const result = new Content()
 
-  const { data: repoinfo } = await client.rest.repos.get({
+  const {data: repoinfo} = await client.rest.repos.get({
     owner: repo.owner,
     repo: repo.name
   })
@@ -221,7 +183,7 @@ async function getActionFile(
 
   // search for action.yml file in the root of the repo
   try {
-    const { data: yml } = await client.rest.repos.getContent({
+    const {data: yml} = await client.rest.repos.getContent({
       owner: repo.owner,
       repo: repo.name,
       path: 'action.yml'
@@ -242,10 +204,10 @@ async function getActionFile(
     core.debug(`No action.yml file found in repository: ${repo.name}`)
   }
 
-  if (result.name === '') {
+  if (!result.name) {
     try {
       // search for the action.yaml, that is also allowed
-      const { data: yaml } = await client.rest.repos.getContent({
+      const {data: yaml} = await client.rest.repos.getContent({
         owner: repo.owner,
         repo: repo.name,
         path: 'action.yaml'
@@ -266,7 +228,7 @@ async function getActionFile(
   }
 
   // todo: ratelimiting can be enabled on GHES as well, but is off by default
-  // we can probably load it from an api call and see if it is enabled, or try .. catch 
+  // we can probably load it from an api call and see if it is enabled, or try .. catch
   if (!isEnterpriseServer) {
     // search API has a strict rate limit, prevent errors
     var ratelimit = await client.rest.rateLimit.get()
@@ -283,24 +245,32 @@ async function getActionFile(
         // back off a bit more to be more certain
         waitTime = waitTime + 1000
       }
-      core.info(`Waiting ${waitTime/1000} seconds to prevent the search API rate limit`)
-      await new Promise(r => setTimeout(r, waitTime));
+      core.info(
+        `Waiting ${
+          waitTime / 1000
+        } seconds to prevent the search API rate limit`
+      )
+      await new Promise(r => setTimeout(r, waitTime))
     }
   }
   if (!result.name) {
     core.info(`No actions found at root level in repository: ${repo.name}`)
     core.info(`Checking subdirectories in repository: ${repo.name}`)
-    var searchQuery = '+filename:action+language:YAML+repo:' + repo.owner + '/' + repo.name;
+    var searchQuery =
+      '+filename:action+language:YAML+repo:' + repo.owner + '/' + repo.name
 
-    var searchResultforRepository = await client.request("GET /search/code", {
+    var searchResultforRepository = await client.request('GET /search/code', {
       q: searchQuery
-    });
+    })
 
     if (Object.keys(searchResultforRepository.data.items).length > 0) {
-
-      for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
-        var element = searchResultforRepository.data.items[index].path;
-        const { data: yaml } = await client.rest.repos.getContent({
+      for (
+        let index = 0;
+        index < Object.keys(searchResultforRepository.data.items).length;
+        index++
+      ) {
+        var element = searchResultforRepository.data.items[index].path
+        const {data: yaml} = await client.rest.repos.getContent({
           owner: repo.owner,
           repo: repo.name,
           path: element
@@ -331,15 +301,17 @@ async function enrichActionFiles(
   for (const action of actionFiles) {
     // download the file in it and parse it
     if (action.downloadUrl !== null) {
-      const { data: content } = await client.request({ url: action.downloadUrl })
+      const {data: content} = await client.request({url: action.downloadUrl})
 
       // try to parse the yaml
       try {
         const parsed = YAML.parse(content)
-        const defaultValue = "Undefined" // Default value when json field is not defined
+        const defaultValue = 'Undefined' // Default value when json field is not defined
         action.name = parsed.name ? parsed.name : defaultValue
         action.author = parsed.author ? parsed.author : defaultValue
-        action.description = parsed.description ? parsed.description : defaultValue
+        action.description = parsed.description
+          ? parsed.description
+          : defaultValue
       } catch (error) {
         // this happens in https://github.com/gaurav-nelson/github-action-markdown-link-check/blob/9de9db77de3b29b650d2e2e99f0ee290f435214b/action.yml#L9
         // because of invalid yaml
@@ -357,4 +329,3 @@ async function enrichActionFiles(
 }
 
 run()
-
