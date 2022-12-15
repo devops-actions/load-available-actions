@@ -176,55 +176,41 @@ async function getActionFile(
     owner: repo.owner,
     repo: repo.name
   })
-  let parentinfo = ''
+  let parentinfo: string | undefined
   if (repoinfo.parent?.full_name) {
     parentinfo = repoinfo.parent.full_name
   }
 
+  let actionData: any
+
   // search for action.yml file in the root of the repo
   try {
-    const {data: yml} = await client.rest.repos.getContent({
+    actionData = await client.rest.repos.getContent({
       owner: repo.owner,
       repo: repo.name,
       path: 'action.yml'
     })
 
-    // todo: warning: duplicated code here
-    if ('name' in yml && 'download_url' in yml) {
-      result.name = yml.name
-      result.owner = repo.owner
-      result.repo = repo.name
-      result.forkedfrom = parentinfo
-
-      if (yml.download_url !== null) {
-        result.downloadUrl = yml.download_url
-      }
-    }
-  } catch (error) {
-    core.debug(`No action.yml file found in repository: ${repo.name}`)
-  }
-
-  if (!result.name) {
-    try {
+    if (!result.name) {
       // search for the action.yaml, that is also allowed
-      const {data: yaml} = await client.rest.repos.getContent({
+      actionData = await client.rest.repos.getContent({
         owner: repo.owner,
         repo: repo.name,
         path: 'action.yaml'
       })
-
-      if ('name' in yaml && 'download_url' in yaml) {
-        result.name = yaml.name
-        result.owner = repo.owner
-        result.repo = repo.name
-        result.forkedfrom = parentinfo
-        if (yaml.download_url !== null) {
-          result.downloadUrl = yaml.download_url
-        }
-      }
-    } catch (error) {
-      core.debug(`No action.yaml file found in repository: ${repo.name}`)
     }
+
+    if ('name' in actionData && 'download_url' in actionData) {
+      result.name = actionData.name
+      result.owner = repo.owner
+      result.repo = repo.name
+      result.forkedfrom = parentinfo
+      if (actionData.download_url !== null) {
+        result.downloadUrl = actionData.download_url
+      }
+    }
+  } catch (error) {
+    core.debug(`No action.yml file found in repository: ${repo.name}`)
   }
 
   // todo: ratelimiting can be enabled on GHES as well, but is off by default
