@@ -38,7 +38,7 @@ jobs:
           npm run all
 
       - name: Commit changes if any
-        run: 
+        run: |
           if [ -z "$(git status --porcelain)" ]; then 
             echo "Found changes to commit"
             git config --global user.email "github-actions[bot]@users.noreply.github.com"
