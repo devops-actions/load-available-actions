@@ -9,48 +9,34 @@ export async function findAllRepos(
 ): Promise<Repository[]> {
   // todo: switch between user and org
 
-  // convert to an array of objects we can return
   const result: Repository[] = []
 
+  let repos: any
   if (username) {
-    const repos = await client.paginate(client.rest.repos.listForUser, {
+    repos = await client.paginate(client.rest.repos.listForUser, {
       username
     })
-
-    core.info(`Found [${repos.length}] repositories`)
-
-    // eslint disabled: no iterator available
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let num = 0; num < repos.length; num++) {
-      const repo = repos[num]
-      const repository = new Repository(
-        repo.owner?.login || '',
-        repo.name,
-        repo.visibility ?? ''
-      ) //todo: handle for orgs
-      result.push(repository)
-    }
   }
 
   if (organization) {
-    const repos = await client.paginate(client.rest.repos.listForOrg, {
+    repos = await client.paginate(client.rest.repos.listForOrg, {
       org: organization
     })
 
     console.log(`Found [${organization}] as orgname parameter`)
-    core.info(`Found [${repos.length}] repositories`)
+  }
+  core.info(`Found [${repos.length}] repositories`)
 
-    // eslint disabled: no iterator available
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
-    for (let num = 0; num < repos.length; num++) {
-      const repo = repos[num]
-      const repository = new Repository(
-        repo.owner?.login || '',
-        repo.name,
-        repo.visibility ?? ''
-      ) //todo: handle for orgs
-      result.push(repository)
-    }
+  // eslint disabled: no iterator available
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
+  for (let num = 0; num < repos.length; num++) {
+    const repo = repos[num]
+    const repository = new Repository(
+      repo.owner?.login || '',
+      repo.name,
+      repo.visibility ?? ''
+    ) //todo: handle for orgs
+    result.push(repository)
   }
 
   return result
