@@ -76,7 +76,7 @@ async function run(): Promise<void> {
 
     const json = JSON.stringify(output)
     core.setOutput('actions', json)
-  } catch (error) {
+  } catch (error: any) {
     core.setFailed(`Error running action: : ${error.message}`)
   }
 }
@@ -102,7 +102,20 @@ export class Content {
   forkedfrom: string | undefined
   readme: string | undefined
 }
-
+async function optional_actions(
+  content: Content,
+  client: Octokit,
+  repo: Repository
+) {
+  content = removeTokenSetting ? removeToken(content) : content
+  if (fetchReadmesSetting) {
+    const readmeLink = await getReadmeContent(client, repo)
+    if (readmeLink) {
+      content.readme = readmeLink
+    }
+  }
+  return content
+}
 async function findAllActions(
   client: Octokit,
   repos: Repository[],
@@ -114,16 +127,9 @@ async function findAllActions(
   for (const repo of repos) {
     core.debug(`Searching repository for actions: ${repo.name}`)
     let content = await getActionFile(client, repo, isEnterpriseServer)
-    if (removeTokenSetting && content) {
-      content = removeToken(content)
-    }
-    if (fetchReadmesSetting && content) {
-      const readmeLink = await getReadmeContent(client, repo)
-      if (readmeLink) {
-        content.readme = readmeLink
-      }
-    }
+
     if (content && content.name) {
+      content = await optional_actions(content, client, repo)
       core.info(
         `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
       )
@@ -146,7 +152,7 @@ async function findAllActions(
             )
             continue
           }
-        } catch (error) {
+        } catch (error: any) {
           core.info(
             `Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope. Error: ${error.message}`
           )
@@ -208,7 +214,7 @@ async function getActionFile(
       await new Promise(r => setTimeout(r, waitTime))
     }
   }
-  if (!result.name) {
+  if (!result) {
     core.info(`No actions found at root level in repository: ${repo.name}`)
     core.info(`Checking subdirectories in repository: ${repo.name}`)
     result = searchForActionYaml(repo, client)

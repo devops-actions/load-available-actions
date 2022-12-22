@@ -2,7 +2,7 @@ import {Content, Repository} from './main'
 import {Octokit} from 'octokit'
 import * as core from '@actions/core'
 
-export const removeToken = (content: Content | null) => {
+export const removeToken = (content: Content) => {
   if (content && content.downloadUrl) {
     content.downloadUrl = content.downloadUrl.replace(/\?(.*)/, '')
   }
