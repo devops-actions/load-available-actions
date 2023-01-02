@@ -39,7 +39,7 @@ jobs:
           user: rajbos
         id: load-actions
 
-      - uses: devops-actions/json-to-file@5984382751b07b0575aff49fe6717a021780ad07 # v1.0.0
+      - uses: devops-actions/json-to-file@f4dfed5916186ad86a993f72d3d8182e543598ea # v1.0.1
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions-user.json
@@ -69,7 +69,7 @@ jobs:
           organization: rajbos-actions
         id: load-actions
 
-      - uses: devops-actions/json-to-file@5984382751b07b0575aff49fe6717a021780ad07 # v1.0.0
+      - uses: devops-actions/json-to-file@f4dfed5916186ad86a993f72d3d8182e543598ea # v1.0.1
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions-organization.json
