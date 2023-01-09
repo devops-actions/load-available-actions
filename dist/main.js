@@ -25861,8 +25861,7 @@ var require_main = __commonJS({
 // src/main.ts
 var main_exports = {};
 __export(main_exports, {
-  Content: () => Content,
-  Repository: () => Repository
+  Content: () => Content
 });
 module.exports = __toCommonJS(main_exports);
 var core = __toESM(require_core());
@@ -25928,13 +25927,6 @@ function run() {
     }
   });
 }
-var Repository = class {
-  constructor(owner, name, visibility) {
-    this.name = name;
-    this.owner = owner;
-    this.visibility = visibility;
-  }
-};
 var Content = class {
 };
 function enrichActionFiles(client, actionFiles) {
@@ -25983,6 +25975,21 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
     });
     if (searchResult) {
       for (let index = 0; index < searchResult.length; index++) {
+        if (!isEnterpriseServer) {
+          var ratelimit = yield client.rest.rateLimit.get();
+          if (ratelimit.data.resources.search.remaining <= 2) {
+            var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+            core.debug(`Search API reset time: ${resetTime}`);
+            var waitTime = resetTime.getTime() - new Date().getTime();
+            if (waitTime < 0) {
+              waitTime = 2500;
+            } else {
+              waitTime = waitTime + 1e3;
+            }
+            core.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
+            yield new Promise((r) => setTimeout(r, waitTime));
+          }
+        }
         const result = new Content();
         var fileName = searchResult[index].name;
         var element = searchResult[index].path;
@@ -26021,8 +26028,7 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
 run();
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Content,
-  Repository
+  Content
 });
 /*! Bundled license information:
 

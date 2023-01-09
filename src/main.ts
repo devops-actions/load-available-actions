@@ -1,9 +1,9 @@
 import * as core from '@actions/core'
-import {Octokit} from 'octokit'
+import { Octokit } from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
-import {removeToken, getReadmeContent} from './optionalActions'
+import { removeToken, getReadmeContent } from './optionalActions'
 // always import the config
 dotenv.config()
 
@@ -52,7 +52,7 @@ async function run(): Promise<void> {
       return
     }
 
-    let actionFiles = await getAllActions(octokit,  user, organization, isEnterpriseServer)
+    let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
     // load the information in the files
     actionFiles = await enrichActionFiles(octokit, actionFiles)
 
@@ -73,17 +73,6 @@ async function run(): Promise<void> {
     core.setOutput('actions', json)
   } catch (error) {
     core.setFailed(`Error running action: : ${error.message}`)
-  }
-}
-
-export class Repository {
-  name: string
-  owner: string
-  visibility: string
-  constructor(owner: string, name: string, visibility: string) {
-    this.name = name
-    this.owner = owner
-    this.visibility = visibility
   }
 }
 
@@ -140,7 +129,7 @@ async function getAllActions(
 ): Promise<Content[]> {
   const actions: Content[] = []
 
-  
+
   var searchQuery = '+filename:action+language:YAML';
   if (username) {
     core.info(`Search for action files of the user [ ${username} ]`)
@@ -158,17 +147,41 @@ async function getAllActions(
     q: searchQuery
   })
 
-  if(searchResult){
-    for (let index = 0; index <searchResult.length; index++) {
+  if (searchResult) {
+    for (let index = 0; index < searchResult.length; index++) {
+
+      // todo: ratelimiting can be enabled on GHES as well, but is off by default
+      // we can probably load it from an api call and see if it is enabled, or try .. catch 
+      if (!isEnterpriseServer) {
+        // search API has a strict rate limit, prevent errors
+        var ratelimit = await client.rest.rateLimit.get()
+        if (ratelimit.data.resources.search.remaining <= 2) {
+          // show the reset time
+          var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+          core.debug(`Search API reset time: ${resetTime}`)
+          // wait until the reset time
+          var waitTime = resetTime.getTime() - new Date().getTime()
+          if (waitTime < 0) {
+            // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
+            waitTime = 2500
+          } else {
+            // back off a bit more to be more certain
+            waitTime = waitTime + 1000
+          }
+          core.info(`Waiting ${waitTime / 1000} seconds to prevent the search API rate limit`)
+          await new Promise(r => setTimeout(r, waitTime));
+        }
+      }
+
       const result = new Content()
-      var fileName = searchResult[index].name; 
+      var fileName = searchResult[index].name;
       var element = searchResult[index].path;
       var repoName = searchResult[index].repository.name;
       var repoOwner = searchResult[index].repository.owner.login;
 
       // Push file to action list if filename matches action.yaml or action.yml
       // Search result will contains list of files matching action files ex: reposyncer_action.yml
-      if(fileName == 'action.yaml'|| fileName == 'action.yml'){
+      if (fileName == 'action.yaml' || fileName == 'action.yml') {
         core.info(`Found action in ${repoName}/${element}`)
         // Get Forked from Info for the repo
         const { data: repoinfo } = await client.rest.repos.get({
