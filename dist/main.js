@@ -726,7 +726,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug3("making CONNECT request");
+      debug2("making CONNECT request");
       var connectReq = self2.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -746,7 +746,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug3(
+          debug2(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -758,7 +758,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug3("got illegal response body from proxy");
+          debug2("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -766,13 +766,13 @@ var require_tunnel = __commonJS({
           self2.removeSocket(placeholder);
           return;
         }
-        debug3("tunneling connection has established");
+        debug2("tunneling connection has established");
         self2.sockets[self2.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug3(
+        debug2(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -834,9 +834,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug3;
+    var debug2;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug3 = function() {
+      debug2 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -846,10 +846,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug3 = function() {
+      debug2 = function() {
       };
     }
-    exports.debug = debug3;
+    exports.debug = debug2;
   }
 });
 
@@ -1971,10 +1971,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports.isDebug = isDebug;
-    function debug3(message) {
+    function debug2(message) {
       command_1.issueCommand("debug", {}, message);
     }
-    exports.debug = debug3;
+    exports.debug = debug2;
     function error(message, properties = {}) {
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -10392,15 +10392,15 @@ var require_timespan = __commonJS({
 var require_semver = __commonJS({
   "node_modules/jsonwebtoken/node_modules/semver/semver.js"(exports, module2) {
     exports = module2.exports = SemVer;
-    var debug3;
+    var debug2;
     if (typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG)) {
-      debug3 = function() {
+      debug2 = function() {
         var args = Array.prototype.slice.call(arguments, 0);
         args.unshift("SEMVER");
         console.log.apply(console, args);
       };
     } else {
-      debug3 = function() {
+      debug2 = function() {
       };
     }
     exports.SEMVER_SPEC_VERSION = "2.0.0";
@@ -10489,7 +10489,7 @@ var require_semver = __commonJS({
     var STAR = R++;
     src[STAR] = "(<|>)?=?\\s*\\*";
     for (i = 0; i < R; i++) {
-      debug3(i, src[i]);
+      debug2(i, src[i]);
       if (!re[i]) {
         re[i] = new RegExp(src[i]);
       }
@@ -10555,7 +10555,7 @@ var require_semver = __commonJS({
       if (!(this instanceof SemVer)) {
         return new SemVer(version2, options);
       }
-      debug3("SemVer", version2, options);
+      debug2("SemVer", version2, options);
       this.options = options;
       this.loose = !!options.loose;
       var m = version2.trim().match(options.loose ? re[LOOSE] : re[FULL]);
@@ -10602,7 +10602,7 @@ var require_semver = __commonJS({
       return this.version;
     };
     SemVer.prototype.compare = function(other) {
-      debug3("SemVer.compare", this.version, this.options, other);
+      debug2("SemVer.compare", this.version, this.options, other);
       if (!(other instanceof SemVer)) {
         other = new SemVer(other, this.options);
       }
@@ -10629,7 +10629,7 @@ var require_semver = __commonJS({
       do {
         var a = this.prerelease[i2];
         var b = other.prerelease[i2];
-        debug3("prerelease compare", i2, a, b);
+        debug2("prerelease compare", i2, a, b);
         if (a === void 0 && b === void 0) {
           return 0;
         } else if (b === void 0) {
@@ -10882,7 +10882,7 @@ var require_semver = __commonJS({
       if (!(this instanceof Comparator)) {
         return new Comparator(comp, options);
       }
-      debug3("comparator", comp, options);
+      debug2("comparator", comp, options);
       this.options = options;
       this.loose = !!options.loose;
       this.parse(comp);
@@ -10891,7 +10891,7 @@ var require_semver = __commonJS({
       } else {
         this.value = this.operator + this.semver.version;
       }
-      debug3("comp", this);
+      debug2("comp", this);
     }
     var ANY = {};
     Comparator.prototype.parse = function(comp) {
@@ -10914,7 +10914,7 @@ var require_semver = __commonJS({
       return this.value;
     };
     Comparator.prototype.test = function(version2) {
-      debug3("Comparator.test", version2, this.options.loose);
+      debug2("Comparator.test", version2, this.options.loose);
       if (this.semver === ANY) {
         return true;
       }
@@ -10998,9 +10998,9 @@ var require_semver = __commonJS({
       range = range.trim();
       var hr = loose ? re[HYPHENRANGELOOSE] : re[HYPHENRANGE];
       range = range.replace(hr, hyphenReplace);
-      debug3("hyphen replace", range);
+      debug2("hyphen replace", range);
       range = range.replace(re[COMPARATORTRIM], comparatorTrimReplace);
-      debug3("comparator trim", range, re[COMPARATORTRIM]);
+      debug2("comparator trim", range, re[COMPARATORTRIM]);
       range = range.replace(re[TILDETRIM], tildeTrimReplace);
       range = range.replace(re[CARETTRIM], caretTrimReplace);
       range = range.split(/\s+/).join(" ");
@@ -11041,15 +11041,15 @@ var require_semver = __commonJS({
       });
     }
     function parseComparator(comp, options) {
-      debug3("comp", comp, options);
+      debug2("comp", comp, options);
       comp = replaceCarets(comp, options);
-      debug3("caret", comp);
+      debug2("caret", comp);
       comp = replaceTildes(comp, options);
-      debug3("tildes", comp);
+      debug2("tildes", comp);
       comp = replaceXRanges(comp, options);
-      debug3("xrange", comp);
+      debug2("xrange", comp);
       comp = replaceStars(comp, options);
-      debug3("stars", comp);
+      debug2("stars", comp);
       return comp;
     }
     function isX(id) {
@@ -11063,7 +11063,7 @@ var require_semver = __commonJS({
     function replaceTilde(comp, options) {
       var r = options.loose ? re[TILDELOOSE] : re[TILDE];
       return comp.replace(r, function(_, M, m, p, pr) {
-        debug3("tilde", comp, _, M, m, p, pr);
+        debug2("tilde", comp, _, M, m, p, pr);
         var ret;
         if (isX(M)) {
           ret = "";
@@ -11072,12 +11072,12 @@ var require_semver = __commonJS({
         } else if (isX(p)) {
           ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
         } else if (pr) {
-          debug3("replaceTilde pr", pr);
+          debug2("replaceTilde pr", pr);
           ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + M + "." + (+m + 1) + ".0";
         } else {
           ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
         }
-        debug3("tilde return", ret);
+        debug2("tilde return", ret);
         return ret;
       });
     }
@@ -11087,10 +11087,10 @@ var require_semver = __commonJS({
       }).join(" ");
     }
     function replaceCaret(comp, options) {
-      debug3("caret", comp, options);
+      debug2("caret", comp, options);
       var r = options.loose ? re[CARETLOOSE] : re[CARET];
       return comp.replace(r, function(_, M, m, p, pr) {
-        debug3("caret", comp, _, M, m, p, pr);
+        debug2("caret", comp, _, M, m, p, pr);
         var ret;
         if (isX(M)) {
           ret = "";
@@ -11103,7 +11103,7 @@ var require_semver = __commonJS({
             ret = ">=" + M + "." + m + ".0 <" + (+M + 1) + ".0.0";
           }
         } else if (pr) {
-          debug3("replaceCaret pr", pr);
+          debug2("replaceCaret pr", pr);
           if (M === "0") {
             if (m === "0") {
               ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + M + "." + m + "." + (+p + 1);
@@ -11114,7 +11114,7 @@ var require_semver = __commonJS({
             ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + (+M + 1) + ".0.0";
           }
         } else {
-          debug3("no pr");
+          debug2("no pr");
           if (M === "0") {
             if (m === "0") {
               ret = ">=" + M + "." + m + "." + p + " <" + M + "." + m + "." + (+p + 1);
@@ -11125,12 +11125,12 @@ var require_semver = __commonJS({
             ret = ">=" + M + "." + m + "." + p + " <" + (+M + 1) + ".0.0";
           }
         }
-        debug3("caret return", ret);
+        debug2("caret return", ret);
         return ret;
       });
     }
     function replaceXRanges(comp, options) {
-      debug3("replaceXRanges", comp, options);
+      debug2("replaceXRanges", comp, options);
       return comp.split(/\s+/).map(function(comp2) {
         return replaceXRange(comp2, options);
       }).join(" ");
@@ -11139,7 +11139,7 @@ var require_semver = __commonJS({
       comp = comp.trim();
       var r = options.loose ? re[XRANGELOOSE] : re[XRANGE];
       return comp.replace(r, function(ret, gtlt, M, m, p, pr) {
-        debug3("xRange", comp, ret, gtlt, M, m, p, pr);
+        debug2("xRange", comp, ret, gtlt, M, m, p, pr);
         var xM = isX(M);
         var xm = xM || isX(m);
         var xp = xm || isX(p);
@@ -11182,12 +11182,12 @@ var require_semver = __commonJS({
         } else if (xp) {
           ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
         }
-        debug3("xRange return", ret);
+        debug2("xRange return", ret);
         return ret;
       });
     }
     function replaceStars(comp, options) {
-      debug3("replaceStars", comp, options);
+      debug2("replaceStars", comp, options);
       return comp.trim().replace(re[STAR], "");
     }
     function hyphenReplace($0, from, fM, fm, fp, fpr, fb, to, tM, tm, tp, tpr, tb) {
@@ -11235,7 +11235,7 @@ var require_semver = __commonJS({
       }
       if (version2.prerelease.length && !options.includePrerelease) {
         for (i2 = 0; i2 < set.length; i2++) {
-          debug3(set[i2].semver);
+          debug2(set[i2].semver);
           if (set[i2].semver === ANY) {
             continue;
           }
@@ -13398,7 +13398,7 @@ var require_dist_node21 = __commonJS({
       return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
     }
     var OAuthAppAuth = require_dist_node17();
-    var core3 = require_dist_node8();
+    var core2 = require_dist_node8();
     var universalUserAgent = require_dist_node();
     var authOauthUser = require_dist_node16();
     var OAuthMethods = require_dist_node14();
@@ -13417,7 +13417,7 @@ var require_dist_node21 = __commonJS({
       }
       state.eventHandlers[eventName].push(eventHandler);
     }
-    var OAuthAppOctokit = core3.Octokit.defaults({
+    var OAuthAppOctokit = core2.Octokit.defaults({
       userAgent: `octokit-oauth-app.js/${VERSION} ${universalUserAgent.getUserAgent()}`
     });
     async function emitEvent(state, context) {
@@ -14653,7 +14653,7 @@ var require_dist_node24 = __commonJS({
   "node_modules/@octokit/app/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core3 = require_dist_node8();
+    var core2 = require_dist_node8();
     var authApp = require_dist_node19();
     var oauthApp = require_dist_node21();
     var authUnauthenticated = require_dist_node20();
@@ -14870,7 +14870,7 @@ var require_dist_node24 = __commonJS({
         return AppWithDefaults;
       }
       constructor(options) {
-        const Octokit2 = options.Octokit || core3.Octokit;
+        const Octokit2 = options.Octokit || core2.Octokit;
         const authOptions = Object.assign({
           appId: options.appId,
           privateKey: options.privateKey
@@ -14929,7 +14929,7 @@ var require_dist_node25 = __commonJS({
   "node_modules/octokit/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core3 = require_dist_node8();
+    var core2 = require_dist_node8();
     var pluginPaginateRest = require_dist_node9();
     var pluginRestEndpointMethods = require_dist_node10();
     var pluginRetry = require_dist_node11();
@@ -14937,7 +14937,7 @@ var require_dist_node25 = __commonJS({
     var app = require_dist_node24();
     var oauthApp = require_dist_node21();
     var VERSION = "2.0.10";
-    var Octokit2 = core3.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
+    var Octokit2 = core2.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
       userAgent: `octokit.js/${VERSION}`,
       throttle: {
         onRateLimit,
@@ -16399,7 +16399,7 @@ ${ctx.indent}`;
 var require_log = __commonJS({
   "node_modules/yaml/dist/log.js"(exports) {
     "use strict";
-    function debug3(logLevel, ...messages) {
+    function debug2(logLevel, ...messages) {
       if (logLevel === "debug")
         console.log(...messages);
     }
@@ -16411,7 +16411,7 @@ var require_log = __commonJS({
           console.warn(warning);
       }
     }
-    exports.debug = debug3;
+    exports.debug = debug2;
     exports.warn = warn;
   }
 });
@@ -25812,7 +25812,7 @@ var require_main = __commonJS({
     function config(options) {
       let dotenvPath = path.resolve(process.cwd(), ".env");
       let encoding = "utf8";
-      const debug3 = Boolean(options && options.debug);
+      const debug2 = Boolean(options && options.debug);
       const override = Boolean(options && options.override);
       if (options) {
         if (options.path != null) {
@@ -25831,7 +25831,7 @@ var require_main = __commonJS({
             if (override === true) {
               process.env[key] = parsed[key];
             }
-            if (debug3) {
+            if (debug2) {
               if (override === true) {
                 _log(`"${key}" is already defined in \`process.env\` and WAS overwritten`);
               } else {
@@ -25842,7 +25842,7 @@ var require_main = __commonJS({
         });
         return { parsed };
       } catch (e) {
-        if (debug3) {
+        if (debug2) {
           _log(`Failed to load ${dotenvPath} ${e.message}`);
         }
         return { error: e };
@@ -25865,7 +25865,7 @@ __export(main_exports, {
   Repository: () => Repository
 });
 module.exports = __toCommonJS(main_exports);
-var core2 = __toESM(require_core());
+var core = __toESM(require_core());
 var import_octokit = __toESM(require_dist_node25());
 var import_yaml = __toESM(require_dist());
 
@@ -25877,38 +25877,13 @@ function GetDateFormatted(date) {
 
 // src/main.ts
 var import_dotenv = __toESM(require_main());
-
-// src/optionalActions.ts
-var core = __toESM(require_core());
-var removeToken = (content) => {
-  if (content && content.downloadUrl) {
-    content.downloadUrl = content.downloadUrl.replace(/\?(.*)/, "");
-  }
-  return content;
-};
-function getReadmeContent(client, repo) {
-  return __async(this, null, function* () {
-    try {
-      const { data: readme } = yield client.rest.repos.getContent({
-        owner: repo.owner,
-        repo: repo.name,
-        path: "README.md"
-      });
-      return readme.content;
-    } catch (error) {
-      core.debug(`No readme file found in repository: ${repo.name}`);
-    }
-  });
-}
-
-// src/main.ts
 import_dotenv.default.config();
-var getInputOrEnv = (input) => core2.getInput(input) || process.env.input || "";
+var getInputOrEnv = (input) => core.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 function run() {
   return __async(this, null, function* () {
-    core2.info("Starting");
+    core.info("Starting");
     try {
       const PAT = getInputOrEnv("PAT");
       const user = getInputOrEnv("user");
@@ -25916,13 +25891,13 @@ function run() {
       const baseUrl = process.env.GITHUB_API_URL || "https://api.github.com";
       const isEnterpriseServer = baseUrl !== "https://api.github.com";
       if (!PAT) {
-        core2.setFailed(
+        core.setFailed(
           "Parameter 'PAT' is required to load all actions from the organization or user account"
         );
         return;
       }
       if (user === "" && organization === "") {
-        core2.setFailed(
+        core.setFailed(
           "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
         );
         return;
@@ -25933,14 +25908,12 @@ function run() {
       });
       try {
       } catch (error) {
-        core2.setFailed(
+        core.setFailed(
           `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
         );
         return;
       }
-      const repos = yield findAllRepos(octokit, user, organization);
-      console.log(`Found [${repos.length}] repositories`);
-      let actionFiles = yield findAllActions(octokit, repos, isEnterpriseServer);
+      let actionFiles = yield getAllActions(octokit, user, organization, isEnterpriseServer);
       actionFiles = yield enrichActionFiles(octokit, actionFiles);
       const output = {
         lastUpdated: GetDateFormatted(new Date()),
@@ -25949,40 +25922,10 @@ function run() {
         user
       };
       const json = JSON.stringify(output);
-      core2.setOutput("actions", json);
+      core.setOutput("actions", json);
     } catch (error) {
-      core2.setFailed(`Error running action: : ${error.message}`);
+      core.setFailed(`Error running action: : ${error.message}`);
     }
-  });
-}
-function findAllRepos(client, username, organization) {
-  return __async(this, null, function* () {
-    var _a, _b, _c, _d;
-    const result = [];
-    if (username) {
-      const repos = yield client.paginate(client.rest.repos.listForUser, {
-        username
-      });
-      core2.info(`Found [${repos.length}] repositories`);
-      for (let num = 0; num < repos.length; num++) {
-        const repo = repos[num];
-        const repository = new Repository(((_a = repo.owner) == null ? void 0 : _a.login) || "", repo.name, (_b = repo.visibility) != null ? _b : "");
-        result.push(repository);
-      }
-    }
-    if (organization !== "") {
-      const repos = yield client.paginate(client.rest.repos.listForOrg, {
-        org: organization
-      });
-      console.log(`Found [${organization}] as orgname parameter`);
-      core2.info(`Found [${repos.length}] repositories`);
-      for (let num = 0; num < repos.length; num++) {
-        const repo = repos[num];
-        const repository = new Repository(((_c = repo.owner) == null ? void 0 : _c.login) || "", repo.name, (_d = repo.visibility) != null ? _d : "");
-        result.push(repository);
-      }
-    }
-    return result;
   });
 }
 var Repository = class {
@@ -25994,151 +25937,10 @@ var Repository = class {
 };
 var Content = class {
 };
-function findAllActions(client, repos, isEnterpriseServer) {
-  return __async(this, null, function* () {
-    const result = [];
-    for (const repo of repos) {
-      core2.debug(`Searching repository for actions: ${repo.name}`);
-      let content = yield getActionFile(client, repo, isEnterpriseServer);
-      if (removeTokenSetting && content) {
-        content = removeToken(content);
-      }
-      if (fetchReadmesSetting && content) {
-        const readmeLink = yield getReadmeContent(client, repo);
-        if (readmeLink) {
-          content.readme = readmeLink;
-        }
-      }
-      if (content && content.name) {
-        core2.info(
-          `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
-        );
-        if (repo.visibility == "internal") {
-          core2.debug(`Get access settings for repository [${repo.owner}/${repo.name}]..............`);
-          try {
-            const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
-              owner: repo.owner,
-              repo: repo.name
-            });
-            if (accessSettings.access_level == "none") {
-              core2.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`);
-              continue;
-            }
-          } catch (error) {
-            core2.info(`Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope. Error: ${error.message}`);
-            continue;
-          }
-        } else if (repo.visibility == "private") {
-          core2.debug(`[${repo.owner}/${repo.name}] is private repo, skipping.`);
-          continue;
-        }
-        result.push(content);
-      }
-    }
-    console.log(`Found [${result.length}] actions in [${repos.length}] repos`);
-    return result;
-  });
-}
-function getActionFile(client, repo, isEnterpriseServer) {
-  return __async(this, null, function* () {
-    var _a;
-    const result = new Content();
-    const { data: repoinfo } = yield client.rest.repos.get({
-      owner: repo.owner,
-      repo: repo.name
-    });
-    let parentinfo = "";
-    if ((_a = repoinfo.parent) == null ? void 0 : _a.full_name) {
-      parentinfo = repoinfo.parent.full_name;
-    }
-    try {
-      const { data: yml } = yield client.rest.repos.getContent({
-        owner: repo.owner,
-        repo: repo.name,
-        path: "action.yml"
-      });
-      if ("name" in yml && "download_url" in yml) {
-        result.name = yml.name;
-        result.owner = repo.owner;
-        result.repo = repo.name;
-        result.forkedfrom = parentinfo;
-        if (yml.download_url !== null) {
-          result.downloadUrl = yml.download_url;
-        }
-      }
-    } catch (error) {
-      core2.debug(`No action.yml file found in repository: ${repo.name}`);
-    }
-    if (result.name === "") {
-      try {
-        const { data: yaml } = yield client.rest.repos.getContent({
-          owner: repo.owner,
-          repo: repo.name,
-          path: "action.yaml"
-        });
-        if ("name" in yaml && "download_url" in yaml) {
-          result.name = yaml.name;
-          result.owner = repo.owner;
-          result.repo = repo.name;
-          result.forkedfrom = parentinfo;
-          if (yaml.download_url !== null) {
-            result.downloadUrl = yaml.download_url;
-          }
-        }
-      } catch (error) {
-        core2.debug(`No action.yaml file found in repository: ${repo.name}`);
-      }
-    }
-    if (!isEnterpriseServer) {
-      var ratelimit = yield client.rest.rateLimit.get();
-      if (ratelimit.data.resources.search.remaining <= 2) {
-        var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-        core2.debug(`Search API reset time: ${resetTime}`);
-        var waitTime = resetTime.getTime() - new Date().getTime();
-        if (waitTime < 0) {
-          waitTime = 2500;
-        } else {
-          waitTime = waitTime + 1e3;
-        }
-        core2.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
-        yield new Promise((r) => setTimeout(r, waitTime));
-      }
-    }
-    if (!result.name) {
-      core2.info(`No actions found at root level in repository: ${repo.name}`);
-      core2.info(`Checking subdirectories in repository: ${repo.name}`);
-      var searchQuery = "+filename:action+language:YAML+repo:" + repo.owner + "/" + repo.name;
-      var searchResultforRepository = yield client.request("GET /search/code", {
-        q: searchQuery
-      });
-      if (Object.keys(searchResultforRepository.data.items).length > 0) {
-        for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
-          var element = searchResultforRepository.data.items[index].path;
-          const { data: yaml } = yield client.rest.repos.getContent({
-            owner: repo.owner,
-            repo: repo.name,
-            path: element
-          });
-          if ("name" in yaml && "download_url" in yaml) {
-            result.name = yaml.name;
-            result.repo = repo.name;
-            result.forkedfrom = parentinfo;
-            if (yaml.download_url !== null) {
-              result.downloadUrl = yaml.download_url;
-            }
-          }
-        }
-        return result;
-      }
-      core2.info(`No actions found in repository: ${repo.name}`);
-      return null;
-    }
-    return result;
-  });
-}
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
+      core.debug(`Enrich : ${action.downloadUrl}`);
       if (action.downloadUrl !== null) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         try {
@@ -26147,6 +25949,7 @@ function enrichActionFiles(client, actionFiles) {
           action.name = parsed.name ? parsed.name : defaultValue;
           action.author = parsed.author ? parsed.author : defaultValue;
           action.description = parsed.description ? parsed.description : defaultValue;
+          action.downloadUrl = action.downloadUrl.split("?")[0];
         } catch (error) {
           console.log(
             `Error parsing action file in repo [${action.repo}] with error:`
@@ -26161,9 +25964,84 @@ function enrichActionFiles(client, actionFiles) {
     return actionFiles;
   });
 }
+function getAllActions(client, username, organization, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    var _a;
+    const actions = [];
+    var searchQuery = "+filename:action+language:YAML";
+    if (username) {
+      core.info(`Search for action files of the user [ ${username} ]`);
+      searchQuery = searchQuery.concat("+user:", username);
+    }
+    if (organization !== "") {
+      core.info(`Search for action files under the organization [ ${organization} ]`);
+      searchQuery = searchQuery.concat("+org:", organization);
+    }
+    core.debug(`searchQuery : ${searchQuery}`);
+    const searchResult = yield client.paginate(client.rest.search.code, {
+      q: searchQuery
+    });
+    if (searchResult) {
+      for (let index = 0; index < searchResult.length; index++) {
+        const result = new Content();
+        var fileName = searchResult[index].name;
+        var element = searchResult[index].path;
+        var repoName = searchResult[index].repository.name;
+        var repoOwner = searchResult[index].repository.owner.login;
+        if (fileName == "action.yaml" || fileName == "action.yml") {
+          core.info(`Found action in ${repoName}/${element}`);
+          const { data: repoinfo } = yield client.rest.repos.get({
+            owner: repoOwner,
+            repo: repoName
+          });
+          let parentinfo = "";
+          if ((_a = repoinfo.parent) == null ? void 0 : _a.full_name) {
+            parentinfo = repoinfo.parent.full_name;
+          }
+          const { data: yaml } = yield client.rest.repos.getContent({
+            owner: repoOwner,
+            repo: repoName,
+            path: element
+          });
+          if ("name" in yaml && "download_url" in yaml) {
+            result.name = yaml.name;
+            result.repo = repoName;
+            result.forkedfrom = parentinfo;
+            if (yaml.download_url !== null) {
+              result.downloadUrl = yaml.download_url;
+            }
+          }
+          actions.push(result);
+        }
+      }
+    }
+    return actions;
+  });
+}
 run();
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   Content,
   Repository
 });
+/*! Bundled license information:
+
+is-plain-object/dist/is-plain-object.js:
+  (*!
+   * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+   *
+   * Copyright (c) 2014-2017, Jon Schlinkert.
+   * Released under the MIT License.
+   *)
+
+fromentries/index.js:
+  (*! fromentries. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> *)
+
+moment/moment.js:
+  (*! moment.js *)
+  (*! version : 2.29.4 *)
+  (*! authors : Tim Wood, Iskren Chernev, Moment.js contributors *)
+  (*! license : MIT *)
+  (*! momentjs.com *)
+  (*! moment.js *)
+*/
