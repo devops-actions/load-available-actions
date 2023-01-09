@@ -3,7 +3,7 @@ import { Octokit } from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
-import { removeToken, getReadmeContent } from './optionalActions'
+import { getReadmeContent } from './optionalActions'
 // always import the config
 dotenv.config()
 
@@ -104,7 +104,6 @@ async function enrichActionFiles(
         action.name = parsed.name ? parsed.name : defaultValue
         action.author = parsed.author ? parsed.author : defaultValue
         action.description = parsed.description ? parsed.description : defaultValue
-        action.downloadUrl = action.downloadUrl.split('?')[0] //Remove the token in json
       } catch (error) {
         // this happens in https://github.com/gaurav-nelson/github-action-markdown-link-check/blob/9de9db77de3b29b650d2e2e99f0ee290f435214b/action.yml#L9
         // because of invalid yaml
@@ -204,7 +203,14 @@ async function getAllActions(
           result.repo = repoName
           result.forkedfrom = parentinfo
           if (yaml.download_url !== null) {
-            result.downloadUrl = yaml.download_url
+            result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, '') : yaml.download_url
+          }
+        }
+        
+        if (fetchReadmesSetting && yaml) {
+          const readmeLink = await getReadmeContent(client, repoName)
+          if (readmeLink) {
+            result.readme = readmeLink
           }
         }
 

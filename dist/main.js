@@ -726,7 +726,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug2("making CONNECT request");
+      debug3("making CONNECT request");
       var connectReq = self2.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -746,7 +746,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug2(
+          debug3(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -758,7 +758,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug2("got illegal response body from proxy");
+          debug3("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -766,13 +766,13 @@ var require_tunnel = __commonJS({
           self2.removeSocket(placeholder);
           return;
         }
-        debug2("tunneling connection has established");
+        debug3("tunneling connection has established");
         self2.sockets[self2.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug2(
+        debug3(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -834,9 +834,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug2;
+    var debug3;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug2 = function() {
+      debug3 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -846,10 +846,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug2 = function() {
+      debug3 = function() {
       };
     }
-    exports.debug = debug2;
+    exports.debug = debug3;
   }
 });
 
@@ -1971,10 +1971,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports.isDebug = isDebug;
-    function debug2(message) {
+    function debug3(message) {
       command_1.issueCommand("debug", {}, message);
     }
-    exports.debug = debug2;
+    exports.debug = debug3;
     function error(message, properties = {}) {
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -10392,15 +10392,15 @@ var require_timespan = __commonJS({
 var require_semver = __commonJS({
   "node_modules/jsonwebtoken/node_modules/semver/semver.js"(exports, module2) {
     exports = module2.exports = SemVer;
-    var debug2;
+    var debug3;
     if (typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG)) {
-      debug2 = function() {
+      debug3 = function() {
         var args = Array.prototype.slice.call(arguments, 0);
         args.unshift("SEMVER");
         console.log.apply(console, args);
       };
     } else {
-      debug2 = function() {
+      debug3 = function() {
       };
     }
     exports.SEMVER_SPEC_VERSION = "2.0.0";
@@ -10489,7 +10489,7 @@ var require_semver = __commonJS({
     var STAR = R++;
     src[STAR] = "(<|>)?=?\\s*\\*";
     for (i = 0; i < R; i++) {
-      debug2(i, src[i]);
+      debug3(i, src[i]);
       if (!re[i]) {
         re[i] = new RegExp(src[i]);
       }
@@ -10555,7 +10555,7 @@ var require_semver = __commonJS({
       if (!(this instanceof SemVer)) {
         return new SemVer(version2, options);
       }
-      debug2("SemVer", version2, options);
+      debug3("SemVer", version2, options);
       this.options = options;
       this.loose = !!options.loose;
       var m = version2.trim().match(options.loose ? re[LOOSE] : re[FULL]);
@@ -10602,7 +10602,7 @@ var require_semver = __commonJS({
       return this.version;
     };
     SemVer.prototype.compare = function(other) {
-      debug2("SemVer.compare", this.version, this.options, other);
+      debug3("SemVer.compare", this.version, this.options, other);
       if (!(other instanceof SemVer)) {
         other = new SemVer(other, this.options);
       }
@@ -10629,7 +10629,7 @@ var require_semver = __commonJS({
       do {
         var a = this.prerelease[i2];
         var b = other.prerelease[i2];
-        debug2("prerelease compare", i2, a, b);
+        debug3("prerelease compare", i2, a, b);
         if (a === void 0 && b === void 0) {
           return 0;
         } else if (b === void 0) {
@@ -10882,7 +10882,7 @@ var require_semver = __commonJS({
       if (!(this instanceof Comparator)) {
         return new Comparator(comp, options);
       }
-      debug2("comparator", comp, options);
+      debug3("comparator", comp, options);
       this.options = options;
       this.loose = !!options.loose;
       this.parse(comp);
@@ -10891,7 +10891,7 @@ var require_semver = __commonJS({
       } else {
         this.value = this.operator + this.semver.version;
       }
-      debug2("comp", this);
+      debug3("comp", this);
     }
     var ANY = {};
     Comparator.prototype.parse = function(comp) {
@@ -10914,7 +10914,7 @@ var require_semver = __commonJS({
       return this.value;
     };
     Comparator.prototype.test = function(version2) {
-      debug2("Comparator.test", version2, this.options.loose);
+      debug3("Comparator.test", version2, this.options.loose);
       if (this.semver === ANY) {
         return true;
       }
@@ -10998,9 +10998,9 @@ var require_semver = __commonJS({
       range = range.trim();
       var hr = loose ? re[HYPHENRANGELOOSE] : re[HYPHENRANGE];
       range = range.replace(hr, hyphenReplace);
-      debug2("hyphen replace", range);
+      debug3("hyphen replace", range);
       range = range.replace(re[COMPARATORTRIM], comparatorTrimReplace);
-      debug2("comparator trim", range, re[COMPARATORTRIM]);
+      debug3("comparator trim", range, re[COMPARATORTRIM]);
       range = range.replace(re[TILDETRIM], tildeTrimReplace);
       range = range.replace(re[CARETTRIM], caretTrimReplace);
       range = range.split(/\s+/).join(" ");
@@ -11041,15 +11041,15 @@ var require_semver = __commonJS({
       });
     }
     function parseComparator(comp, options) {
-      debug2("comp", comp, options);
+      debug3("comp", comp, options);
       comp = replaceCarets(comp, options);
-      debug2("caret", comp);
+      debug3("caret", comp);
       comp = replaceTildes(comp, options);
-      debug2("tildes", comp);
+      debug3("tildes", comp);
       comp = replaceXRanges(comp, options);
-      debug2("xrange", comp);
+      debug3("xrange", comp);
       comp = replaceStars(comp, options);
-      debug2("stars", comp);
+      debug3("stars", comp);
       return comp;
     }
     function isX(id) {
@@ -11063,7 +11063,7 @@ var require_semver = __commonJS({
     function replaceTilde(comp, options) {
       var r = options.loose ? re[TILDELOOSE] : re[TILDE];
       return comp.replace(r, function(_, M, m, p, pr) {
-        debug2("tilde", comp, _, M, m, p, pr);
+        debug3("tilde", comp, _, M, m, p, pr);
         var ret;
         if (isX(M)) {
           ret = "";
@@ -11072,12 +11072,12 @@ var require_semver = __commonJS({
         } else if (isX(p)) {
           ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
         } else if (pr) {
-          debug2("replaceTilde pr", pr);
+          debug3("replaceTilde pr", pr);
           ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + M + "." + (+m + 1) + ".0";
         } else {
           ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
         }
-        debug2("tilde return", ret);
+        debug3("tilde return", ret);
         return ret;
       });
     }
@@ -11087,10 +11087,10 @@ var require_semver = __commonJS({
       }).join(" ");
     }
     function replaceCaret(comp, options) {
-      debug2("caret", comp, options);
+      debug3("caret", comp, options);
       var r = options.loose ? re[CARETLOOSE] : re[CARET];
       return comp.replace(r, function(_, M, m, p, pr) {
-        debug2("caret", comp, _, M, m, p, pr);
+        debug3("caret", comp, _, M, m, p, pr);
         var ret;
         if (isX(M)) {
           ret = "";
@@ -11103,7 +11103,7 @@ var require_semver = __commonJS({
             ret = ">=" + M + "." + m + ".0 <" + (+M + 1) + ".0.0";
           }
         } else if (pr) {
-          debug2("replaceCaret pr", pr);
+          debug3("replaceCaret pr", pr);
           if (M === "0") {
             if (m === "0") {
               ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + M + "." + m + "." + (+p + 1);
@@ -11114,7 +11114,7 @@ var require_semver = __commonJS({
             ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + (+M + 1) + ".0.0";
           }
         } else {
-          debug2("no pr");
+          debug3("no pr");
           if (M === "0") {
             if (m === "0") {
               ret = ">=" + M + "." + m + "." + p + " <" + M + "." + m + "." + (+p + 1);
@@ -11125,12 +11125,12 @@ var require_semver = __commonJS({
             ret = ">=" + M + "." + m + "." + p + " <" + (+M + 1) + ".0.0";
           }
         }
-        debug2("caret return", ret);
+        debug3("caret return", ret);
         return ret;
       });
     }
     function replaceXRanges(comp, options) {
-      debug2("replaceXRanges", comp, options);
+      debug3("replaceXRanges", comp, options);
       return comp.split(/\s+/).map(function(comp2) {
         return replaceXRange(comp2, options);
       }).join(" ");
@@ -11139,7 +11139,7 @@ var require_semver = __commonJS({
       comp = comp.trim();
       var r = options.loose ? re[XRANGELOOSE] : re[XRANGE];
       return comp.replace(r, function(ret, gtlt, M, m, p, pr) {
-        debug2("xRange", comp, ret, gtlt, M, m, p, pr);
+        debug3("xRange", comp, ret, gtlt, M, m, p, pr);
         var xM = isX(M);
         var xm = xM || isX(m);
         var xp = xm || isX(p);
@@ -11182,12 +11182,12 @@ var require_semver = __commonJS({
         } else if (xp) {
           ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
         }
-        debug2("xRange return", ret);
+        debug3("xRange return", ret);
         return ret;
       });
     }
     function replaceStars(comp, options) {
-      debug2("replaceStars", comp, options);
+      debug3("replaceStars", comp, options);
       return comp.trim().replace(re[STAR], "");
     }
     function hyphenReplace($0, from, fM, fm, fp, fpr, fb, to, tM, tm, tp, tpr, tb) {
@@ -11235,7 +11235,7 @@ var require_semver = __commonJS({
       }
       if (version2.prerelease.length && !options.includePrerelease) {
         for (i2 = 0; i2 < set.length; i2++) {
-          debug2(set[i2].semver);
+          debug3(set[i2].semver);
           if (set[i2].semver === ANY) {
             continue;
           }
@@ -13398,7 +13398,7 @@ var require_dist_node21 = __commonJS({
       return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
     }
     var OAuthAppAuth = require_dist_node17();
-    var core2 = require_dist_node8();
+    var core3 = require_dist_node8();
     var universalUserAgent = require_dist_node();
     var authOauthUser = require_dist_node16();
     var OAuthMethods = require_dist_node14();
@@ -13417,7 +13417,7 @@ var require_dist_node21 = __commonJS({
       }
       state.eventHandlers[eventName].push(eventHandler);
     }
-    var OAuthAppOctokit = core2.Octokit.defaults({
+    var OAuthAppOctokit = core3.Octokit.defaults({
       userAgent: `octokit-oauth-app.js/${VERSION} ${universalUserAgent.getUserAgent()}`
     });
     async function emitEvent(state, context) {
@@ -14653,7 +14653,7 @@ var require_dist_node24 = __commonJS({
   "node_modules/@octokit/app/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core2 = require_dist_node8();
+    var core3 = require_dist_node8();
     var authApp = require_dist_node19();
     var oauthApp = require_dist_node21();
     var authUnauthenticated = require_dist_node20();
@@ -14870,7 +14870,7 @@ var require_dist_node24 = __commonJS({
         return AppWithDefaults;
       }
       constructor(options) {
-        const Octokit2 = options.Octokit || core2.Octokit;
+        const Octokit2 = options.Octokit || core3.Octokit;
         const authOptions = Object.assign({
           appId: options.appId,
           privateKey: options.privateKey
@@ -14929,7 +14929,7 @@ var require_dist_node25 = __commonJS({
   "node_modules/octokit/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core2 = require_dist_node8();
+    var core3 = require_dist_node8();
     var pluginPaginateRest = require_dist_node9();
     var pluginRestEndpointMethods = require_dist_node10();
     var pluginRetry = require_dist_node11();
@@ -14937,7 +14937,7 @@ var require_dist_node25 = __commonJS({
     var app = require_dist_node24();
     var oauthApp = require_dist_node21();
     var VERSION = "2.0.10";
-    var Octokit2 = core2.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
+    var Octokit2 = core3.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
       userAgent: `octokit.js/${VERSION}`,
       throttle: {
         onRateLimit,
@@ -16399,7 +16399,7 @@ ${ctx.indent}`;
 var require_log = __commonJS({
   "node_modules/yaml/dist/log.js"(exports) {
     "use strict";
-    function debug2(logLevel, ...messages) {
+    function debug3(logLevel, ...messages) {
       if (logLevel === "debug")
         console.log(...messages);
     }
@@ -16411,7 +16411,7 @@ var require_log = __commonJS({
           console.warn(warning);
       }
     }
-    exports.debug = debug2;
+    exports.debug = debug3;
     exports.warn = warn;
   }
 });
@@ -25812,7 +25812,7 @@ var require_main = __commonJS({
     function config(options) {
       let dotenvPath = path.resolve(process.cwd(), ".env");
       let encoding = "utf8";
-      const debug2 = Boolean(options && options.debug);
+      const debug3 = Boolean(options && options.debug);
       const override = Boolean(options && options.override);
       if (options) {
         if (options.path != null) {
@@ -25831,7 +25831,7 @@ var require_main = __commonJS({
             if (override === true) {
               process.env[key] = parsed[key];
             }
-            if (debug2) {
+            if (debug3) {
               if (override === true) {
                 _log(`"${key}" is already defined in \`process.env\` and WAS overwritten`);
               } else {
@@ -25842,7 +25842,7 @@ var require_main = __commonJS({
         });
         return { parsed };
       } catch (e) {
-        if (debug2) {
+        if (debug3) {
           _log(`Failed to load ${dotenvPath} ${e.message}`);
         }
         return { error: e };
@@ -25864,7 +25864,7 @@ __export(main_exports, {
   Content: () => Content
 });
 module.exports = __toCommonJS(main_exports);
-var core = __toESM(require_core());
+var core2 = __toESM(require_core());
 var import_octokit = __toESM(require_dist_node25());
 var import_yaml = __toESM(require_dist());
 
@@ -25876,13 +25876,32 @@ function GetDateFormatted(date) {
 
 // src/main.ts
 var import_dotenv = __toESM(require_main());
+
+// src/optionalActions.ts
+var core = __toESM(require_core());
+function getReadmeContent(client, repo) {
+  return __async(this, null, function* () {
+    try {
+      const { data: readme } = yield client.rest.repos.getContent({
+        owner: repo.owner,
+        repo: repo.name,
+        path: "README.md"
+      });
+      return readme.content;
+    } catch (error) {
+      core.debug(`No readme file found in repository: ${repo.name}`);
+    }
+  });
+}
+
+// src/main.ts
 import_dotenv.default.config();
-var getInputOrEnv = (input) => core.getInput(input) || process.env.input || "";
+var getInputOrEnv = (input) => core2.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 function run() {
   return __async(this, null, function* () {
-    core.info("Starting");
+    core2.info("Starting");
     try {
       const PAT = getInputOrEnv("PAT");
       const user = getInputOrEnv("user");
@@ -25890,13 +25909,13 @@ function run() {
       const baseUrl = process.env.GITHUB_API_URL || "https://api.github.com";
       const isEnterpriseServer = baseUrl !== "https://api.github.com";
       if (!PAT) {
-        core.setFailed(
+        core2.setFailed(
           "Parameter 'PAT' is required to load all actions from the organization or user account"
         );
         return;
       }
       if (user === "" && organization === "") {
-        core.setFailed(
+        core2.setFailed(
           "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
         );
         return;
@@ -25907,7 +25926,7 @@ function run() {
       });
       try {
       } catch (error) {
-        core.setFailed(
+        core2.setFailed(
           `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
         );
         return;
@@ -25921,9 +25940,9 @@ function run() {
         user
       };
       const json = JSON.stringify(output);
-      core.setOutput("actions", json);
+      core2.setOutput("actions", json);
     } catch (error) {
-      core.setFailed(`Error running action: : ${error.message}`);
+      core2.setFailed(`Error running action: : ${error.message}`);
     }
   });
 }
@@ -25932,7 +25951,7 @@ var Content = class {
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
-      core.debug(`Enrich : ${action.downloadUrl}`);
+      core2.debug(`Enrich : ${action.downloadUrl}`);
       if (action.downloadUrl !== null) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         try {
@@ -25941,7 +25960,6 @@ function enrichActionFiles(client, actionFiles) {
           action.name = parsed.name ? parsed.name : defaultValue;
           action.author = parsed.author ? parsed.author : defaultValue;
           action.description = parsed.description ? parsed.description : defaultValue;
-          action.downloadUrl = action.downloadUrl.split("?")[0];
         } catch (error) {
           console.log(
             `Error parsing action file in repo [${action.repo}] with error:`
@@ -25962,14 +25980,14 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
     const actions = [];
     var searchQuery = "+filename:action+language:YAML";
     if (username) {
-      core.info(`Search for action files of the user [ ${username} ]`);
+      core2.info(`Search for action files of the user [ ${username} ]`);
       searchQuery = searchQuery.concat("+user:", username);
     }
     if (organization !== "") {
-      core.info(`Search for action files under the organization [ ${organization} ]`);
+      core2.info(`Search for action files under the organization [ ${organization} ]`);
       searchQuery = searchQuery.concat("+org:", organization);
     }
-    core.debug(`searchQuery : ${searchQuery}`);
+    core2.debug(`searchQuery : ${searchQuery}`);
     const searchResult = yield client.paginate(client.rest.search.code, {
       q: searchQuery
     });
@@ -25979,14 +25997,14 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
           var ratelimit = yield client.rest.rateLimit.get();
           if (ratelimit.data.resources.search.remaining <= 2) {
             var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-            core.debug(`Search API reset time: ${resetTime}`);
+            core2.debug(`Search API reset time: ${resetTime}`);
             var waitTime = resetTime.getTime() - new Date().getTime();
             if (waitTime < 0) {
               waitTime = 2500;
             } else {
               waitTime = waitTime + 1e3;
             }
-            core.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
+            core2.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
             yield new Promise((r) => setTimeout(r, waitTime));
           }
         }
@@ -25996,7 +26014,7 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
         var repoName = searchResult[index].repository.name;
         var repoOwner = searchResult[index].repository.owner.login;
         if (fileName == "action.yaml" || fileName == "action.yml") {
-          core.info(`Found action in ${repoName}/${element}`);
+          core2.info(`Found action in ${repoName}/${element}`);
           const { data: repoinfo } = yield client.rest.repos.get({
             owner: repoOwner,
             repo: repoName
@@ -26015,7 +26033,13 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
             result.repo = repoName;
             result.forkedfrom = parentinfo;
             if (yaml.download_url !== null) {
-              result.downloadUrl = yaml.download_url;
+              result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
+            }
+          }
+          if (fetchReadmesSetting && yaml) {
+            const readmeLink = yield getReadmeContent(client, repoName);
+            if (readmeLink) {
+              result.readme = readmeLink;
             }
           }
           actions.push(result);
