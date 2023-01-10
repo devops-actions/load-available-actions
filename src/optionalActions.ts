@@ -1,4 +1,4 @@
-import {Content, Repository} from './main'
+import { Repository } from './main'
 import {Octokit} from 'octokit'
 import * as core from '@actions/core'
 
