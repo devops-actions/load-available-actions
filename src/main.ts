@@ -208,7 +208,7 @@ async function getAllActions(
         }
         
         if (fetchReadmesSetting && yaml) {
-          const readmeLink = await getReadmeContent(client, repoName)
+          const readmeLink = await getReadmeContent(client, repoName, repoOwner)
           if (readmeLink) {
             result.readme = readmeLink
           }
