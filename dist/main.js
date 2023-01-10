@@ -25861,8 +25861,7 @@ var require_main = __commonJS({
 // src/main.ts
 var main_exports = {};
 __export(main_exports, {
-  Content: () => Content,
-  Repository: () => Repository
+  Content: () => Content
 });
 module.exports = __toCommonJS(main_exports);
 var core2 = __toESM(require_core());
@@ -25880,12 +25879,6 @@ var import_dotenv = __toESM(require_main());
 
 // src/optionalActions.ts
 var core = __toESM(require_core());
-var removeToken = (content) => {
-  if (content && content.downloadUrl) {
-    content.downloadUrl = content.downloadUrl.replace(/\?(.*)/, "");
-  }
-  return content;
-};
 function getReadmeContent(client, repo) {
   return __async(this, null, function* () {
     try {
@@ -25938,9 +25931,7 @@ function run() {
         );
         return;
       }
-      const repos = yield findAllRepos(octokit, user, organization);
-      console.log(`Found [${repos.length}] repositories`);
-      let actionFiles = yield findAllActions(octokit, repos, isEnterpriseServer);
+      let actionFiles = yield getAllActions(octokit, user, organization, isEnterpriseServer);
       actionFiles = yield enrichActionFiles(octokit, actionFiles);
       const output = {
         lastUpdated: GetDateFormatted(new Date()),
@@ -25955,190 +25946,12 @@ function run() {
     }
   });
 }
-function findAllRepos(client, username, organization) {
-  return __async(this, null, function* () {
-    var _a, _b, _c, _d;
-    const result = [];
-    if (username) {
-      const repos = yield client.paginate(client.rest.repos.listForUser, {
-        username
-      });
-      core2.info(`Found [${repos.length}] repositories`);
-      for (let num = 0; num < repos.length; num++) {
-        const repo = repos[num];
-        const repository = new Repository(((_a = repo.owner) == null ? void 0 : _a.login) || "", repo.name, (_b = repo.visibility) != null ? _b : "");
-        result.push(repository);
-      }
-    }
-    if (organization !== "") {
-      const repos = yield client.paginate(client.rest.repos.listForOrg, {
-        org: organization
-      });
-      console.log(`Found [${organization}] as orgname parameter`);
-      core2.info(`Found [${repos.length}] repositories`);
-      for (let num = 0; num < repos.length; num++) {
-        const repo = repos[num];
-        const repository = new Repository(((_c = repo.owner) == null ? void 0 : _c.login) || "", repo.name, (_d = repo.visibility) != null ? _d : "");
-        result.push(repository);
-      }
-    }
-    return result;
-  });
-}
-var Repository = class {
-  constructor(owner, name, visibility) {
-    this.name = name;
-    this.owner = owner;
-    this.visibility = visibility;
-  }
-};
 var Content = class {
 };
-function findAllActions(client, repos, isEnterpriseServer) {
-  return __async(this, null, function* () {
-    const result = [];
-    for (const repo of repos) {
-      core2.debug(`Searching repository for actions: ${repo.name}`);
-      let content = yield getActionFile(client, repo, isEnterpriseServer);
-      if (removeTokenSetting && content) {
-        content = removeToken(content);
-      }
-      if (fetchReadmesSetting && content) {
-        const readmeLink = yield getReadmeContent(client, repo);
-        if (readmeLink) {
-          content.readme = readmeLink;
-        }
-      }
-      if (content && content.name) {
-        core2.info(
-          `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
-        );
-        if (repo.visibility == "internal") {
-          core2.debug(`Get access settings for repository [${repo.owner}/${repo.name}]..............`);
-          try {
-            const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
-              owner: repo.owner,
-              repo: repo.name
-            });
-            if (accessSettings.access_level == "none") {
-              core2.info(`Access to use action [${repo.owner}/${repo.name}] is disabled`);
-              continue;
-            }
-          } catch (error) {
-            core2.info(`Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope. Error: ${error.message}`);
-            continue;
-          }
-        } else if (repo.visibility == "private") {
-          core2.debug(`[${repo.owner}/${repo.name}] is private repo, skipping.`);
-          continue;
-        }
-        result.push(content);
-      }
-    }
-    console.log(`Found [${result.length}] actions in [${repos.length}] repos`);
-    return result;
-  });
-}
-function getActionFile(client, repo, isEnterpriseServer) {
-  return __async(this, null, function* () {
-    var _a;
-    const result = new Content();
-    const { data: repoinfo } = yield client.rest.repos.get({
-      owner: repo.owner,
-      repo: repo.name
-    });
-    let parentinfo = "";
-    if ((_a = repoinfo.parent) == null ? void 0 : _a.full_name) {
-      parentinfo = repoinfo.parent.full_name;
-    }
-    try {
-      const { data: yml } = yield client.rest.repos.getContent({
-        owner: repo.owner,
-        repo: repo.name,
-        path: "action.yml"
-      });
-      if ("name" in yml && "download_url" in yml) {
-        result.name = yml.name;
-        result.owner = repo.owner;
-        result.repo = repo.name;
-        result.forkedfrom = parentinfo;
-        if (yml.download_url !== null) {
-          result.downloadUrl = yml.download_url;
-        }
-      }
-    } catch (error) {
-      core2.debug(`No action.yml file found in repository: ${repo.name}`);
-    }
-    if (result.name === "") {
-      try {
-        const { data: yaml } = yield client.rest.repos.getContent({
-          owner: repo.owner,
-          repo: repo.name,
-          path: "action.yaml"
-        });
-        if ("name" in yaml && "download_url" in yaml) {
-          result.name = yaml.name;
-          result.owner = repo.owner;
-          result.repo = repo.name;
-          result.forkedfrom = parentinfo;
-          if (yaml.download_url !== null) {
-            result.downloadUrl = yaml.download_url;
-          }
-        }
-      } catch (error) {
-        core2.debug(`No action.yaml file found in repository: ${repo.name}`);
-      }
-    }
-    if (!isEnterpriseServer) {
-      var ratelimit = yield client.rest.rateLimit.get();
-      if (ratelimit.data.resources.search.remaining <= 2) {
-        var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-        core2.debug(`Search API reset time: ${resetTime}`);
-        var waitTime = resetTime.getTime() - new Date().getTime();
-        if (waitTime < 0) {
-          waitTime = 2500;
-        } else {
-          waitTime = waitTime + 1e3;
-        }
-        core2.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
-        yield new Promise((r) => setTimeout(r, waitTime));
-      }
-    }
-    if (!result.name) {
-      core2.info(`No actions found at root level in repository: ${repo.name}`);
-      core2.info(`Checking subdirectories in repository: ${repo.name}`);
-      var searchQuery = "+filename:action+language:YAML+repo:" + repo.owner + "/" + repo.name;
-      var searchResultforRepository = yield client.request("GET /search/code", {
-        q: searchQuery
-      });
-      if (Object.keys(searchResultforRepository.data.items).length > 0) {
-        for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
-          var element = searchResultforRepository.data.items[index].path;
-          const { data: yaml } = yield client.rest.repos.getContent({
-            owner: repo.owner,
-            repo: repo.name,
-            path: element
-          });
-          if ("name" in yaml && "download_url" in yaml) {
-            result.name = yaml.name;
-            result.repo = repo.name;
-            result.forkedfrom = parentinfo;
-            if (yaml.download_url !== null) {
-              result.downloadUrl = yaml.download_url;
-            }
-          }
-        }
-        return result;
-      }
-      core2.info(`No actions found in repository: ${repo.name}`);
-      return null;
-    }
-    return result;
-  });
-}
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
+      core2.debug(`Enrich : ${action.downloadUrl}`);
       if (action.downloadUrl !== null) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         try {
@@ -26161,9 +25974,104 @@ function enrichActionFiles(client, actionFiles) {
     return actionFiles;
   });
 }
+function getAllActions(client, username, organization, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    var _a;
+    const actions = [];
+    var searchQuery = "+filename:action+language:YAML";
+    if (username) {
+      core2.info(`Search for action files of the user [ ${username} ]`);
+      searchQuery = searchQuery.concat("+user:", username);
+    }
+    if (organization !== "") {
+      core2.info(`Search for action files under the organization [ ${organization} ]`);
+      searchQuery = searchQuery.concat("+org:", organization);
+    }
+    core2.debug(`searchQuery : ${searchQuery}`);
+    const searchResult = yield client.paginate(client.rest.search.code, {
+      q: searchQuery
+    });
+    if (searchResult) {
+      for (let index = 0; index < searchResult.length; index++) {
+        if (!isEnterpriseServer) {
+          var ratelimit = yield client.rest.rateLimit.get();
+          if (ratelimit.data.resources.search.remaining <= 2) {
+            var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+            core2.debug(`Search API reset time: ${resetTime}`);
+            var waitTime = resetTime.getTime() - new Date().getTime();
+            if (waitTime < 0) {
+              waitTime = 2500;
+            } else {
+              waitTime = waitTime + 1e3;
+            }
+            core2.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
+            yield new Promise((r) => setTimeout(r, waitTime));
+          }
+        }
+        const result = new Content();
+        var fileName = searchResult[index].name;
+        var element = searchResult[index].path;
+        var repoName = searchResult[index].repository.name;
+        var repoOwner = searchResult[index].repository.owner.login;
+        if (fileName == "action.yaml" || fileName == "action.yml") {
+          core2.info(`Found action in ${repoName}/${element}`);
+          const { data: repoinfo } = yield client.rest.repos.get({
+            owner: repoOwner,
+            repo: repoName
+          });
+          let parentinfo = "";
+          if ((_a = repoinfo.parent) == null ? void 0 : _a.full_name) {
+            parentinfo = repoinfo.parent.full_name;
+          }
+          const { data: yaml } = yield client.rest.repos.getContent({
+            owner: repoOwner,
+            repo: repoName,
+            path: element
+          });
+          if ("name" in yaml && "download_url" in yaml) {
+            result.name = yaml.name;
+            result.repo = repoName;
+            result.forkedfrom = parentinfo;
+            if (yaml.download_url !== null) {
+              result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
+            }
+          }
+          if (fetchReadmesSetting && yaml) {
+            const readmeLink = yield getReadmeContent(client, repoName);
+            if (readmeLink) {
+              result.readme = readmeLink;
+            }
+          }
+          actions.push(result);
+        }
+      }
+    }
+    return actions;
+  });
+}
 run();
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Content,
-  Repository
+  Content
 });
+/*! Bundled license information:
+
+is-plain-object/dist/is-plain-object.js:
+  (*!
+   * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
+   *
+   * Copyright (c) 2014-2017, Jon Schlinkert.
+   * Released under the MIT License.
+   *)
+
+fromentries/index.js:
+  (*! fromentries. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> *)
+
+moment/moment.js:
+  (*! moment.js *)
+  (*! version : 2.29.4 *)
+  (*! authors : Tim Wood, Iskren Chernev, Moment.js contributors *)
+  (*! license : MIT *)
+  (*! momentjs.com *)
+  (*! moment.js *)
+*/
