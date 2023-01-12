@@ -1,7 +1,9 @@
 import {wait} from '../src/wait'
 import {expect, test} from '@jest/globals'
 import GetDateFormatted from '../src/utils'
-
+import {removeToken} from '../src/optionalActions'
+import {Content} from '../src/main'
+import assert from 'assert'
 test('throws invalid number', async () => {
   const input = parseInt('foo', 10)
   await expect(wait(input)).rejects.toThrow('milliseconds not a number')
@@ -21,4 +23,23 @@ test(`check dateformat string`, () => {
 
   expect(result).toHaveLength(13)
   expect(result).toMatch('20210116_1143')
+})
+
+test(`Token trimming, valid input`, () => {
+  let content = new Content()
+  content = {
+    downloadUrl: 'https://example.com/file.txt?token=abc123',
+    name: '',
+    owner: '',
+    repo: '',
+    author: '',
+    description: '',
+    forkedfrom: '',
+    readme: ''
+  }
+  const expectedOutput = {
+    downloadUrl: 'https://example.com/file.txt'
+  }
+  const result = removeToken(content)
+  assert.deepEqual(result.downloadUrl, expectedOutput.downloadUrl)
 })
