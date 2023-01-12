@@ -14,11 +14,12 @@ export async function getReadmeContent(
   repo: Repository
 ): Promise<string | undefined> {
   try {
-    const {data: readme} = await client.rest.repos.getContent({
+    const readme: any = await client.rest.repos.getContent({
       owner: repo.owner,
       repo: repo.name,
       path: 'README.md'
     })
+
     return readme.content
   } catch (error) {
     core.debug(`No readme file found in repository: ${repo.name}`)

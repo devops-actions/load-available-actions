@@ -25934,7 +25934,7 @@ var removeToken = (content) => {
 function getReadmeContent(client, repo) {
   return __async(this, null, function* () {
     try {
-      const { data: readme } = yield client.rest.repos.getContent({
+      const readme = yield client.rest.repos.getContent({
         owner: repo.owner,
         repo: repo.name,
         path: "README.md"
@@ -26139,7 +26139,7 @@ function getActionFile(client, repo, isEnterpriseServer) {
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
-      if (action.downloadUrl !== null) {
+      if (action.downloadUrl) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         try {
           const parsed = import_yaml.default.parse(content);

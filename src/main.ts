@@ -233,7 +233,7 @@ async function enrichActionFiles(
 ): Promise<Content[]> {
   for (const action of actionFiles) {
     // download the file in it and parse it
-    if (action.downloadUrl !== null) {
+    if (action.downloadUrl) {
       const {data: content} = await client.request({url: action.downloadUrl})
 
       // try to parse the yaml
