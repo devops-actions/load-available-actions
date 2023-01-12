@@ -12,7 +12,7 @@ jobs:
   test-local-action:
     runs-on: ubuntu-latest
     steps: 
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
 
       - uses: ./
         name: Load used actions
@@ -21,7 +21,7 @@ jobs:
           user: rajbos
         id: load-actions
 
-      - uses: devops-actions/json-to-file@5984382751b07b0575aff49fe6717a021780ad07 # v1.0.0
+      - uses: devops-actions/json-to-file@f4dfed5916186ad86a993f72d3d8182e543598ea # v1.0.1
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions.json
@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # get code
-      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3.1.0
+      - uses: actions/checkout@755da8c3cf115ac066823e79a1e1788f8940201b # v3.2.0
 
       # build it
       - run: |
