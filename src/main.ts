@@ -217,7 +217,7 @@ async function getActionFile(
   if (!result) {
     core.info(`No actions found at root level in repository: ${repo.name}`)
     core.info(`Checking subdirectories in repository: ${repo.name}`)
-    result = searchForActionYaml(repo, client)
+    result = await searchForActionYaml(repo, client)
     if (!result) {
       core.info(`No actions found in repository: ${repo.name}`)
       return null
