@@ -236,6 +236,7 @@ async function getActionFile(
   if (!result) {
     core.info(`No actions found at root level in repository: ${repo.name}`)
     core.info(`Checking subdirectories in repository: ${repo.name}`)
+<<<<<<< HEAD
     const searchQuery =
       '+filename:action+language:YAML+repo:' + repo.owner + '/' + repo.name
 
@@ -253,6 +254,12 @@ async function getActionFile(
         result = fetchYaml(repo, client, pathElement)
       }
       return result
+=======
+    result = await searchForActionYaml(repo, client)
+    if (!result) {
+      core.info(`No actions found in repository: ${repo.name}`)
+      return null
+>>>>>>> c22869b (CodeQL await warning)
     }
   }
 
