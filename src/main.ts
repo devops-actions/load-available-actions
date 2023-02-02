@@ -1,8 +1,14 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
 import YAML from 'yaml'
+<<<<<<< HEAD
 import dotenv from 'dotenv'
 import GetDateFormatted, {fetchYaml} from './utils'
+=======
+import GetDateFormatted from './utils'
+import dotenv from 'dotenv'
+
+>>>>>>> 83d3e8c (Rebase)
 import {getReadmeContent} from './optionalActions'
 
 dotenv.config()
@@ -90,6 +96,7 @@ export class Content {
   forkedfrom: string | undefined
   readme: string | undefined
 }
+<<<<<<< HEAD
 async function optional_actions(
   content: Content,
   client: Octokit,
@@ -265,6 +272,8 @@ async function getActionFile(
 
   return result
 }
+=======
+>>>>>>> 83d3e8c (Rebase)
 
 async function enrichActionFiles(
   client: Octokit,

@@ -24,10 +24,6 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -173,10 +169,14 @@ var require_command = __commonJS({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/rng.js
 =======
 // node_modules/uuid/dist/esm-node/rng.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/rng.js
+>>>>>>> 83d3e8c (Rebase)
 function rng() {
   if (poolPtr > rnds8Pool.length - 16) {
     import_crypto.default.randomFillSync(rnds8Pool);
@@ -187,16 +187,21 @@ function rng() {
 var import_crypto, rnds8Pool, poolPtr;
 var init_rng = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/rng.js"() {
 =======
   "node_modules/uuid/dist/esm-node/rng.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/rng.js"() {
+>>>>>>> 83d3e8c (Rebase)
     import_crypto = __toESM(require("crypto"));
     rnds8Pool = new Uint8Array(256);
     poolPtr = rnds8Pool.length;
   }
 });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/regex.js
 var regex_default;
@@ -208,35 +213,53 @@ var regex_default;
 var init_regex = __esm({
   "node_modules/uuid/dist/esm-node/regex.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/regex.js
+var regex_default;
+var init_regex = __esm({
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/regex.js"() {
+>>>>>>> 83d3e8c (Rebase)
     regex_default = /^(?:[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}|00000000-0000-0000-0000-000000000000)$/i;
   }
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/validate.js
 =======
 // node_modules/uuid/dist/esm-node/validate.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/validate.js
+>>>>>>> 83d3e8c (Rebase)
 function validate(uuid) {
   return typeof uuid === "string" && regex_default.test(uuid);
 }
 var validate_default;
 var init_validate = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/validate.js"() {
 =======
   "node_modules/uuid/dist/esm-node/validate.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/validate.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_regex();
     validate_default = validate;
   }
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/stringify.js
 =======
 // node_modules/uuid/dist/esm-node/stringify.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/stringify.js
+>>>>>>> 83d3e8c (Rebase)
 function stringify(arr, offset = 0) {
   const uuid = (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
   if (!validate_default(uuid)) {
@@ -247,10 +270,14 @@ function stringify(arr, offset = 0) {
 var byteToHex, stringify_default;
 var init_stringify = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/stringify.js"() {
 =======
   "node_modules/uuid/dist/esm-node/stringify.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/stringify.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_validate();
     byteToHex = [];
     for (let i = 0; i < 256; ++i) {
@@ -261,10 +288,14 @@ var init_stringify = __esm({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v1.js
 =======
 // node_modules/uuid/dist/esm-node/v1.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v1.js
+>>>>>>> 83d3e8c (Rebase)
 function v1(options, buf, offset) {
   let i = buf && offset || 0;
   const b = buf || new Array(16);
@@ -316,10 +347,14 @@ function v1(options, buf, offset) {
 var _nodeId, _clockseq, _lastMSecs, _lastNSecs, v1_default;
 var init_v1 = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v1.js"() {
 =======
   "node_modules/uuid/dist/esm-node/v1.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v1.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_rng();
     init_stringify();
     _lastMSecs = 0;
@@ -329,10 +364,14 @@ var init_v1 = __esm({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/parse.js
 =======
 // node_modules/uuid/dist/esm-node/parse.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/parse.js
+>>>>>>> 83d3e8c (Rebase)
 function parse(uuid) {
   if (!validate_default(uuid)) {
     throw TypeError("Invalid UUID");
@@ -360,20 +399,28 @@ function parse(uuid) {
 var parse_default;
 var init_parse = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/parse.js"() {
 =======
   "node_modules/uuid/dist/esm-node/parse.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/parse.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_validate();
     parse_default = parse;
   }
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v35.js
 =======
 // node_modules/uuid/dist/esm-node/v35.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v35.js
+>>>>>>> 83d3e8c (Rebase)
 function stringToBytes(str) {
   str = unescape(encodeURIComponent(str));
   const bytes = [];
@@ -419,10 +466,14 @@ function v35_default(name, version2, hashfunc) {
 var DNS, URL2;
 var init_v35 = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v35.js"() {
 =======
   "node_modules/uuid/dist/esm-node/v35.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v35.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_stringify();
     init_parse();
     DNS = "6ba7b810-9dad-11d1-80b4-00c04fd430c8";
@@ -431,10 +482,14 @@ var init_v35 = __esm({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/md5.js
 =======
 // node_modules/uuid/dist/esm-node/md5.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/md5.js
+>>>>>>> 83d3e8c (Rebase)
 function md5(bytes) {
   if (Array.isArray(bytes)) {
     bytes = Buffer.from(bytes);
@@ -446,15 +501,20 @@ function md5(bytes) {
 var import_crypto2, md5_default;
 var init_md5 = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/md5.js"() {
 =======
   "node_modules/uuid/dist/esm-node/md5.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/md5.js"() {
+>>>>>>> 83d3e8c (Rebase)
     import_crypto2 = __toESM(require("crypto"));
     md5_default = md5;
   }
 });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v3.js
 var v3, v3_default;
@@ -466,6 +526,12 @@ var v3, v3_default;
 var init_v3 = __esm({
   "node_modules/uuid/dist/esm-node/v3.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v3.js
+var v3, v3_default;
+var init_v3 = __esm({
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v3.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_v35();
     init_md5();
     v3 = v35_default("v3", 48, md5_default);
@@ -474,10 +540,14 @@ var init_v3 = __esm({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v4.js
 =======
 // node_modules/uuid/dist/esm-node/v4.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v4.js
+>>>>>>> 83d3e8c (Rebase)
 function v4(options, buf, offset) {
   options = options || {};
   const rnds = options.random || (options.rng || rng)();
@@ -495,10 +565,14 @@ function v4(options, buf, offset) {
 var v4_default;
 var init_v4 = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v4.js"() {
 =======
   "node_modules/uuid/dist/esm-node/v4.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v4.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_rng();
     init_stringify();
     v4_default = v4;
@@ -506,10 +580,14 @@ var init_v4 = __esm({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/sha1.js
 =======
 // node_modules/uuid/dist/esm-node/sha1.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/sha1.js
+>>>>>>> 83d3e8c (Rebase)
 function sha1(bytes) {
   if (Array.isArray(bytes)) {
     bytes = Buffer.from(bytes);
@@ -521,15 +599,20 @@ function sha1(bytes) {
 var import_crypto3, sha1_default;
 var init_sha1 = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/sha1.js"() {
 =======
   "node_modules/uuid/dist/esm-node/sha1.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/sha1.js"() {
+>>>>>>> 83d3e8c (Rebase)
     import_crypto3 = __toESM(require("crypto"));
     sha1_default = sha1;
   }
 });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v5.js
 var v5, v5_default;
@@ -541,6 +624,12 @@ var v5, v5_default;
 var init_v5 = __esm({
   "node_modules/uuid/dist/esm-node/v5.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v5.js
+var v5, v5_default;
+var init_v5 = __esm({
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/v5.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_v35();
     init_sha1();
     v5 = v35_default("v5", 80, sha1_default);
@@ -548,6 +637,7 @@ var init_v5 = __esm({
   }
 });
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/nil.js
 var nil_default;
@@ -559,15 +649,25 @@ var nil_default;
 var init_nil = __esm({
   "node_modules/uuid/dist/esm-node/nil.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/nil.js
+var nil_default;
+var init_nil = __esm({
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/nil.js"() {
+>>>>>>> 83d3e8c (Rebase)
     nil_default = "00000000-0000-0000-0000-000000000000";
   }
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/version.js
 =======
 // node_modules/uuid/dist/esm-node/version.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/version.js
+>>>>>>> 83d3e8c (Rebase)
 function version(uuid) {
   if (!validate_default(uuid)) {
     throw TypeError("Invalid UUID");
@@ -577,20 +677,28 @@ function version(uuid) {
 var version_default;
 var init_version = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/version.js"() {
 =======
   "node_modules/uuid/dist/esm-node/version.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/version.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_validate();
     version_default = version;
   }
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/index.js
 =======
 // node_modules/uuid/dist/esm-node/index.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/index.js
+>>>>>>> 83d3e8c (Rebase)
 var esm_node_exports = {};
 __export(esm_node_exports, {
   NIL: () => nil_default,
@@ -605,10 +713,14 @@ __export(esm_node_exports, {
 });
 var init_esm_node = __esm({
 <<<<<<< HEAD
+<<<<<<< HEAD
   "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/index.js"() {
 =======
   "node_modules/uuid/dist/esm-node/index.js"() {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+  "../../node_modules/@actions/core/node_modules/uuid/dist/esm-node/index.js"() {
+>>>>>>> 83d3e8c (Rebase)
     init_v1();
     init_v3();
     init_v4();
@@ -1215,10 +1327,6 @@ var require_lib = __commonJS({
           return this.request(verb, requestUrl, stream, additionalHeaders);
         });
       }
-      /**
-       * Gets a typed object from an endpoint
-       * Be aware that not found returns a null.  Other errors (4xx, 5xx) reject the promise
-       */
       getJson(requestUrl, additionalHeaders = {}) {
         return __awaiter(this, void 0, void 0, function* () {
           additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
@@ -1253,23 +1361,18 @@ var require_lib = __commonJS({
           return this._processResponse(res, this.requestOptions);
         });
       }
-      /**
-       * Makes a raw http request.
-       * All other methods such as get, post, patch, and request ultimately call this.
-       * Prefer get, del, post and patch
-       */
       request(verb, requestUrl, data, headers) {
         return __awaiter(this, void 0, void 0, function* () {
           if (this._disposed) {
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info3 = this._prepareRequest(verb, parsedUrl, headers);
+          let info2 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info3, data);
+            response = yield this.requestRaw(info2, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler of this.handlers) {
@@ -1279,7 +1382,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info3, data);
+                return authenticationHandler.handleAuthentication(this, info2, data);
               } else {
                 return response;
               }
@@ -1302,8 +1405,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info3, data);
+              info2 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info2, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -1318,21 +1421,13 @@ var require_lib = __commonJS({
           return response;
         });
       }
-      /**
-       * Needs to be called if keepAlive is set to true in request options.
-       */
       dispose() {
         if (this._agent) {
           this._agent.destroy();
         }
         this._disposed = true;
       }
-      /**
-       * Raw request.
-       * @param info
-       * @param data
-       */
-      requestRaw(info3, data) {
+      requestRaw(info2, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -1344,22 +1439,16 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info3, data, callbackForResult);
+            this.requestRawWithCallback(info2, data, callbackForResult);
           });
         });
       }
-      /**
-       * Raw request with callback.
-       * @param info
-       * @param data
-       * @param onResult
-       */
-      requestRawWithCallback(info3, data, onResult) {
+      requestRawWithCallback(info2, data, onResult) {
         if (typeof data === "string") {
-          if (!info3.options.headers) {
-            info3.options.headers = {};
+          if (!info2.options.headers) {
+            info2.options.headers = {};
           }
-          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info2.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -1368,7 +1457,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info3.httpModule.request(info3.options, (msg) => {
+        const req = info2.httpModule.request(info2.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -1380,7 +1469,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info3.options.path}`));
+          handleResult(new Error(`Request timeout: ${info2.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -1397,37 +1486,32 @@ var require_lib = __commonJS({
           req.end();
         }
       }
-      /**
-       * Gets an http agent. This function is useful when you need an http agent that handles
-       * routing through a proxy server - depending upon the url and proxy environment variables.
-       * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
-       */
       getAgent(serverUrl) {
         const parsedUrl = new URL(serverUrl);
         return this._getAgent(parsedUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info3 = {};
-        info3.parsedUrl = requestUrl;
-        const usingSsl = info3.parsedUrl.protocol === "https:";
-        info3.httpModule = usingSsl ? https : http;
+        const info2 = {};
+        info2.parsedUrl = requestUrl;
+        const usingSsl = info2.parsedUrl.protocol === "https:";
+        info2.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info3.options = {};
-        info3.options.host = info3.parsedUrl.hostname;
-        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
-        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
-        info3.options.method = method;
-        info3.options.headers = this._mergeHeaders(headers);
+        info2.options = {};
+        info2.options.host = info2.parsedUrl.hostname;
+        info2.options.port = info2.parsedUrl.port ? parseInt(info2.parsedUrl.port) : defaultPort;
+        info2.options.path = (info2.parsedUrl.pathname || "") + (info2.parsedUrl.search || "");
+        info2.options.method = method;
+        info2.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info3.options.headers["user-agent"] = this.userAgent;
+          info2.options.headers["user-agent"] = this.userAgent;
         }
-        info3.options.agent = this._getAgent(info3.parsedUrl);
+        info2.options.agent = this._getAgent(info2.parsedUrl);
         if (this.handlers) {
           for (const handler of this.handlers) {
-            handler.prepareRequest(info3.options);
+            handler.prepareRequest(info2.options);
           }
         }
-        return info3;
+        return info2;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -1604,7 +1688,6 @@ var require_auth = __commonJS({
         }
         options.headers["Authorization"] = `Basic ${Buffer.from(`${this.username}:${this.password}`).toString("base64")}`;
       }
-      // This handler cannot handle 401
       canHandleAuthentication() {
         return false;
       }
@@ -1619,15 +1702,12 @@ var require_auth = __commonJS({
       constructor(token) {
         this.token = token;
       }
-      // currently implements pre-authorization
-      // TODO: support preAuth = false where it hooks on 401
       prepareRequest(options) {
         if (!options.headers) {
           throw Error("The request has no headers");
         }
         options.headers["Authorization"] = `Bearer ${this.token}`;
       }
-      // This handler cannot handle 401
       canHandleAuthentication() {
         return false;
       }
@@ -1642,15 +1722,12 @@ var require_auth = __commonJS({
       constructor(token) {
         this.token = token;
       }
-      // currently implements pre-authorization
-      // TODO: support preAuth = false where it hooks on 401
       prepareRequest(options) {
         if (!options.headers) {
           throw Error("The request has no headers");
         }
         options.headers["Authorization"] = `Basic ${Buffer.from(`PAT:${this.token}`).toString("base64")}`;
       }
-      // This handler cannot handle 401
       canHandleAuthentication() {
         return false;
       }
@@ -1804,12 +1881,6 @@ var require_summary = __commonJS({
       constructor() {
         this._buffer = "";
       }
-      /**
-       * Finds the summary file path from the environment, rejects if env var is not found or file does not exist
-       * Also checks r/w permissions.
-       *
-       * @returns step summary file path
-       */
       filePath() {
         return __awaiter(this, void 0, void 0, function* () {
           if (this._filePath) {
@@ -1828,15 +1899,6 @@ var require_summary = __commonJS({
           return this._filePath;
         });
       }
-      /**
-       * Wraps content in an HTML tag, adding any HTML attributes
-       *
-       * @param {string} tag HTML tag to wrap
-       * @param {string | null} content content within the tag
-       * @param {[attribute: string]: string} attrs key-value list of HTML attributes to add
-       *
-       * @returns {string} content wrapped in HTML element
-       */
       wrap(tag, content, attrs = {}) {
         const htmlAttrs = Object.entries(attrs).map(([key, value]) => ` ${key}="${value}"`).join("");
         if (!content) {
@@ -1844,13 +1906,6 @@ var require_summary = __commonJS({
         }
         return `<${tag}${htmlAttrs}>${content}</${tag}>`;
       }
-      /**
-       * Writes text in the buffer to the summary buffer file and empties buffer. Will append by default.
-       *
-       * @param {SummaryWriteOptions} [options] (optional) options for write operation
-       *
-       * @returns {Promise<Summary>} summary instance
-       */
       write(options) {
         return __awaiter(this, void 0, void 0, function* () {
           const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
@@ -1860,95 +1915,39 @@ var require_summary = __commonJS({
           return this.emptyBuffer();
         });
       }
-      /**
-       * Clears the summary buffer and wipes the summary file
-       *
-       * @returns {Summary} summary instance
-       */
       clear() {
         return __awaiter(this, void 0, void 0, function* () {
           return this.emptyBuffer().write({ overwrite: true });
         });
       }
-      /**
-       * Returns the current summary buffer as a string
-       *
-       * @returns {string} string of summary buffer
-       */
       stringify() {
         return this._buffer;
       }
-      /**
-       * If the summary buffer is empty
-       *
-       * @returns {boolen} true if the buffer is empty
-       */
       isEmptyBuffer() {
         return this._buffer.length === 0;
       }
-      /**
-       * Resets the summary buffer without writing to summary file
-       *
-       * @returns {Summary} summary instance
-       */
       emptyBuffer() {
         this._buffer = "";
         return this;
       }
-      /**
-       * Adds raw text to the summary buffer
-       *
-       * @param {string} text content to add
-       * @param {boolean} [addEOL=false] (optional) append an EOL to the raw text (default: false)
-       *
-       * @returns {Summary} summary instance
-       */
       addRaw(text, addEOL = false) {
         this._buffer += text;
         return addEOL ? this.addEOL() : this;
       }
-      /**
-       * Adds the operating system-specific end-of-line marker to the buffer
-       *
-       * @returns {Summary} summary instance
-       */
       addEOL() {
         return this.addRaw(os_1.EOL);
       }
-      /**
-       * Adds an HTML codeblock to the summary buffer
-       *
-       * @param {string} code content to render within fenced code block
-       * @param {string} lang (optional) language to syntax highlight code
-       *
-       * @returns {Summary} summary instance
-       */
       addCodeBlock(code, lang) {
         const attrs = Object.assign({}, lang && { lang });
         const element = this.wrap("pre", this.wrap("code", code), attrs);
         return this.addRaw(element).addEOL();
       }
-      /**
-       * Adds an HTML list to the summary buffer
-       *
-       * @param {string[]} items list of items to render
-       * @param {boolean} [ordered=false] (optional) if the rendered list should be ordered or not (default: false)
-       *
-       * @returns {Summary} summary instance
-       */
       addList(items, ordered = false) {
         const tag = ordered ? "ol" : "ul";
         const listItems = items.map((item) => this.wrap("li", item)).join("");
         const element = this.wrap(tag, listItems);
         return this.addRaw(element).addEOL();
       }
-      /**
-       * Adds an HTML table to the summary buffer
-       *
-       * @param {SummaryTableCell[]} rows table rows
-       *
-       * @returns {Summary} summary instance
-       */
       addTable(rows) {
         const tableBody = rows.map((row) => {
           const cells = row.map((cell) => {
@@ -1965,86 +1964,35 @@ var require_summary = __commonJS({
         const element = this.wrap("table", tableBody);
         return this.addRaw(element).addEOL();
       }
-      /**
-       * Adds a collapsable HTML details element to the summary buffer
-       *
-       * @param {string} label text for the closed state
-       * @param {string} content collapsable content
-       *
-       * @returns {Summary} summary instance
-       */
       addDetails(label, content) {
         const element = this.wrap("details", this.wrap("summary", label) + content);
         return this.addRaw(element).addEOL();
       }
-      /**
-       * Adds an HTML image tag to the summary buffer
-       *
-       * @param {string} src path to the image you to embed
-       * @param {string} alt text description of the image
-       * @param {SummaryImageOptions} options (optional) addition image attributes
-       *
-       * @returns {Summary} summary instance
-       */
       addImage(src, alt, options) {
         const { width, height } = options || {};
         const attrs = Object.assign(Object.assign({}, width && { width }), height && { height });
         const element = this.wrap("img", null, Object.assign({ src, alt }, attrs));
         return this.addRaw(element).addEOL();
       }
-      /**
-       * Adds an HTML section heading element
-       *
-       * @param {string} text heading text
-       * @param {number | string} [level=1] (optional) the heading level, default: 1
-       *
-       * @returns {Summary} summary instance
-       */
       addHeading(text, level) {
         const tag = `h${level}`;
         const allowedTag = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(tag) ? tag : "h1";
         const element = this.wrap(allowedTag, text);
         return this.addRaw(element).addEOL();
       }
-      /**
-       * Adds an HTML thematic break (<hr>) to the summary buffer
-       *
-       * @returns {Summary} summary instance
-       */
       addSeparator() {
         const element = this.wrap("hr", null);
         return this.addRaw(element).addEOL();
       }
-      /**
-       * Adds an HTML line break (<br>) to the summary buffer
-       *
-       * @returns {Summary} summary instance
-       */
       addBreak() {
         const element = this.wrap("br", null);
         return this.addRaw(element).addEOL();
       }
-      /**
-       * Adds an HTML blockquote to the summary buffer
-       *
-       * @param {string} text quote text
-       * @param {string} cite (optional) citation url
-       *
-       * @returns {Summary} summary instance
-       */
       addQuote(text, cite) {
         const attrs = Object.assign({}, cite && { cite });
         const element = this.wrap("blockquote", text, attrs);
         return this.addRaw(element).addEOL();
       }
-      /**
-       * Adds an HTML anchor tag to the summary buffer
-       *
-       * @param {string} text link text/content
-       * @param {string} href hyperlink
-       *
-       * @returns {Summary} summary instance
-       */
       addLink(text, href) {
         const element = this.wrap("a", text, { href });
         return this.addRaw(element).addEOL();
@@ -2271,10 +2219,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info3(message) {
+    function info2(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info3;
+    exports.info = info2;
     function startGroup(name) {
       command_1.issue("group", name);
     }
@@ -3939,9 +3887,7 @@ var require_url_state_machine = __commonJS({
           this.url.fragment = "";
           this.state = "fragment";
         } else {
-          if (this.input.length - this.pointer - 1 === 0 || // remaining consists of 0 code points
-          !isWindowsDriveLetterCodePoints(c, this.input[this.pointer + 1]) || this.input.length - this.pointer - 1 >= 2 && // remaining has at least 2 code points
-          !fileOtherwiseCodePoints.has(this.input[this.pointer + 2])) {
+          if (this.input.length - this.pointer - 1 === 0 || !isWindowsDriveLetterCodePoints(c, this.input[this.pointer + 1]) || this.input.length - this.pointer - 1 >= 2 && !fileOtherwiseCodePoints.has(this.input[this.pointer + 2])) {
             this.url.host = this.base.host;
             this.url.path = this.base.path.slice();
             shortenPath(this.url);
@@ -4772,26 +4718,15 @@ var require_lib3 = __commonJS({
       get bodyUsed() {
         return this[INTERNALS].disturbed;
       },
-      /**
-       * Decode response as ArrayBuffer
-       *
-       * @return  Promise
-       */
       arrayBuffer() {
         return consumeBody.call(this).then(function(buf) {
           return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
         });
       },
-      /**
-       * Return raw response as Blob
-       *
-       * @return Promise
-       */
       blob() {
         let ct = this.headers && this.headers.get("content-type") || "";
         return consumeBody.call(this).then(function(buf) {
           return Object.assign(
-            // Prevent copying
             new Blob([], {
               type: ct.toLowerCase()
             }),
@@ -4801,11 +4736,6 @@ var require_lib3 = __commonJS({
           );
         });
       },
-      /**
-       * Decode response as json
-       *
-       * @return  Promise
-       */
       json() {
         var _this2 = this;
         return consumeBody.call(this).then(function(buffer) {
@@ -4816,30 +4746,14 @@ var require_lib3 = __commonJS({
           }
         });
       },
-      /**
-       * Decode response as text
-       *
-       * @return  Promise
-       */
       text() {
         return consumeBody.call(this).then(function(buffer) {
           return buffer.toString();
         });
       },
-      /**
-       * Decode response as buffer (non-spec api)
-       *
-       * @return  Promise
-       */
       buffer() {
         return consumeBody.call(this);
       },
-      /**
-       * Decode response as text, while automatically detecting the encoding and
-       * trying to decode to UTF-8 (non-spec api)
-       *
-       * @return  Promise
-       */
       textConverted() {
         var _this3 = this;
         return consumeBody.call(this).then(function(buffer) {
@@ -5023,8 +4937,7 @@ var require_lib3 = __commonJS({
       } else if (Buffer.isBuffer(body)) {
         return body.length;
       } else if (body && typeof body.getLengthSync === "function") {
-        if (body._lengthRetrievers && body._lengthRetrievers.length == 0 || // 1.x
-        body.hasKnownLength && body.hasKnownLength()) {
+        if (body._lengthRetrievers && body._lengthRetrievers.length == 0 || body.hasKnownLength && body.hasKnownLength()) {
           return body.getLengthSync();
         }
         return null;
@@ -5071,12 +4984,6 @@ var require_lib3 = __commonJS({
     }
     var MAP = Symbol("map");
     var Headers = class {
-      /**
-       * Headers class
-       *
-       * @param   Object  headers  Response headers
-       * @return  Void
-       */
       constructor() {
         let init = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : void 0;
         this[MAP] = /* @__PURE__ */ Object.create(null);
@@ -5121,12 +5028,6 @@ var require_lib3 = __commonJS({
           throw new TypeError("Provided initializer must be an object");
         }
       }
-      /**
-       * Return combined header value given name
-       *
-       * @param   String  name  Header name
-       * @return  Mixed
-       */
       get(name) {
         name = `${name}`;
         validateName(name);
@@ -5136,13 +5037,6 @@ var require_lib3 = __commonJS({
         }
         return this[MAP][key].join(", ");
       }
-      /**
-       * Iterate over all headers
-       *
-       * @param   Function  callback  Executed for each item with parameters (value, name, thisArg)
-       * @param   Boolean   thisArg   `this` context for callback function
-       * @return  Void
-       */
       forEach(callback) {
         let thisArg = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : void 0;
         let pairs = getHeaders(this);
@@ -5155,13 +5049,6 @@ var require_lib3 = __commonJS({
           i++;
         }
       }
-      /**
-       * Overwrite header values given name
-       *
-       * @param   String  name   Header name
-       * @param   String  value  Header value
-       * @return  Void
-       */
       set(name, value) {
         name = `${name}`;
         value = `${value}`;
@@ -5170,13 +5057,6 @@ var require_lib3 = __commonJS({
         const key = find(this[MAP], name);
         this[MAP][key !== void 0 ? key : name] = [value];
       }
-      /**
-       * Append a value onto existing header
-       *
-       * @param   String  name   Header name
-       * @param   String  value  Header value
-       * @return  Void
-       */
       append(name, value) {
         name = `${name}`;
         value = `${value}`;
@@ -5189,23 +5069,11 @@ var require_lib3 = __commonJS({
           this[MAP][name] = [value];
         }
       }
-      /**
-       * Check for header name existence
-       *
-       * @param   String   name  Header name
-       * @return  Boolean
-       */
       has(name) {
         name = `${name}`;
         validateName(name);
         return find(this[MAP], name) !== void 0;
       }
-      /**
-       * Delete all header values given name
-       *
-       * @param   String  name  Header name
-       * @return  Void
-       */
       delete(name) {
         name = `${name}`;
         validateName(name);
@@ -5214,37 +5082,15 @@ var require_lib3 = __commonJS({
           delete this[MAP][key];
         }
       }
-      /**
-       * Return raw headers (non-spec api)
-       *
-       * @return  Object
-       */
       raw() {
         return this[MAP];
       }
-      /**
-       * Get an iterator on keys.
-       *
-       * @return  Iterator
-       */
       keys() {
         return createHeadersIterator(this, "key");
       }
-      /**
-       * Get an iterator on values.
-       *
-       * @return  Iterator
-       */
       values() {
         return createHeadersIterator(this, "value");
       }
-      /**
-       * Get an iterator on entries.
-       *
-       * This is the default iterator of the Headers object.
-       *
-       * @return  Iterator
-       */
       [Symbol.iterator]() {
         return createHeadersIterator(this, "key+value");
       }
@@ -5376,9 +5222,6 @@ var require_lib3 = __commonJS({
       get status() {
         return this[INTERNALS$1].status;
       }
-      /**
-       * Convenience property representing if the request ended normally
-       */
       get ok() {
         return this[INTERNALS$1].status >= 200 && this[INTERNALS$1].status < 300;
       }
@@ -5391,11 +5234,6 @@ var require_lib3 = __commonJS({
       get headers() {
         return this[INTERNALS$1].headers;
       }
-      /**
-       * Clone this response
-       *
-       * @return  Response
-       */
       clone() {
         return new Response2(clone(this), {
           url: this.url,
@@ -5505,11 +5343,6 @@ var require_lib3 = __commonJS({
       get signal() {
         return this[INTERNALS$2].signal;
       }
-      /**
-       * Clone this request
-       *
-       * @return  Request
-       */
       clone() {
         return new Request(this);
       }
@@ -5956,8 +5789,7 @@ var require_dist_node5 = __commonJS({
       let headers = {};
       let status;
       let url;
-      const fetch = requestOptions.request && requestOptions.request.fetch || globalThis.fetch || /* istanbul ignore next */
-      nodeFetch;
+      const fetch = requestOptions.request && requestOptions.request.fetch || globalThis.fetch || nodeFetch;
       return fetch(requestOptions.url, Object.assign(
         {
           method: requestOptions.method,
@@ -5965,8 +5797,6 @@ var require_dist_node5 = __commonJS({
           headers: requestOptions.headers,
           redirect: requestOptions.redirect
         },
-        // `requestOptions.request.agent` type is incompatible
-        // see https://github.com/octokit/types.ts/pull/264
         requestOptions.request
       )).then(async (response) => {
         url = response.url;
@@ -6251,7 +6081,6 @@ var require_dist_node8 = __commonJS({
           baseUrl: request.request.endpoint.DEFAULTS.baseUrl,
           headers: {},
           request: Object.assign({}, options.request, {
-            // @ts-ignore internal usage only, no need to type
             hook: hook.bind(null, "request")
           }),
           mediaType: {
@@ -6298,11 +6127,6 @@ var require_dist_node8 = __commonJS({
           const auth = authStrategy(Object.assign({
             request: this.request,
             log: this.log,
-            // we pass the current octokit instance as well as its constructor options
-            // to allow for authentication strategies that return a new octokit instance
-            // that shares the same internal state as the current one. The original
-            // requirement for this was the "event-octokit" authentication strategy
-            // of https://github.com/probot/octokit-auth-probot.
             octokit: this,
             octokitOptions: otherOptions
           }, options.auth));
@@ -6329,12 +6153,6 @@ var require_dist_node8 = __commonJS({
         };
         return OctokitWithDefaults;
       }
-      /**
-       * Attach a plugin (or many) to your Octokit instance.
-       *
-       * @example
-       * const API = Octokit.plugin(plugin1, plugin2, plugin3, ...)
-       */
       static plugin(...newPlugins) {
         var _a;
         const currentPlugins = this.plugins;
@@ -8880,11 +8698,11 @@ var require_dist_node11 = __commonJS({
     }
     async function wrapRequest(state, request, options) {
       const limiter = new Bottleneck();
-      limiter.on("failed", function(error, info3) {
+      limiter.on("failed", function(error, info2) {
         const maxRetries = ~~error.request.request.retries;
         const after = ~~error.request.request.retryAfter;
-        options.request.retryCount = info3.retryCount + 1;
-        if (maxRetries > info3.retryCount) {
+        options.request.retryCount = info2.retryCount + 1;
+        if (maxRetries > info2.retryCount) {
           return after * state.retryAfterBaseValue;
         }
       });
@@ -8961,8 +8779,7 @@ var require_dist_node12 = __commonJS({
       const req = state.global.key(state.id).schedule(jobOptions, request, options);
       if (isGraphQL) {
         const res = await req;
-        if (res.data.errors != null && // @ts-expect-error
-        res.data.errors.some((error) => error.type === "RATE_LIMITED")) {
+        if (res.data.errors != null && res.data.errors.some((error) => error.type === "RATE_LIMITED")) {
           const error = Object.assign(new Error("GraphQL Rate Limit Exceeded"), {
             response: res,
             data: res.data
@@ -9012,7 +8829,6 @@ var require_dist_node12 = __commonJS({
         Bottleneck = BottleneckLight,
         id = "no-id",
         timeout = 1e3 * 60 * 2,
-        // Redis TTL: 2 minutes
         connection
       } = octokitOptions.throttle || {};
       if (!enabled) {
@@ -9056,8 +8872,8 @@ var require_dist_node12 = __commonJS({
       } : state.onSecondaryRateLimit);
       events.on("rate-limit", state.onRateLimit);
       events.on("error", (e) => octokit.log.warn("Error in throttling-plugin limit handler", e));
-      state.retryLimiter.on("failed", async function(error, info3) {
-        const [state2, request, options] = info3.args;
+      state.retryLimiter.on("failed", async function(error, info2) {
+        const [state2, request, options] = info2.args;
         const {
           pathname
         } = new URL(options.url, "http://github.test");
@@ -9211,8 +9027,7 @@ var require_dist_node14 = __commonJS({
       });
     }
     async function exchangeWebFlowCode(options) {
-      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
-      request.request;
+      const request$1 = options.request || request.request;
       const response = await oauthRequest(request$1, "POST /login/oauth/access_token", {
         client_id: options.clientId,
         client_secret: options.clientSecret,
@@ -9242,8 +9057,7 @@ var require_dist_node14 = __commonJS({
       return new Date(apiTimeInMs + expirationInSeconds * 1e3).toISOString();
     }
     async function createDeviceCode(options) {
-      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
-      request.request;
+      const request$1 = options.request || request.request;
       const parameters = {
         client_id: options.clientId
       };
@@ -9253,8 +9067,7 @@ var require_dist_node14 = __commonJS({
       return oauthRequest(request$1, "POST /login/device/code", parameters);
     }
     async function exchangeDeviceCode(options) {
-      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
-      request.request;
+      const request$1 = options.request || request.request;
       const response = await oauthRequest(request$1, "POST /login/oauth/access_token", {
         client_id: options.clientId,
         device_code: options.code,
@@ -9285,8 +9098,7 @@ var require_dist_node14 = __commonJS({
       return new Date(apiTimeInMs + expirationInSeconds * 1e3).toISOString();
     }
     async function checkToken(options) {
-      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
-      request.request;
+      const request$1 = options.request || request.request;
       const response = await request$1("POST /applications/{client_id}/token", {
         headers: {
           authorization: `basic ${btoa2(`${options.clientId}:${options.clientSecret}`)}`
@@ -9312,8 +9124,7 @@ var require_dist_node14 = __commonJS({
       };
     }
     async function refreshToken(options) {
-      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
-      request.request;
+      const request$1 = options.request || request.request;
       const response = await oauthRequest(request$1, "POST /login/oauth/access_token", {
         client_id: options.clientId,
         client_secret: options.clientSecret,
@@ -9347,8 +9158,7 @@ var require_dist_node14 = __commonJS({
         token,
         ...requestOptions
       } = options;
-      const request$1 = optionsRequest || /* istanbul ignore next: we always pass a custom request in tests */
-      request.request;
+      const request$1 = optionsRequest || request.request;
       const response = await request$1("POST /applications/{client_id}/token/scoped", {
         headers: {
           authorization: `basic ${btoa2(`${clientId}:${clientSecret}`)}`
@@ -9371,8 +9181,7 @@ var require_dist_node14 = __commonJS({
       };
     }
     async function resetToken(options) {
-      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
-      request.request;
+      const request$1 = options.request || request.request;
       const auth = btoa2(`${options.clientId}:${options.clientSecret}`);
       const response = await request$1("PATCH /applications/{client_id}/token", {
         headers: {
@@ -9399,8 +9208,7 @@ var require_dist_node14 = __commonJS({
       };
     }
     async function deleteToken(options) {
-      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
-      request.request;
+      const request$1 = options.request || request.request;
       const auth = btoa2(`${options.clientId}:${options.clientSecret}`);
       return request$1("DELETE /applications/{client_id}/token", {
         headers: {
@@ -9411,8 +9219,7 @@ var require_dist_node14 = __commonJS({
       });
     }
     async function deleteAuthorization(options) {
-      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
-      request.request;
+      const request$1 = options.request || request.request;
       const auth = btoa2(`${options.clientId}:${options.clientSecret}`);
       return request$1("DELETE /applications/{client_id}/grant", {
         headers: {
@@ -9454,7 +9261,6 @@ var require_dist_node15 = __commonJS({
         clientType: state.clientType,
         clientId: state.clientId,
         request: options.request || state.request,
-        // @ts-expect-error the extra code to make TS happy is not worth it
         scopes: options.auth.scopes || state.scopes
       });
       await state.onVerification(verification);
@@ -9583,7 +9389,7 @@ var require_dist_node16 = __commonJS({
     var authOauthDevice = require_dist_node15();
     var oauthMethods = require_dist_node14();
     var btoa2 = _interopDefault(require_btoa_node());
-    var VERSION = "2.1.0";
+    var VERSION = "2.0.4";
     async function getAuthentication(state) {
       if ("code" in state.strategyOptions) {
         const {
@@ -9592,7 +9398,6 @@ var require_dist_node16 = __commonJS({
           clientId: state.clientId,
           clientSecret: state.clientSecret,
           clientType: state.clientType,
-          onTokenCreated: state.onTokenCreated,
           ...state.strategyOptions,
           request: state.request
         });
@@ -9606,7 +9411,6 @@ var require_dist_node16 = __commonJS({
         const deviceAuth = authOauthDevice.createOAuthDeviceAuth({
           clientType: state.clientType,
           clientId: state.clientId,
-          onTokenCreated: state.onTokenCreated,
           ...state.strategyOptions,
           request: state.request
         });
@@ -9625,7 +9429,6 @@ var require_dist_node16 = __commonJS({
           clientId: state.clientId,
           clientSecret: state.clientSecret,
           clientType: state.clientType,
-          onTokenCreated: state.onTokenCreated,
           ...state.strategyOptions
         };
       }
@@ -9658,16 +9461,12 @@ var require_dist_node16 = __commonJS({
         }
       }
       if (options.type === "refresh") {
-        var _state$onTokenCreated;
         if (state.clientType === "oauth-app") {
           throw new Error("[@octokit/auth-oauth-user] OAuth Apps do not support expiring tokens");
         }
         if (!currentAuthentication.hasOwnProperty("expiresAt")) {
           throw new Error("[@octokit/auth-oauth-user] Refresh token missing");
         }
-        await ((_state$onTokenCreated = state.onTokenCreated) === null || _state$onTokenCreated === void 0 ? void 0 : _state$onTokenCreated.call(state, state.authentication, {
-          type: options.type
-        }));
       }
       if (options.type === "check" || options.type === "reset") {
         const method = options.type === "check" ? oauthMethods.checkToken : oauthMethods.resetToken;
@@ -9675,7 +9474,6 @@ var require_dist_node16 = __commonJS({
           const {
             authentication
           } = await method({
-            // @ts-expect-error making TS happy would require unnecessary code so no
             clientType: state.clientType,
             clientId: state.clientId,
             clientSecret: state.clientSecret,
@@ -9685,15 +9483,8 @@ var require_dist_node16 = __commonJS({
           state.authentication = {
             tokenType: "oauth",
             type: "token",
-            // @ts-expect-error TBD
             ...authentication
           };
-          if (options.type === "reset") {
-            var _state$onTokenCreated2;
-            await ((_state$onTokenCreated2 = state.onTokenCreated) === null || _state$onTokenCreated2 === void 0 ? void 0 : _state$onTokenCreated2.call(state, state.authentication, {
-              type: options.type
-            }));
-          }
           return state.authentication;
         } catch (error) {
           if (error.status === 404) {
@@ -9707,7 +9498,6 @@ var require_dist_node16 = __commonJS({
         const method = options.type === "delete" ? oauthMethods.deleteToken : oauthMethods.deleteAuthorization;
         try {
           await method({
-            // @ts-expect-error making TS happy would require unnecessary code so no
             clientType: state.clientType,
             clientId: state.clientId,
             clientSecret: state.clientSecret,
@@ -9758,19 +9548,16 @@ var require_dist_node16 = __commonJS({
           "user-agent": `octokit-auth-oauth-app.js/${VERSION} ${universalUserAgent.getUserAgent()}`
         }
       }),
-      onTokenCreated,
       ...strategyOptions
     }) {
       const state = Object.assign({
         clientType,
         clientId,
         clientSecret,
-        onTokenCreated,
         strategyOptions,
         request: request$1
       });
       return Object.assign(auth.bind(null, state), {
-        // @ts-expect-error not worth the extra code needed to appease TS
         hook: hook.bind(null, state)
       });
     }
@@ -9873,6 +9660,7 @@ var require_dist_node17 = __commonJS({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/safe-buffer/index.js
 =======
 // node_modules/jsonwebtoken/lib/JsonWebTokenError.js
@@ -9926,6 +9714,9 @@ var require_TokenExpiredError = __commonJS({
 
 // node_modules/safe-buffer/index.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/safe-buffer/index.js
+>>>>>>> 83d3e8c (Rebase)
 var require_safe_buffer = __commonJS({
   "../../node_modules/safe-buffer/index.js"(exports, module2) {
     var buffer = require("buffer");
@@ -9944,7 +9735,6 @@ var require_safe_buffer = __commonJS({
     function SafeBuffer(arg, encodingOrOffset, length) {
       return Buffer2(arg, encodingOrOffset, length);
     }
-    SafeBuffer.prototype = Object.create(Buffer2.prototype);
     copyProps(Buffer2, SafeBuffer);
     SafeBuffer.from = function(arg, encodingOrOffset, length) {
       if (typeof arg === "number") {
@@ -10702,6 +10492,9 @@ var require_decode = __commonJS({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 83d3e8c (Rebase)
 // ../../node_modules/jsonwebtoken/lib/JsonWebTokenError.js
 var require_JsonWebTokenError = __commonJS({
   "../../node_modules/jsonwebtoken/lib/JsonWebTokenError.js"(exports, module2) {
@@ -10752,9 +10545,12 @@ var require_TokenExpiredError = __commonJS({
 });
 
 // ../../node_modules/ms/index.js
+<<<<<<< HEAD
 =======
 // node_modules/ms/index.js
 >>>>>>> c22869b (CodeQL await warning)
+=======
+>>>>>>> 83d3e8c (Rebase)
 var require_ms = __commonJS({
   "../../node_modules/ms/index.js"(exports, module2) {
     var s = 1e3;
@@ -10892,6 +10688,9 @@ var require_timespan = __commonJS({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 83d3e8c (Rebase)
 // ../../node_modules/jsonwebtoken/node_modules/semver/semver.js
 var require_semver = __commonJS({
   "../../node_modules/jsonwebtoken/node_modules/semver/semver.js"(exports, module2) {
@@ -10908,367 +10707,114 @@ var require_semver = __commonJS({
       };
     }
     exports.SEMVER_SPEC_VERSION = "2.0.0";
+<<<<<<< HEAD
 =======
 // node_modules/semver/internal/constants.js
 var require_constants = __commonJS({
   "node_modules/semver/internal/constants.js"(exports, module2) {
     var SEMVER_SPEC_VERSION = "2.0.0";
 >>>>>>> c22869b (CodeQL await warning)
+=======
+>>>>>>> 83d3e8c (Rebase)
     var MAX_LENGTH = 256;
-    var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || /* istanbul ignore next */
-    9007199254740991;
+    var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
     var MAX_SAFE_COMPONENT_LENGTH = 16;
-    module2.exports = {
-      SEMVER_SPEC_VERSION,
-      MAX_LENGTH,
-      MAX_SAFE_INTEGER,
-      MAX_SAFE_COMPONENT_LENGTH
-    };
-  }
-});
-
-// node_modules/semver/internal/debug.js
-var require_debug = __commonJS({
-  "node_modules/semver/internal/debug.js"(exports, module2) {
-    var debug3 = typeof process === "object" && process.env && process.env.NODE_DEBUG && /\bsemver\b/i.test(process.env.NODE_DEBUG) ? (...args) => console.error("SEMVER", ...args) : () => {
-    };
-    module2.exports = debug3;
-  }
-});
-
-// node_modules/semver/internal/re.js
-var require_re = __commonJS({
-  "node_modules/semver/internal/re.js"(exports, module2) {
-    var { MAX_SAFE_COMPONENT_LENGTH } = require_constants();
-    var debug3 = require_debug();
-    exports = module2.exports = {};
     var re = exports.re = [];
     var src = exports.src = [];
-    var t = exports.t = {};
     var R = 0;
-    var createToken = (name, value, isGlobal) => {
-      const index = R++;
-      debug3(name, index, value);
-      t[name] = index;
-      src[index] = value;
-      re[index] = new RegExp(value, isGlobal ? "g" : void 0);
-    };
-    createToken("NUMERICIDENTIFIER", "0|[1-9]\\d*");
-    createToken("NUMERICIDENTIFIERLOOSE", "[0-9]+");
-    createToken("NONNUMERICIDENTIFIER", "\\d*[a-zA-Z-][a-zA-Z0-9-]*");
-    createToken("MAINVERSION", `(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})\\.(${src[t.NUMERICIDENTIFIER]})`);
-    createToken("MAINVERSIONLOOSE", `(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})\\.(${src[t.NUMERICIDENTIFIERLOOSE]})`);
-    createToken("PRERELEASEIDENTIFIER", `(?:${src[t.NUMERICIDENTIFIER]}|${src[t.NONNUMERICIDENTIFIER]})`);
-    createToken("PRERELEASEIDENTIFIERLOOSE", `(?:${src[t.NUMERICIDENTIFIERLOOSE]}|${src[t.NONNUMERICIDENTIFIER]})`);
-    createToken("PRERELEASE", `(?:-(${src[t.PRERELEASEIDENTIFIER]}(?:\\.${src[t.PRERELEASEIDENTIFIER]})*))`);
-    createToken("PRERELEASELOOSE", `(?:-?(${src[t.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${src[t.PRERELEASEIDENTIFIERLOOSE]})*))`);
-    createToken("BUILDIDENTIFIER", "[0-9A-Za-z-]+");
-    createToken("BUILD", `(?:\\+(${src[t.BUILDIDENTIFIER]}(?:\\.${src[t.BUILDIDENTIFIER]})*))`);
-    createToken("FULLPLAIN", `v?${src[t.MAINVERSION]}${src[t.PRERELEASE]}?${src[t.BUILD]}?`);
-    createToken("FULL", `^${src[t.FULLPLAIN]}$`);
-    createToken("LOOSEPLAIN", `[v=\\s]*${src[t.MAINVERSIONLOOSE]}${src[t.PRERELEASELOOSE]}?${src[t.BUILD]}?`);
-    createToken("LOOSE", `^${src[t.LOOSEPLAIN]}$`);
-    createToken("GTLT", "((?:<|>)?=?)");
-    createToken("XRANGEIDENTIFIERLOOSE", `${src[t.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`);
-    createToken("XRANGEIDENTIFIER", `${src[t.NUMERICIDENTIFIER]}|x|X|\\*`);
-    createToken("XRANGEPLAIN", `[v=\\s]*(${src[t.XRANGEIDENTIFIER]})(?:\\.(${src[t.XRANGEIDENTIFIER]})(?:\\.(${src[t.XRANGEIDENTIFIER]})(?:${src[t.PRERELEASE]})?${src[t.BUILD]}?)?)?`);
-    createToken("XRANGEPLAINLOOSE", `[v=\\s]*(${src[t.XRANGEIDENTIFIERLOOSE]})(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})(?:\\.(${src[t.XRANGEIDENTIFIERLOOSE]})(?:${src[t.PRERELEASELOOSE]})?${src[t.BUILD]}?)?)?`);
-    createToken("XRANGE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAIN]}$`);
-    createToken("XRANGELOOSE", `^${src[t.GTLT]}\\s*${src[t.XRANGEPLAINLOOSE]}$`);
-    createToken("COERCE", `${"(^|[^\\d])(\\d{1,"}${MAX_SAFE_COMPONENT_LENGTH}})(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?(?:\\.(\\d{1,${MAX_SAFE_COMPONENT_LENGTH}}))?(?:$|[^\\d])`);
-    createToken("COERCERTL", src[t.COERCE], true);
-    createToken("LONETILDE", "(?:~>?)");
-    createToken("TILDETRIM", `(\\s*)${src[t.LONETILDE]}\\s+`, true);
-    exports.tildeTrimReplace = "$1~";
-    createToken("TILDE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAIN]}$`);
-    createToken("TILDELOOSE", `^${src[t.LONETILDE]}${src[t.XRANGEPLAINLOOSE]}$`);
-    createToken("LONECARET", "(?:\\^)");
-    createToken("CARETTRIM", `(\\s*)${src[t.LONECARET]}\\s+`, true);
-    exports.caretTrimReplace = "$1^";
-    createToken("CARET", `^${src[t.LONECARET]}${src[t.XRANGEPLAIN]}$`);
-    createToken("CARETLOOSE", `^${src[t.LONECARET]}${src[t.XRANGEPLAINLOOSE]}$`);
-    createToken("COMPARATORLOOSE", `^${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]})$|^$`);
-    createToken("COMPARATOR", `^${src[t.GTLT]}\\s*(${src[t.FULLPLAIN]})$|^$`);
-    createToken("COMPARATORTRIM", `(\\s*)${src[t.GTLT]}\\s*(${src[t.LOOSEPLAIN]}|${src[t.XRANGEPLAIN]})`, true);
-    exports.comparatorTrimReplace = "$1$2$3";
-    createToken("HYPHENRANGE", `^\\s*(${src[t.XRANGEPLAIN]})\\s+-\\s+(${src[t.XRANGEPLAIN]})\\s*$`);
-    createToken("HYPHENRANGELOOSE", `^\\s*(${src[t.XRANGEPLAINLOOSE]})\\s+-\\s+(${src[t.XRANGEPLAINLOOSE]})\\s*$`);
-    createToken("STAR", "(<|>)?=?\\s*\\*");
-    createToken("GTE0", "^\\s*>=\\s*0\\.0\\.0\\s*$");
-    createToken("GTE0PRE", "^\\s*>=\\s*0\\.0\\.0-0\\s*$");
-  }
-});
-
-// node_modules/semver/internal/parse-options.js
-var require_parse_options = __commonJS({
-  "node_modules/semver/internal/parse-options.js"(exports, module2) {
-    var opts = ["includePrerelease", "loose", "rtl"];
-    var parseOptions = (options) => !options ? {} : typeof options !== "object" ? { loose: true } : opts.filter((k) => options[k]).reduce((o, k) => {
-      o[k] = true;
-      return o;
-    }, {});
-    module2.exports = parseOptions;
-  }
-});
-
-// node_modules/semver/internal/identifiers.js
-var require_identifiers = __commonJS({
-  "node_modules/semver/internal/identifiers.js"(exports, module2) {
-    var numeric = /^[0-9]+$/;
-    var compareIdentifiers = (a, b) => {
-      const anum = numeric.test(a);
-      const bnum = numeric.test(b);
-      if (anum && bnum) {
-        a = +a;
-        b = +b;
+    var NUMERICIDENTIFIER = R++;
+    src[NUMERICIDENTIFIER] = "0|[1-9]\\d*";
+    var NUMERICIDENTIFIERLOOSE = R++;
+    src[NUMERICIDENTIFIERLOOSE] = "[0-9]+";
+    var NONNUMERICIDENTIFIER = R++;
+    src[NONNUMERICIDENTIFIER] = "\\d*[a-zA-Z-][a-zA-Z0-9-]*";
+    var MAINVERSION = R++;
+    src[MAINVERSION] = "(" + src[NUMERICIDENTIFIER] + ")\\.(" + src[NUMERICIDENTIFIER] + ")\\.(" + src[NUMERICIDENTIFIER] + ")";
+    var MAINVERSIONLOOSE = R++;
+    src[MAINVERSIONLOOSE] = "(" + src[NUMERICIDENTIFIERLOOSE] + ")\\.(" + src[NUMERICIDENTIFIERLOOSE] + ")\\.(" + src[NUMERICIDENTIFIERLOOSE] + ")";
+    var PRERELEASEIDENTIFIER = R++;
+    src[PRERELEASEIDENTIFIER] = "(?:" + src[NUMERICIDENTIFIER] + "|" + src[NONNUMERICIDENTIFIER] + ")";
+    var PRERELEASEIDENTIFIERLOOSE = R++;
+    src[PRERELEASEIDENTIFIERLOOSE] = "(?:" + src[NUMERICIDENTIFIERLOOSE] + "|" + src[NONNUMERICIDENTIFIER] + ")";
+    var PRERELEASE = R++;
+    src[PRERELEASE] = "(?:-(" + src[PRERELEASEIDENTIFIER] + "(?:\\." + src[PRERELEASEIDENTIFIER] + ")*))";
+    var PRERELEASELOOSE = R++;
+    src[PRERELEASELOOSE] = "(?:-?(" + src[PRERELEASEIDENTIFIERLOOSE] + "(?:\\." + src[PRERELEASEIDENTIFIERLOOSE] + ")*))";
+    var BUILDIDENTIFIER = R++;
+    src[BUILDIDENTIFIER] = "[0-9A-Za-z-]+";
+    var BUILD = R++;
+    src[BUILD] = "(?:\\+(" + src[BUILDIDENTIFIER] + "(?:\\." + src[BUILDIDENTIFIER] + ")*))";
+    var FULL = R++;
+    var FULLPLAIN = "v?" + src[MAINVERSION] + src[PRERELEASE] + "?" + src[BUILD] + "?";
+    src[FULL] = "^" + FULLPLAIN + "$";
+    var LOOSEPLAIN = "[v=\\s]*" + src[MAINVERSIONLOOSE] + src[PRERELEASELOOSE] + "?" + src[BUILD] + "?";
+    var LOOSE = R++;
+    src[LOOSE] = "^" + LOOSEPLAIN + "$";
+    var GTLT = R++;
+    src[GTLT] = "((?:<|>)?=?)";
+    var XRANGEIDENTIFIERLOOSE = R++;
+    src[XRANGEIDENTIFIERLOOSE] = src[NUMERICIDENTIFIERLOOSE] + "|x|X|\\*";
+    var XRANGEIDENTIFIER = R++;
+    src[XRANGEIDENTIFIER] = src[NUMERICIDENTIFIER] + "|x|X|\\*";
+    var XRANGEPLAIN = R++;
+    src[XRANGEPLAIN] = "[v=\\s]*(" + src[XRANGEIDENTIFIER] + ")(?:\\.(" + src[XRANGEIDENTIFIER] + ")(?:\\.(" + src[XRANGEIDENTIFIER] + ")(?:" + src[PRERELEASE] + ")?" + src[BUILD] + "?)?)?";
+    var XRANGEPLAINLOOSE = R++;
+    src[XRANGEPLAINLOOSE] = "[v=\\s]*(" + src[XRANGEIDENTIFIERLOOSE] + ")(?:\\.(" + src[XRANGEIDENTIFIERLOOSE] + ")(?:\\.(" + src[XRANGEIDENTIFIERLOOSE] + ")(?:" + src[PRERELEASELOOSE] + ")?" + src[BUILD] + "?)?)?";
+    var XRANGE = R++;
+    src[XRANGE] = "^" + src[GTLT] + "\\s*" + src[XRANGEPLAIN] + "$";
+    var XRANGELOOSE = R++;
+    src[XRANGELOOSE] = "^" + src[GTLT] + "\\s*" + src[XRANGEPLAINLOOSE] + "$";
+    var COERCE = R++;
+    src[COERCE] = "(?:^|[^\\d])(\\d{1," + MAX_SAFE_COMPONENT_LENGTH + "})(?:\\.(\\d{1," + MAX_SAFE_COMPONENT_LENGTH + "}))?(?:\\.(\\d{1," + MAX_SAFE_COMPONENT_LENGTH + "}))?(?:$|[^\\d])";
+    var LONETILDE = R++;
+    src[LONETILDE] = "(?:~>?)";
+    var TILDETRIM = R++;
+    src[TILDETRIM] = "(\\s*)" + src[LONETILDE] + "\\s+";
+    re[TILDETRIM] = new RegExp(src[TILDETRIM], "g");
+    var tildeTrimReplace = "$1~";
+    var TILDE = R++;
+    src[TILDE] = "^" + src[LONETILDE] + src[XRANGEPLAIN] + "$";
+    var TILDELOOSE = R++;
+    src[TILDELOOSE] = "^" + src[LONETILDE] + src[XRANGEPLAINLOOSE] + "$";
+    var LONECARET = R++;
+    src[LONECARET] = "(?:\\^)";
+    var CARETTRIM = R++;
+    src[CARETTRIM] = "(\\s*)" + src[LONECARET] + "\\s+";
+    re[CARETTRIM] = new RegExp(src[CARETTRIM], "g");
+    var caretTrimReplace = "$1^";
+    var CARET = R++;
+    src[CARET] = "^" + src[LONECARET] + src[XRANGEPLAIN] + "$";
+    var CARETLOOSE = R++;
+    src[CARETLOOSE] = "^" + src[LONECARET] + src[XRANGEPLAINLOOSE] + "$";
+    var COMPARATORLOOSE = R++;
+    src[COMPARATORLOOSE] = "^" + src[GTLT] + "\\s*(" + LOOSEPLAIN + ")$|^$";
+    var COMPARATOR = R++;
+    src[COMPARATOR] = "^" + src[GTLT] + "\\s*(" + FULLPLAIN + ")$|^$";
+    var COMPARATORTRIM = R++;
+    src[COMPARATORTRIM] = "(\\s*)" + src[GTLT] + "\\s*(" + LOOSEPLAIN + "|" + src[XRANGEPLAIN] + ")";
+    re[COMPARATORTRIM] = new RegExp(src[COMPARATORTRIM], "g");
+    var comparatorTrimReplace = "$1$2$3";
+    var HYPHENRANGE = R++;
+    src[HYPHENRANGE] = "^\\s*(" + src[XRANGEPLAIN] + ")\\s+-\\s+(" + src[XRANGEPLAIN] + ")\\s*$";
+    var HYPHENRANGELOOSE = R++;
+    src[HYPHENRANGELOOSE] = "^\\s*(" + src[XRANGEPLAINLOOSE] + ")\\s+-\\s+(" + src[XRANGEPLAINLOOSE] + ")\\s*$";
+    var STAR = R++;
+    src[STAR] = "(<|>)?=?\\s*\\*";
+    for (i = 0; i < R; i++) {
+      debug3(i, src[i]);
+      if (!re[i]) {
+        re[i] = new RegExp(src[i]);
       }
-      return a === b ? 0 : anum && !bnum ? -1 : bnum && !anum ? 1 : a < b ? -1 : 1;
-    };
-    var rcompareIdentifiers = (a, b) => compareIdentifiers(b, a);
-    module2.exports = {
-      compareIdentifiers,
-      rcompareIdentifiers
-    };
-  }
-});
-
-// node_modules/semver/classes/semver.js
-var require_semver = __commonJS({
-  "node_modules/semver/classes/semver.js"(exports, module2) {
-    var debug3 = require_debug();
-    var { MAX_LENGTH, MAX_SAFE_INTEGER } = require_constants();
-    var { re, t } = require_re();
-    var parseOptions = require_parse_options();
-    var { compareIdentifiers } = require_identifiers();
-    var SemVer = class {
-      constructor(version2, options) {
-        options = parseOptions(options);
-        if (version2 instanceof SemVer) {
-          if (version2.loose === !!options.loose && version2.includePrerelease === !!options.includePrerelease) {
-            return version2;
-          } else {
-            version2 = version2.version;
-          }
-        } else if (typeof version2 !== "string") {
-          throw new TypeError(`Invalid Version: ${version2}`);
-        }
-        if (version2.length > MAX_LENGTH) {
-          throw new TypeError(
-            `version is longer than ${MAX_LENGTH} characters`
-          );
-        }
-        debug3("SemVer", version2, options);
-        this.options = options;
-        this.loose = !!options.loose;
-        this.includePrerelease = !!options.includePrerelease;
-        const m = version2.trim().match(options.loose ? re[t.LOOSE] : re[t.FULL]);
-        if (!m) {
-          throw new TypeError(`Invalid Version: ${version2}`);
-        }
-        this.raw = version2;
-        this.major = +m[1];
-        this.minor = +m[2];
-        this.patch = +m[3];
-        if (this.major > MAX_SAFE_INTEGER || this.major < 0) {
-          throw new TypeError("Invalid major version");
-        }
-        if (this.minor > MAX_SAFE_INTEGER || this.minor < 0) {
-          throw new TypeError("Invalid minor version");
-        }
-        if (this.patch > MAX_SAFE_INTEGER || this.patch < 0) {
-          throw new TypeError("Invalid patch version");
-        }
-        if (!m[4]) {
-          this.prerelease = [];
-        } else {
-          this.prerelease = m[4].split(".").map((id) => {
-            if (/^[0-9]+$/.test(id)) {
-              const num = +id;
-              if (num >= 0 && num < MAX_SAFE_INTEGER) {
-                return num;
-              }
-            }
-            return id;
-          });
-        }
-        this.build = m[5] ? m[5].split(".") : [];
-        this.format();
+    }
+    var i;
+    exports.parse = parse2;
+    function parse2(version2, options) {
+      if (!options || typeof options !== "object") {
+        options = {
+          loose: !!options,
+          includePrerelease: false
+        };
       }
-      format() {
-        this.version = `${this.major}.${this.minor}.${this.patch}`;
-        if (this.prerelease.length) {
-          this.version += `-${this.prerelease.join(".")}`;
-        }
-        return this.version;
-      }
-      toString() {
-        return this.version;
-      }
-      compare(other) {
-        debug3("SemVer.compare", this.version, this.options, other);
-        if (!(other instanceof SemVer)) {
-          if (typeof other === "string" && other === this.version) {
-            return 0;
-          }
-          other = new SemVer(other, this.options);
-        }
-        if (other.version === this.version) {
-          return 0;
-        }
-        return this.compareMain(other) || this.comparePre(other);
-      }
-      compareMain(other) {
-        if (!(other instanceof SemVer)) {
-          other = new SemVer(other, this.options);
-        }
-        return compareIdentifiers(this.major, other.major) || compareIdentifiers(this.minor, other.minor) || compareIdentifiers(this.patch, other.patch);
-      }
-      comparePre(other) {
-        if (!(other instanceof SemVer)) {
-          other = new SemVer(other, this.options);
-        }
-        if (this.prerelease.length && !other.prerelease.length) {
-          return -1;
-        } else if (!this.prerelease.length && other.prerelease.length) {
-          return 1;
-        } else if (!this.prerelease.length && !other.prerelease.length) {
-          return 0;
-        }
-        let i = 0;
-        do {
-          const a = this.prerelease[i];
-          const b = other.prerelease[i];
-          debug3("prerelease compare", i, a, b);
-          if (a === void 0 && b === void 0) {
-            return 0;
-          } else if (b === void 0) {
-            return 1;
-          } else if (a === void 0) {
-            return -1;
-          } else if (a === b) {
-            continue;
-          } else {
-            return compareIdentifiers(a, b);
-          }
-        } while (++i);
-      }
-      compareBuild(other) {
-        if (!(other instanceof SemVer)) {
-          other = new SemVer(other, this.options);
-        }
-        let i = 0;
-        do {
-          const a = this.build[i];
-          const b = other.build[i];
-          debug3("prerelease compare", i, a, b);
-          if (a === void 0 && b === void 0) {
-            return 0;
-          } else if (b === void 0) {
-            return 1;
-          } else if (a === void 0) {
-            return -1;
-          } else if (a === b) {
-            continue;
-          } else {
-            return compareIdentifiers(a, b);
-          }
-        } while (++i);
-      }
-      // preminor will bump the version up to the next minor release, and immediately
-      // down to pre-release. premajor and prepatch work the same way.
-      inc(release, identifier) {
-        switch (release) {
-          case "premajor":
-            this.prerelease.length = 0;
-            this.patch = 0;
-            this.minor = 0;
-            this.major++;
-            this.inc("pre", identifier);
-            break;
-          case "preminor":
-            this.prerelease.length = 0;
-            this.patch = 0;
-            this.minor++;
-            this.inc("pre", identifier);
-            break;
-          case "prepatch":
-            this.prerelease.length = 0;
-            this.inc("patch", identifier);
-            this.inc("pre", identifier);
-            break;
-          case "prerelease":
-            if (this.prerelease.length === 0) {
-              this.inc("patch", identifier);
-            }
-            this.inc("pre", identifier);
-            break;
-          case "major":
-            if (this.minor !== 0 || this.patch !== 0 || this.prerelease.length === 0) {
-              this.major++;
-            }
-            this.minor = 0;
-            this.patch = 0;
-            this.prerelease = [];
-            break;
-          case "minor":
-            if (this.patch !== 0 || this.prerelease.length === 0) {
-              this.minor++;
-            }
-            this.patch = 0;
-            this.prerelease = [];
-            break;
-          case "patch":
-            if (this.prerelease.length === 0) {
-              this.patch++;
-            }
-            this.prerelease = [];
-            break;
-          case "pre":
-            if (this.prerelease.length === 0) {
-              this.prerelease = [0];
-            } else {
-              let i = this.prerelease.length;
-              while (--i >= 0) {
-                if (typeof this.prerelease[i] === "number") {
-                  this.prerelease[i]++;
-                  i = -2;
-                }
-              }
-              if (i === -1) {
-                this.prerelease.push(0);
-              }
-            }
-            if (identifier) {
-              if (compareIdentifiers(this.prerelease[0], identifier) === 0) {
-                if (isNaN(this.prerelease[1])) {
-                  this.prerelease = [identifier, 0];
-                }
-              } else {
-                this.prerelease = [identifier, 0];
-              }
-            }
-            break;
-          default:
-            throw new Error(`invalid increment argument: ${release}`);
-        }
-        this.format();
-        this.raw = this.version;
-        return this;
-      }
-    };
-    module2.exports = SemVer;
-  }
-});
-
-// node_modules/semver/functions/parse.js
-var require_parse = __commonJS({
-  "node_modules/semver/functions/parse.js"(exports, module2) {
-    var { MAX_LENGTH } = require_constants();
-    var { re, t } = require_re();
-    var SemVer = require_semver();
-    var parseOptions = require_parse_options();
-    var parse2 = (version2, options) => {
-      options = parseOptions(options);
       if (version2 instanceof SemVer) {
         return version2;
       }
@@ -11278,7 +10824,7 @@ var require_parse = __commonJS({
       if (version2.length > MAX_LENGTH) {
         return null;
       }
-      const r = options.loose ? re[t.LOOSE] : re[t.FULL];
+      var r = options.loose ? re[LOOSE] : re[FULL];
       if (!r.test(version2)) {
         return null;
       }
@@ -11287,90 +10833,232 @@ var require_parse = __commonJS({
       } catch (er) {
         return null;
       }
-    };
-    module2.exports = parse2;
-  }
-});
-
-// node_modules/semver/functions/valid.js
-var require_valid = __commonJS({
-  "node_modules/semver/functions/valid.js"(exports, module2) {
-    var parse2 = require_parse();
-    var valid = (version2, options) => {
-      const v = parse2(version2, options);
+    }
+    exports.valid = valid;
+    function valid(version2, options) {
+      var v = parse2(version2, options);
       return v ? v.version : null;
-    };
-    module2.exports = valid;
-  }
-});
-
-// node_modules/semver/functions/clean.js
-var require_clean = __commonJS({
-  "node_modules/semver/functions/clean.js"(exports, module2) {
-    var parse2 = require_parse();
-    var clean = (version2, options) => {
-      const s = parse2(version2.trim().replace(/^[=v]+/, ""), options);
+    }
+    exports.clean = clean;
+    function clean(version2, options) {
+      var s = parse2(version2.trim().replace(/^[=v]+/, ""), options);
       return s ? s.version : null;
+    }
+    exports.SemVer = SemVer;
+    function SemVer(version2, options) {
+      if (!options || typeof options !== "object") {
+        options = {
+          loose: !!options,
+          includePrerelease: false
+        };
+      }
+      if (version2 instanceof SemVer) {
+        if (version2.loose === options.loose) {
+          return version2;
+        } else {
+          version2 = version2.version;
+        }
+      } else if (typeof version2 !== "string") {
+        throw new TypeError("Invalid Version: " + version2);
+      }
+      if (version2.length > MAX_LENGTH) {
+        throw new TypeError("version is longer than " + MAX_LENGTH + " characters");
+      }
+      if (!(this instanceof SemVer)) {
+        return new SemVer(version2, options);
+      }
+      debug3("SemVer", version2, options);
+      this.options = options;
+      this.loose = !!options.loose;
+      var m = version2.trim().match(options.loose ? re[LOOSE] : re[FULL]);
+      if (!m) {
+        throw new TypeError("Invalid Version: " + version2);
+      }
+      this.raw = version2;
+      this.major = +m[1];
+      this.minor = +m[2];
+      this.patch = +m[3];
+      if (this.major > MAX_SAFE_INTEGER || this.major < 0) {
+        throw new TypeError("Invalid major version");
+      }
+      if (this.minor > MAX_SAFE_INTEGER || this.minor < 0) {
+        throw new TypeError("Invalid minor version");
+      }
+      if (this.patch > MAX_SAFE_INTEGER || this.patch < 0) {
+        throw new TypeError("Invalid patch version");
+      }
+      if (!m[4]) {
+        this.prerelease = [];
+      } else {
+        this.prerelease = m[4].split(".").map(function(id) {
+          if (/^[0-9]+$/.test(id)) {
+            var num = +id;
+            if (num >= 0 && num < MAX_SAFE_INTEGER) {
+              return num;
+            }
+          }
+          return id;
+        });
+      }
+      this.build = m[5] ? m[5].split(".") : [];
+      this.format();
+    }
+    SemVer.prototype.format = function() {
+      this.version = this.major + "." + this.minor + "." + this.patch;
+      if (this.prerelease.length) {
+        this.version += "-" + this.prerelease.join(".");
+      }
+      return this.version;
     };
-    module2.exports = clean;
-  }
-});
-
-// node_modules/semver/functions/inc.js
-var require_inc = __commonJS({
-  "node_modules/semver/functions/inc.js"(exports, module2) {
-    var SemVer = require_semver();
-    var inc = (version2, release, options, identifier) => {
-      if (typeof options === "string") {
-        identifier = options;
-        options = void 0;
+    SemVer.prototype.toString = function() {
+      return this.version;
+    };
+    SemVer.prototype.compare = function(other) {
+      debug3("SemVer.compare", this.version, this.options, other);
+      if (!(other instanceof SemVer)) {
+        other = new SemVer(other, this.options);
+      }
+      return this.compareMain(other) || this.comparePre(other);
+    };
+    SemVer.prototype.compareMain = function(other) {
+      if (!(other instanceof SemVer)) {
+        other = new SemVer(other, this.options);
+      }
+      return compareIdentifiers(this.major, other.major) || compareIdentifiers(this.minor, other.minor) || compareIdentifiers(this.patch, other.patch);
+    };
+    SemVer.prototype.comparePre = function(other) {
+      if (!(other instanceof SemVer)) {
+        other = new SemVer(other, this.options);
+      }
+      if (this.prerelease.length && !other.prerelease.length) {
+        return -1;
+      } else if (!this.prerelease.length && other.prerelease.length) {
+        return 1;
+      } else if (!this.prerelease.length && !other.prerelease.length) {
+        return 0;
+      }
+      var i2 = 0;
+      do {
+        var a = this.prerelease[i2];
+        var b = other.prerelease[i2];
+        debug3("prerelease compare", i2, a, b);
+        if (a === void 0 && b === void 0) {
+          return 0;
+        } else if (b === void 0) {
+          return 1;
+        } else if (a === void 0) {
+          return -1;
+        } else if (a === b) {
+          continue;
+        } else {
+          return compareIdentifiers(a, b);
+        }
+      } while (++i2);
+    };
+    SemVer.prototype.inc = function(release, identifier) {
+      switch (release) {
+        case "premajor":
+          this.prerelease.length = 0;
+          this.patch = 0;
+          this.minor = 0;
+          this.major++;
+          this.inc("pre", identifier);
+          break;
+        case "preminor":
+          this.prerelease.length = 0;
+          this.patch = 0;
+          this.minor++;
+          this.inc("pre", identifier);
+          break;
+        case "prepatch":
+          this.prerelease.length = 0;
+          this.inc("patch", identifier);
+          this.inc("pre", identifier);
+          break;
+        case "prerelease":
+          if (this.prerelease.length === 0) {
+            this.inc("patch", identifier);
+          }
+          this.inc("pre", identifier);
+          break;
+        case "major":
+          if (this.minor !== 0 || this.patch !== 0 || this.prerelease.length === 0) {
+            this.major++;
+          }
+          this.minor = 0;
+          this.patch = 0;
+          this.prerelease = [];
+          break;
+        case "minor":
+          if (this.patch !== 0 || this.prerelease.length === 0) {
+            this.minor++;
+          }
+          this.patch = 0;
+          this.prerelease = [];
+          break;
+        case "patch":
+          if (this.prerelease.length === 0) {
+            this.patch++;
+          }
+          this.prerelease = [];
+          break;
+        case "pre":
+          if (this.prerelease.length === 0) {
+            this.prerelease = [0];
+          } else {
+            var i2 = this.prerelease.length;
+            while (--i2 >= 0) {
+              if (typeof this.prerelease[i2] === "number") {
+                this.prerelease[i2]++;
+                i2 = -2;
+              }
+            }
+            if (i2 === -1) {
+              this.prerelease.push(0);
+            }
+          }
+          if (identifier) {
+            if (this.prerelease[0] === identifier) {
+              if (isNaN(this.prerelease[1])) {
+                this.prerelease = [identifier, 0];
+              }
+            } else {
+              this.prerelease = [identifier, 0];
+            }
+          }
+          break;
+        default:
+          throw new Error("invalid increment argument: " + release);
+      }
+      this.format();
+      this.raw = this.version;
+      return this;
+    };
+    exports.inc = inc;
+    function inc(version2, release, loose, identifier) {
+      if (typeof loose === "string") {
+        identifier = loose;
+        loose = void 0;
       }
       try {
-        return new SemVer(
-          version2 instanceof SemVer ? version2.version : version2,
-          options
-        ).inc(release, identifier).version;
+        return new SemVer(version2, loose).inc(release, identifier).version;
       } catch (er) {
         return null;
       }
-    };
-    module2.exports = inc;
-  }
-});
-
-// node_modules/semver/functions/compare.js
-var require_compare = __commonJS({
-  "node_modules/semver/functions/compare.js"(exports, module2) {
-    var SemVer = require_semver();
-    var compare = (a, b, loose) => new SemVer(a, loose).compare(new SemVer(b, loose));
-    module2.exports = compare;
-  }
-});
-
-// node_modules/semver/functions/eq.js
-var require_eq = __commonJS({
-  "node_modules/semver/functions/eq.js"(exports, module2) {
-    var compare = require_compare();
-    var eq = (a, b, loose) => compare(a, b, loose) === 0;
-    module2.exports = eq;
-  }
-});
-
-// node_modules/semver/functions/diff.js
-var require_diff = __commonJS({
-  "node_modules/semver/functions/diff.js"(exports, module2) {
-    var parse2 = require_parse();
-    var eq = require_eq();
-    var diff = (version1, version2) => {
+    }
+    exports.diff = diff;
+    function diff(version1, version2) {
       if (eq(version1, version2)) {
         return null;
       } else {
-        const v12 = parse2(version1);
-        const v2 = parse2(version2);
-        const hasPre = v12.prerelease.length || v2.prerelease.length;
-        const prefix = hasPre ? "pre" : "";
-        const defaultResult = hasPre ? "prerelease" : "";
-        for (const key in v12) {
+        var v12 = parse2(version1);
+        var v2 = parse2(version2);
+        var prefix = "";
+        if (v12.prerelease.length || v2.prerelease.length) {
+          prefix = "pre";
+          var defaultResult = "prerelease";
+        }
+        for (var key in v12) {
           if (key === "major" || key === "minor" || key === "patch") {
             if (v12[key] !== v2[key]) {
               return prefix + key;
@@ -11379,170 +11067,96 @@ var require_diff = __commonJS({
         }
         return defaultResult;
       }
-    };
-    module2.exports = diff;
-  }
-});
-
-// node_modules/semver/functions/major.js
-var require_major = __commonJS({
-  "node_modules/semver/functions/major.js"(exports, module2) {
-    var SemVer = require_semver();
-    var major = (a, loose) => new SemVer(a, loose).major;
-    module2.exports = major;
-  }
-});
-
-// node_modules/semver/functions/minor.js
-var require_minor = __commonJS({
-  "node_modules/semver/functions/minor.js"(exports, module2) {
-    var SemVer = require_semver();
-    var minor = (a, loose) => new SemVer(a, loose).minor;
-    module2.exports = minor;
-  }
-});
-
-// node_modules/semver/functions/patch.js
-var require_patch = __commonJS({
-  "node_modules/semver/functions/patch.js"(exports, module2) {
-    var SemVer = require_semver();
-    var patch = (a, loose) => new SemVer(a, loose).patch;
-    module2.exports = patch;
-  }
-});
-
-// node_modules/semver/functions/prerelease.js
-var require_prerelease = __commonJS({
-  "node_modules/semver/functions/prerelease.js"(exports, module2) {
-    var parse2 = require_parse();
-    var prerelease = (version2, options) => {
-      const parsed = parse2(version2, options);
-      return parsed && parsed.prerelease.length ? parsed.prerelease : null;
-    };
-    module2.exports = prerelease;
-  }
-});
-
-// node_modules/semver/functions/rcompare.js
-var require_rcompare = __commonJS({
-  "node_modules/semver/functions/rcompare.js"(exports, module2) {
-    var compare = require_compare();
-    var rcompare = (a, b, loose) => compare(b, a, loose);
-    module2.exports = rcompare;
-  }
-});
-
-// node_modules/semver/functions/compare-loose.js
-var require_compare_loose = __commonJS({
-  "node_modules/semver/functions/compare-loose.js"(exports, module2) {
-    var compare = require_compare();
-    var compareLoose = (a, b) => compare(a, b, true);
-    module2.exports = compareLoose;
-  }
-});
-
-// node_modules/semver/functions/compare-build.js
-var require_compare_build = __commonJS({
-  "node_modules/semver/functions/compare-build.js"(exports, module2) {
-    var SemVer = require_semver();
-    var compareBuild = (a, b, loose) => {
-      const versionA = new SemVer(a, loose);
-      const versionB = new SemVer(b, loose);
-      return versionA.compare(versionB) || versionA.compareBuild(versionB);
-    };
-    module2.exports = compareBuild;
-  }
-});
-
-// node_modules/semver/functions/sort.js
-var require_sort = __commonJS({
-  "node_modules/semver/functions/sort.js"(exports, module2) {
-    var compareBuild = require_compare_build();
-    var sort = (list, loose) => list.sort((a, b) => compareBuild(a, b, loose));
-    module2.exports = sort;
-  }
-});
-
-// node_modules/semver/functions/rsort.js
-var require_rsort = __commonJS({
-  "node_modules/semver/functions/rsort.js"(exports, module2) {
-    var compareBuild = require_compare_build();
-    var rsort = (list, loose) => list.sort((a, b) => compareBuild(b, a, loose));
-    module2.exports = rsort;
-  }
-});
-
-// node_modules/semver/functions/gt.js
-var require_gt = __commonJS({
-  "node_modules/semver/functions/gt.js"(exports, module2) {
-    var compare = require_compare();
-    var gt = (a, b, loose) => compare(a, b, loose) > 0;
-    module2.exports = gt;
-  }
-});
-
-// node_modules/semver/functions/lt.js
-var require_lt = __commonJS({
-  "node_modules/semver/functions/lt.js"(exports, module2) {
-    var compare = require_compare();
-    var lt = (a, b, loose) => compare(a, b, loose) < 0;
-    module2.exports = lt;
-  }
-});
-
-// node_modules/semver/functions/neq.js
-var require_neq = __commonJS({
-  "node_modules/semver/functions/neq.js"(exports, module2) {
-    var compare = require_compare();
-    var neq = (a, b, loose) => compare(a, b, loose) !== 0;
-    module2.exports = neq;
-  }
-});
-
-// node_modules/semver/functions/gte.js
-var require_gte = __commonJS({
-  "node_modules/semver/functions/gte.js"(exports, module2) {
-    var compare = require_compare();
-    var gte = (a, b, loose) => compare(a, b, loose) >= 0;
-    module2.exports = gte;
-  }
-});
-
-// node_modules/semver/functions/lte.js
-var require_lte = __commonJS({
-  "node_modules/semver/functions/lte.js"(exports, module2) {
-    var compare = require_compare();
-    var lte = (a, b, loose) => compare(a, b, loose) <= 0;
-    module2.exports = lte;
-  }
-});
-
-// node_modules/semver/functions/cmp.js
-var require_cmp = __commonJS({
-  "node_modules/semver/functions/cmp.js"(exports, module2) {
-    var eq = require_eq();
-    var neq = require_neq();
-    var gt = require_gt();
-    var gte = require_gte();
-    var lt = require_lt();
-    var lte = require_lte();
-    var cmp = (a, op, b, loose) => {
+    }
+    exports.compareIdentifiers = compareIdentifiers;
+    var numeric = /^[0-9]+$/;
+    function compareIdentifiers(a, b) {
+      var anum = numeric.test(a);
+      var bnum = numeric.test(b);
+      if (anum && bnum) {
+        a = +a;
+        b = +b;
+      }
+      return a === b ? 0 : anum && !bnum ? -1 : bnum && !anum ? 1 : a < b ? -1 : 1;
+    }
+    exports.rcompareIdentifiers = rcompareIdentifiers;
+    function rcompareIdentifiers(a, b) {
+      return compareIdentifiers(b, a);
+    }
+    exports.major = major;
+    function major(a, loose) {
+      return new SemVer(a, loose).major;
+    }
+    exports.minor = minor;
+    function minor(a, loose) {
+      return new SemVer(a, loose).minor;
+    }
+    exports.patch = patch;
+    function patch(a, loose) {
+      return new SemVer(a, loose).patch;
+    }
+    exports.compare = compare;
+    function compare(a, b, loose) {
+      return new SemVer(a, loose).compare(new SemVer(b, loose));
+    }
+    exports.compareLoose = compareLoose;
+    function compareLoose(a, b) {
+      return compare(a, b, true);
+    }
+    exports.rcompare = rcompare;
+    function rcompare(a, b, loose) {
+      return compare(b, a, loose);
+    }
+    exports.sort = sort;
+    function sort(list, loose) {
+      return list.sort(function(a, b) {
+        return exports.compare(a, b, loose);
+      });
+    }
+    exports.rsort = rsort;
+    function rsort(list, loose) {
+      return list.sort(function(a, b) {
+        return exports.rcompare(a, b, loose);
+      });
+    }
+    exports.gt = gt;
+    function gt(a, b, loose) {
+      return compare(a, b, loose) > 0;
+    }
+    exports.lt = lt;
+    function lt(a, b, loose) {
+      return compare(a, b, loose) < 0;
+    }
+    exports.eq = eq;
+    function eq(a, b, loose) {
+      return compare(a, b, loose) === 0;
+    }
+    exports.neq = neq;
+    function neq(a, b, loose) {
+      return compare(a, b, loose) !== 0;
+    }
+    exports.gte = gte;
+    function gte(a, b, loose) {
+      return compare(a, b, loose) >= 0;
+    }
+    exports.lte = lte;
+    function lte(a, b, loose) {
+      return compare(a, b, loose) <= 0;
+    }
+    exports.cmp = cmp;
+    function cmp(a, op, b, loose) {
       switch (op) {
         case "===":
-          if (typeof a === "object") {
+          if (typeof a === "object")
             a = a.version;
-          }
-          if (typeof b === "object") {
+          if (typeof b === "object")
             b = b.version;
-          }
           return a === b;
         case "!==":
-          if (typeof a === "object") {
+          if (typeof a === "object")
             a = a.version;
-          }
-          if (typeof b === "object") {
+          if (typeof b === "object")
             b = b.version;
-          }
           return a !== b;
         case "":
         case "=":
@@ -11559,46 +11173,578 @@ var require_cmp = __commonJS({
         case "<=":
           return lte(a, b, loose);
         default:
-          throw new TypeError(`Invalid operator: ${op}`);
+          throw new TypeError("Invalid operator: " + op);
+      }
+    }
+    exports.Comparator = Comparator;
+    function Comparator(comp, options) {
+      if (!options || typeof options !== "object") {
+        options = {
+          loose: !!options,
+          includePrerelease: false
+        };
+      }
+      if (comp instanceof Comparator) {
+        if (comp.loose === !!options.loose) {
+          return comp;
+        } else {
+          comp = comp.value;
+        }
+      }
+      if (!(this instanceof Comparator)) {
+        return new Comparator(comp, options);
+      }
+      debug3("comparator", comp, options);
+      this.options = options;
+      this.loose = !!options.loose;
+      this.parse(comp);
+      if (this.semver === ANY) {
+        this.value = "";
+      } else {
+        this.value = this.operator + this.semver.version;
+      }
+      debug3("comp", this);
+    }
+    var ANY = {};
+    Comparator.prototype.parse = function(comp) {
+      var r = this.options.loose ? re[COMPARATORLOOSE] : re[COMPARATOR];
+      var m = comp.match(r);
+      if (!m) {
+        throw new TypeError("Invalid comparator: " + comp);
+      }
+      this.operator = m[1];
+      if (this.operator === "=") {
+        this.operator = "";
+      }
+      if (!m[2]) {
+        this.semver = ANY;
+      } else {
+        this.semver = new SemVer(m[2], this.options.loose);
       }
     };
-    module2.exports = cmp;
-  }
-});
-
-// node_modules/semver/functions/coerce.js
-var require_coerce = __commonJS({
-  "node_modules/semver/functions/coerce.js"(exports, module2) {
-    var SemVer = require_semver();
-    var parse2 = require_parse();
-    var { re, t } = require_re();
-    var coerce = (version2, options) => {
+    Comparator.prototype.toString = function() {
+      return this.value;
+    };
+    Comparator.prototype.test = function(version2) {
+      debug3("Comparator.test", version2, this.options.loose);
+      if (this.semver === ANY) {
+        return true;
+      }
+      if (typeof version2 === "string") {
+        version2 = new SemVer(version2, this.options);
+      }
+      return cmp(version2, this.operator, this.semver, this.options);
+    };
+    Comparator.prototype.intersects = function(comp, options) {
+      if (!(comp instanceof Comparator)) {
+        throw new TypeError("a Comparator is required");
+      }
+      if (!options || typeof options !== "object") {
+        options = {
+          loose: !!options,
+          includePrerelease: false
+        };
+      }
+      var rangeTmp;
+      if (this.operator === "") {
+        rangeTmp = new Range(comp.value, options);
+        return satisfies(this.value, rangeTmp, options);
+      } else if (comp.operator === "") {
+        rangeTmp = new Range(this.value, options);
+        return satisfies(comp.semver, rangeTmp, options);
+      }
+      var sameDirectionIncreasing = (this.operator === ">=" || this.operator === ">") && (comp.operator === ">=" || comp.operator === ">");
+      var sameDirectionDecreasing = (this.operator === "<=" || this.operator === "<") && (comp.operator === "<=" || comp.operator === "<");
+      var sameSemVer = this.semver.version === comp.semver.version;
+      var differentDirectionsInclusive = (this.operator === ">=" || this.operator === "<=") && (comp.operator === ">=" || comp.operator === "<=");
+      var oppositeDirectionsLessThan = cmp(this.semver, "<", comp.semver, options) && ((this.operator === ">=" || this.operator === ">") && (comp.operator === "<=" || comp.operator === "<"));
+      var oppositeDirectionsGreaterThan = cmp(this.semver, ">", comp.semver, options) && ((this.operator === "<=" || this.operator === "<") && (comp.operator === ">=" || comp.operator === ">"));
+      return sameDirectionIncreasing || sameDirectionDecreasing || sameSemVer && differentDirectionsInclusive || oppositeDirectionsLessThan || oppositeDirectionsGreaterThan;
+    };
+    exports.Range = Range;
+    function Range(range, options) {
+      if (!options || typeof options !== "object") {
+        options = {
+          loose: !!options,
+          includePrerelease: false
+        };
+      }
+      if (range instanceof Range) {
+        if (range.loose === !!options.loose && range.includePrerelease === !!options.includePrerelease) {
+          return range;
+        } else {
+          return new Range(range.raw, options);
+        }
+      }
+      if (range instanceof Comparator) {
+        return new Range(range.value, options);
+      }
+      if (!(this instanceof Range)) {
+        return new Range(range, options);
+      }
+      this.options = options;
+      this.loose = !!options.loose;
+      this.includePrerelease = !!options.includePrerelease;
+      this.raw = range;
+      this.set = range.split(/\s*\|\|\s*/).map(function(range2) {
+        return this.parseRange(range2.trim());
+      }, this).filter(function(c) {
+        return c.length;
+      });
+      if (!this.set.length) {
+        throw new TypeError("Invalid SemVer Range: " + range);
+      }
+      this.format();
+    }
+    Range.prototype.format = function() {
+      this.range = this.set.map(function(comps) {
+        return comps.join(" ").trim();
+      }).join("||").trim();
+      return this.range;
+    };
+    Range.prototype.toString = function() {
+      return this.range;
+    };
+    Range.prototype.parseRange = function(range) {
+      var loose = this.options.loose;
+      range = range.trim();
+      var hr = loose ? re[HYPHENRANGELOOSE] : re[HYPHENRANGE];
+      range = range.replace(hr, hyphenReplace);
+      debug3("hyphen replace", range);
+      range = range.replace(re[COMPARATORTRIM], comparatorTrimReplace);
+      debug3("comparator trim", range, re[COMPARATORTRIM]);
+      range = range.replace(re[TILDETRIM], tildeTrimReplace);
+      range = range.replace(re[CARETTRIM], caretTrimReplace);
+      range = range.split(/\s+/).join(" ");
+      var compRe = loose ? re[COMPARATORLOOSE] : re[COMPARATOR];
+      var set = range.split(" ").map(function(comp) {
+        return parseComparator(comp, this.options);
+      }, this).join(" ").split(/\s+/);
+      if (this.options.loose) {
+        set = set.filter(function(comp) {
+          return !!comp.match(compRe);
+        });
+      }
+      set = set.map(function(comp) {
+        return new Comparator(comp, this.options);
+      }, this);
+      return set;
+    };
+    Range.prototype.intersects = function(range, options) {
+      if (!(range instanceof Range)) {
+        throw new TypeError("a Range is required");
+      }
+      return this.set.some(function(thisComparators) {
+        return thisComparators.every(function(thisComparator) {
+          return range.set.some(function(rangeComparators) {
+            return rangeComparators.every(function(rangeComparator) {
+              return thisComparator.intersects(rangeComparator, options);
+            });
+          });
+        });
+      });
+    };
+    exports.toComparators = toComparators;
+    function toComparators(range, options) {
+      return new Range(range, options).set.map(function(comp) {
+        return comp.map(function(c) {
+          return c.value;
+        }).join(" ").trim().split(" ");
+      });
+    }
+    function parseComparator(comp, options) {
+      debug3("comp", comp, options);
+      comp = replaceCarets(comp, options);
+      debug3("caret", comp);
+      comp = replaceTildes(comp, options);
+      debug3("tildes", comp);
+      comp = replaceXRanges(comp, options);
+      debug3("xrange", comp);
+      comp = replaceStars(comp, options);
+      debug3("stars", comp);
+      return comp;
+    }
+    function isX(id) {
+      return !id || id.toLowerCase() === "x" || id === "*";
+    }
+    function replaceTildes(comp, options) {
+      return comp.trim().split(/\s+/).map(function(comp2) {
+        return replaceTilde(comp2, options);
+      }).join(" ");
+    }
+    function replaceTilde(comp, options) {
+      var r = options.loose ? re[TILDELOOSE] : re[TILDE];
+      return comp.replace(r, function(_, M, m, p, pr) {
+        debug3("tilde", comp, _, M, m, p, pr);
+        var ret;
+        if (isX(M)) {
+          ret = "";
+        } else if (isX(m)) {
+          ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
+        } else if (isX(p)) {
+          ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+        } else if (pr) {
+          debug3("replaceTilde pr", pr);
+          ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + M + "." + (+m + 1) + ".0";
+        } else {
+          ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
+        }
+        debug3("tilde return", ret);
+        return ret;
+      });
+    }
+    function replaceCarets(comp, options) {
+      return comp.trim().split(/\s+/).map(function(comp2) {
+        return replaceCaret(comp2, options);
+      }).join(" ");
+    }
+    function replaceCaret(comp, options) {
+      debug3("caret", comp, options);
+      var r = options.loose ? re[CARETLOOSE] : re[CARET];
+      return comp.replace(r, function(_, M, m, p, pr) {
+        debug3("caret", comp, _, M, m, p, pr);
+        var ret;
+        if (isX(M)) {
+          ret = "";
+        } else if (isX(m)) {
+          ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
+        } else if (isX(p)) {
+          if (M === "0") {
+            ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+          } else {
+            ret = ">=" + M + "." + m + ".0 <" + (+M + 1) + ".0.0";
+          }
+        } else if (pr) {
+          debug3("replaceCaret pr", pr);
+          if (M === "0") {
+            if (m === "0") {
+              ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + M + "." + m + "." + (+p + 1);
+            } else {
+              ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + M + "." + (+m + 1) + ".0";
+            }
+          } else {
+            ret = ">=" + M + "." + m + "." + p + "-" + pr + " <" + (+M + 1) + ".0.0";
+          }
+        } else {
+          debug3("no pr");
+          if (M === "0") {
+            if (m === "0") {
+              ret = ">=" + M + "." + m + "." + p + " <" + M + "." + m + "." + (+p + 1);
+            } else {
+              ret = ">=" + M + "." + m + "." + p + " <" + M + "." + (+m + 1) + ".0";
+            }
+          } else {
+            ret = ">=" + M + "." + m + "." + p + " <" + (+M + 1) + ".0.0";
+          }
+        }
+        debug3("caret return", ret);
+        return ret;
+      });
+    }
+    function replaceXRanges(comp, options) {
+      debug3("replaceXRanges", comp, options);
+      return comp.split(/\s+/).map(function(comp2) {
+        return replaceXRange(comp2, options);
+      }).join(" ");
+    }
+    function replaceXRange(comp, options) {
+      comp = comp.trim();
+      var r = options.loose ? re[XRANGELOOSE] : re[XRANGE];
+      return comp.replace(r, function(ret, gtlt, M, m, p, pr) {
+        debug3("xRange", comp, ret, gtlt, M, m, p, pr);
+        var xM = isX(M);
+        var xm = xM || isX(m);
+        var xp = xm || isX(p);
+        var anyX = xp;
+        if (gtlt === "=" && anyX) {
+          gtlt = "";
+        }
+        if (xM) {
+          if (gtlt === ">" || gtlt === "<") {
+            ret = "<0.0.0";
+          } else {
+            ret = "*";
+          }
+        } else if (gtlt && anyX) {
+          if (xm) {
+            m = 0;
+          }
+          p = 0;
+          if (gtlt === ">") {
+            gtlt = ">=";
+            if (xm) {
+              M = +M + 1;
+              m = 0;
+              p = 0;
+            } else {
+              m = +m + 1;
+              p = 0;
+            }
+          } else if (gtlt === "<=") {
+            gtlt = "<";
+            if (xm) {
+              M = +M + 1;
+            } else {
+              m = +m + 1;
+            }
+          }
+          ret = gtlt + M + "." + m + "." + p;
+        } else if (xm) {
+          ret = ">=" + M + ".0.0 <" + (+M + 1) + ".0.0";
+        } else if (xp) {
+          ret = ">=" + M + "." + m + ".0 <" + M + "." + (+m + 1) + ".0";
+        }
+        debug3("xRange return", ret);
+        return ret;
+      });
+    }
+    function replaceStars(comp, options) {
+      debug3("replaceStars", comp, options);
+      return comp.trim().replace(re[STAR], "");
+    }
+    function hyphenReplace($0, from, fM, fm, fp, fpr, fb, to, tM, tm, tp, tpr, tb) {
+      if (isX(fM)) {
+        from = "";
+      } else if (isX(fm)) {
+        from = ">=" + fM + ".0.0";
+      } else if (isX(fp)) {
+        from = ">=" + fM + "." + fm + ".0";
+      } else {
+        from = ">=" + from;
+      }
+      if (isX(tM)) {
+        to = "";
+      } else if (isX(tm)) {
+        to = "<" + (+tM + 1) + ".0.0";
+      } else if (isX(tp)) {
+        to = "<" + tM + "." + (+tm + 1) + ".0";
+      } else if (tpr) {
+        to = "<=" + tM + "." + tm + "." + tp + "-" + tpr;
+      } else {
+        to = "<=" + to;
+      }
+      return (from + " " + to).trim();
+    }
+    Range.prototype.test = function(version2) {
+      if (!version2) {
+        return false;
+      }
+      if (typeof version2 === "string") {
+        version2 = new SemVer(version2, this.options);
+      }
+      for (var i2 = 0; i2 < this.set.length; i2++) {
+        if (testSet(this.set[i2], version2, this.options)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    function testSet(set, version2, options) {
+      for (var i2 = 0; i2 < set.length; i2++) {
+        if (!set[i2].test(version2)) {
+          return false;
+        }
+      }
+      if (version2.prerelease.length && !options.includePrerelease) {
+        for (i2 = 0; i2 < set.length; i2++) {
+          debug3(set[i2].semver);
+          if (set[i2].semver === ANY) {
+            continue;
+          }
+          if (set[i2].semver.prerelease.length > 0) {
+            var allowed = set[i2].semver;
+            if (allowed.major === version2.major && allowed.minor === version2.minor && allowed.patch === version2.patch) {
+              return true;
+            }
+          }
+        }
+        return false;
+      }
+      return true;
+    }
+    exports.satisfies = satisfies;
+    function satisfies(version2, range, options) {
+      try {
+        range = new Range(range, options);
+      } catch (er) {
+        return false;
+      }
+      return range.test(version2);
+    }
+    exports.maxSatisfying = maxSatisfying;
+    function maxSatisfying(versions, range, options) {
+      var max = null;
+      var maxSV = null;
+      try {
+        var rangeObj = new Range(range, options);
+      } catch (er) {
+        return null;
+      }
+      versions.forEach(function(v) {
+        if (rangeObj.test(v)) {
+          if (!max || maxSV.compare(v) === -1) {
+            max = v;
+            maxSV = new SemVer(max, options);
+          }
+        }
+      });
+      return max;
+    }
+    exports.minSatisfying = minSatisfying;
+    function minSatisfying(versions, range, options) {
+      var min = null;
+      var minSV = null;
+      try {
+        var rangeObj = new Range(range, options);
+      } catch (er) {
+        return null;
+      }
+      versions.forEach(function(v) {
+        if (rangeObj.test(v)) {
+          if (!min || minSV.compare(v) === 1) {
+            min = v;
+            minSV = new SemVer(min, options);
+          }
+        }
+      });
+      return min;
+    }
+    exports.minVersion = minVersion;
+    function minVersion(range, loose) {
+      range = new Range(range, loose);
+      var minver = new SemVer("0.0.0");
+      if (range.test(minver)) {
+        return minver;
+      }
+      minver = new SemVer("0.0.0-0");
+      if (range.test(minver)) {
+        return minver;
+      }
+      minver = null;
+      for (var i2 = 0; i2 < range.set.length; ++i2) {
+        var comparators = range.set[i2];
+        comparators.forEach(function(comparator) {
+          var compver = new SemVer(comparator.semver.version);
+          switch (comparator.operator) {
+            case ">":
+              if (compver.prerelease.length === 0) {
+                compver.patch++;
+              } else {
+                compver.prerelease.push(0);
+              }
+              compver.raw = compver.format();
+            case "":
+            case ">=":
+              if (!minver || gt(minver, compver)) {
+                minver = compver;
+              }
+              break;
+            case "<":
+            case "<=":
+              break;
+            default:
+              throw new Error("Unexpected operation: " + comparator.operator);
+          }
+        });
+      }
+      if (minver && range.test(minver)) {
+        return minver;
+      }
+      return null;
+    }
+    exports.validRange = validRange;
+    function validRange(range, options) {
+      try {
+        return new Range(range, options).range || "*";
+      } catch (er) {
+        return null;
+      }
+    }
+    exports.ltr = ltr;
+    function ltr(version2, range, options) {
+      return outside(version2, range, "<", options);
+    }
+    exports.gtr = gtr;
+    function gtr(version2, range, options) {
+      return outside(version2, range, ">", options);
+    }
+    exports.outside = outside;
+    function outside(version2, range, hilo, options) {
+      version2 = new SemVer(version2, options);
+      range = new Range(range, options);
+      var gtfn, ltefn, ltfn, comp, ecomp;
+      switch (hilo) {
+        case ">":
+          gtfn = gt;
+          ltefn = lte;
+          ltfn = lt;
+          comp = ">";
+          ecomp = ">=";
+          break;
+        case "<":
+          gtfn = lt;
+          ltefn = gte;
+          ltfn = gt;
+          comp = "<";
+          ecomp = "<=";
+          break;
+        default:
+          throw new TypeError('Must provide a hilo val of "<" or ">"');
+      }
+      if (satisfies(version2, range, options)) {
+        return false;
+      }
+      for (var i2 = 0; i2 < range.set.length; ++i2) {
+        var comparators = range.set[i2];
+        var high = null;
+        var low = null;
+        comparators.forEach(function(comparator) {
+          if (comparator.semver === ANY) {
+            comparator = new Comparator(">=0.0.0");
+          }
+          high = high || comparator;
+          low = low || comparator;
+          if (gtfn(comparator.semver, high.semver, options)) {
+            high = comparator;
+          } else if (ltfn(comparator.semver, low.semver, options)) {
+            low = comparator;
+          }
+        });
+        if (high.operator === comp || high.operator === ecomp) {
+          return false;
+        }
+        if ((!low.operator || low.operator === comp) && ltefn(version2, low.semver)) {
+          return false;
+        } else if (low.operator === ecomp && ltfn(version2, low.semver)) {
+          return false;
+        }
+      }
+      return true;
+    }
+    exports.prerelease = prerelease;
+    function prerelease(version2, options) {
+      var parsed = parse2(version2, options);
+      return parsed && parsed.prerelease.length ? parsed.prerelease : null;
+    }
+    exports.intersects = intersects;
+    function intersects(r1, r2, options) {
+      r1 = new Range(r1, options);
+      r2 = new Range(r2, options);
+      return r1.intersects(r2);
+    }
+    exports.coerce = coerce;
+    function coerce(version2) {
       if (version2 instanceof SemVer) {
         return version2;
-      }
-      if (typeof version2 === "number") {
-        version2 = String(version2);
       }
       if (typeof version2 !== "string") {
         return null;
       }
-      options = options || {};
-      let match = null;
-      if (!options.rtl) {
-        match = version2.match(re[t.COERCE]);
-      } else {
-        let next;
-        while ((next = re[t.COERCERTL].exec(version2)) && (!match || match.index + match[0].length !== version2.length)) {
-          if (!match || next.index + next[0].length !== match.index + match[0].length) {
-            match = next;
-          }
-          re[t.COERCERTL].lastIndex = next.index + next[1].length + next[2].length;
-        }
-        re[t.COERCERTL].lastIndex = -1;
-      }
-      if (match === null) {
+      var match = version2.match(re[COERCE]);
+      if (match == null) {
         return null;
       }
+<<<<<<< HEAD
 <<<<<<< HEAD
       return parse2(match[1] + "." + (match[2] || "0") + "." + (match[3] || "0"));
     }
@@ -11797,6 +11943,200 @@ var require_verify = __commonJS({
 });
 
 <<<<<<< HEAD
+=======
+      return parse2(match[1] + "." + (match[2] || "0") + "." + (match[3] || "0"));
+    }
+  }
+});
+
+// ../../node_modules/jsonwebtoken/lib/psSupported.js
+var require_psSupported = __commonJS({
+  "../../node_modules/jsonwebtoken/lib/psSupported.js"(exports, module2) {
+    var semver = require_semver();
+    module2.exports = semver.satisfies(process.version, "^6.12.0 || >=8.0.0");
+  }
+});
+
+// ../../node_modules/jsonwebtoken/verify.js
+var require_verify = __commonJS({
+  "../../node_modules/jsonwebtoken/verify.js"(exports, module2) {
+    var JsonWebTokenError = require_JsonWebTokenError();
+    var NotBeforeError = require_NotBeforeError();
+    var TokenExpiredError = require_TokenExpiredError();
+    var decode = require_decode();
+    var timespan = require_timespan();
+    var PS_SUPPORTED = require_psSupported();
+    var jws = require_jws();
+    var PUB_KEY_ALGS = ["RS256", "RS384", "RS512", "ES256", "ES384", "ES512"];
+    var RSA_KEY_ALGS = ["RS256", "RS384", "RS512"];
+    var HS_ALGS = ["HS256", "HS384", "HS512"];
+    if (PS_SUPPORTED) {
+      PUB_KEY_ALGS.splice(3, 0, "PS256", "PS384", "PS512");
+      RSA_KEY_ALGS.splice(3, 0, "PS256", "PS384", "PS512");
+    }
+    module2.exports = function(jwtString, secretOrPublicKey, options, callback) {
+      if (typeof options === "function" && !callback) {
+        callback = options;
+        options = {};
+      }
+      if (!options) {
+        options = {};
+      }
+      options = Object.assign({}, options);
+      var done;
+      if (callback) {
+        done = callback;
+      } else {
+        done = function(err, data) {
+          if (err)
+            throw err;
+          return data;
+        };
+      }
+      if (options.clockTimestamp && typeof options.clockTimestamp !== "number") {
+        return done(new JsonWebTokenError("clockTimestamp must be a number"));
+      }
+      if (options.nonce !== void 0 && (typeof options.nonce !== "string" || options.nonce.trim() === "")) {
+        return done(new JsonWebTokenError("nonce must be a non-empty string"));
+      }
+      var clockTimestamp = options.clockTimestamp || Math.floor(Date.now() / 1e3);
+      if (!jwtString) {
+        return done(new JsonWebTokenError("jwt must be provided"));
+      }
+      if (typeof jwtString !== "string") {
+        return done(new JsonWebTokenError("jwt must be a string"));
+      }
+      var parts = jwtString.split(".");
+      if (parts.length !== 3) {
+        return done(new JsonWebTokenError("jwt malformed"));
+      }
+      var decodedToken;
+      try {
+        decodedToken = decode(jwtString, { complete: true });
+      } catch (err) {
+        return done(err);
+      }
+      if (!decodedToken) {
+        return done(new JsonWebTokenError("invalid token"));
+      }
+      var header = decodedToken.header;
+      var getSecret;
+      if (typeof secretOrPublicKey === "function") {
+        if (!callback) {
+          return done(new JsonWebTokenError("verify must be called asynchronous if secret or public key is provided as a callback"));
+        }
+        getSecret = secretOrPublicKey;
+      } else {
+        getSecret = function(header2, secretCallback) {
+          return secretCallback(null, secretOrPublicKey);
+        };
+      }
+      return getSecret(header, function(err, secretOrPublicKey2) {
+        if (err) {
+          return done(new JsonWebTokenError("error in secret or public key callback: " + err.message));
+        }
+        var hasSignature = parts[2].trim() !== "";
+        if (!hasSignature && secretOrPublicKey2) {
+          return done(new JsonWebTokenError("jwt signature is required"));
+        }
+        if (hasSignature && !secretOrPublicKey2) {
+          return done(new JsonWebTokenError("secret or public key must be provided"));
+        }
+        if (!hasSignature && !options.algorithms) {
+          options.algorithms = ["none"];
+        }
+        if (!options.algorithms) {
+          options.algorithms = ~secretOrPublicKey2.toString().indexOf("BEGIN CERTIFICATE") || ~secretOrPublicKey2.toString().indexOf("BEGIN PUBLIC KEY") ? PUB_KEY_ALGS : ~secretOrPublicKey2.toString().indexOf("BEGIN RSA PUBLIC KEY") ? RSA_KEY_ALGS : HS_ALGS;
+        }
+        if (!~options.algorithms.indexOf(decodedToken.header.alg)) {
+          return done(new JsonWebTokenError("invalid algorithm"));
+        }
+        var valid;
+        try {
+          valid = jws.verify(jwtString, decodedToken.header.alg, secretOrPublicKey2);
+        } catch (e) {
+          return done(e);
+        }
+        if (!valid) {
+          return done(new JsonWebTokenError("invalid signature"));
+        }
+        var payload = decodedToken.payload;
+        if (typeof payload.nbf !== "undefined" && !options.ignoreNotBefore) {
+          if (typeof payload.nbf !== "number") {
+            return done(new JsonWebTokenError("invalid nbf value"));
+          }
+          if (payload.nbf > clockTimestamp + (options.clockTolerance || 0)) {
+            return done(new NotBeforeError("jwt not active", new Date(payload.nbf * 1e3)));
+          }
+        }
+        if (typeof payload.exp !== "undefined" && !options.ignoreExpiration) {
+          if (typeof payload.exp !== "number") {
+            return done(new JsonWebTokenError("invalid exp value"));
+          }
+          if (clockTimestamp >= payload.exp + (options.clockTolerance || 0)) {
+            return done(new TokenExpiredError("jwt expired", new Date(payload.exp * 1e3)));
+          }
+        }
+        if (options.audience) {
+          var audiences = Array.isArray(options.audience) ? options.audience : [options.audience];
+          var target = Array.isArray(payload.aud) ? payload.aud : [payload.aud];
+          var match = target.some(function(targetAudience) {
+            return audiences.some(function(audience) {
+              return audience instanceof RegExp ? audience.test(targetAudience) : audience === targetAudience;
+            });
+          });
+          if (!match) {
+            return done(new JsonWebTokenError("jwt audience invalid. expected: " + audiences.join(" or ")));
+          }
+        }
+        if (options.issuer) {
+          var invalid_issuer = typeof options.issuer === "string" && payload.iss !== options.issuer || Array.isArray(options.issuer) && options.issuer.indexOf(payload.iss) === -1;
+          if (invalid_issuer) {
+            return done(new JsonWebTokenError("jwt issuer invalid. expected: " + options.issuer));
+          }
+        }
+        if (options.subject) {
+          if (payload.sub !== options.subject) {
+            return done(new JsonWebTokenError("jwt subject invalid. expected: " + options.subject));
+          }
+        }
+        if (options.jwtid) {
+          if (payload.jti !== options.jwtid) {
+            return done(new JsonWebTokenError("jwt jwtid invalid. expected: " + options.jwtid));
+          }
+        }
+        if (options.nonce) {
+          if (payload.nonce !== options.nonce) {
+            return done(new JsonWebTokenError("jwt nonce invalid. expected: " + options.nonce));
+          }
+        }
+        if (options.maxAge) {
+          if (typeof payload.iat !== "number") {
+            return done(new JsonWebTokenError("iat required when maxAge is specified"));
+          }
+          var maxAgeTimestamp = timespan(options.maxAge, payload.iat);
+          if (typeof maxAgeTimestamp === "undefined") {
+            return done(new JsonWebTokenError('"maxAge" should be a number of seconds or string representing a timespan eg: "1d", "20h", 60'));
+          }
+          if (clockTimestamp >= maxAgeTimestamp + (options.clockTolerance || 0)) {
+            return done(new TokenExpiredError("maxAge exceeded", new Date(maxAgeTimestamp * 1e3)));
+          }
+        }
+        if (options.complete === true) {
+          var signature = decodedToken.signature;
+          return done(null, {
+            header,
+            payload,
+            signature
+          });
+        }
+        return done(null, payload);
+      });
+    };
+  }
+});
+
+>>>>>>> 83d3e8c (Rebase)
 // ../../node_modules/lodash.includes/index.js
 var require_lodash = __commonJS({
   "../../node_modules/lodash.includes/index.js"(exports, module2) {
@@ -12462,6 +12802,7 @@ var require_dist_node18 = __commonJS({
 });
 
 // ../../node_modules/yallist/iterator.js
+<<<<<<< HEAD
 var require_iterator = __commonJS({
   "../../node_modules/yallist/iterator.js"(exports, module2) {
 =======
@@ -12469,6 +12810,10 @@ var require_iterator = __commonJS({
 var require_iterator = __commonJS({
   "node_modules/semver/node_modules/yallist/iterator.js"(exports, module2) {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+var require_iterator = __commonJS({
+  "../../node_modules/yallist/iterator.js"(exports, module2) {
+>>>>>>> 83d3e8c (Rebase)
     "use strict";
     module2.exports = function(Yallist) {
       Yallist.prototype[Symbol.iterator] = function* () {
@@ -12481,6 +12826,7 @@ var require_iterator = __commonJS({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/yallist/yallist.js
 var require_yallist = __commonJS({
   "../../node_modules/yallist/yallist.js"(exports, module2) {
@@ -12489,6 +12835,11 @@ var require_yallist = __commonJS({
 var require_yallist = __commonJS({
   "node_modules/semver/node_modules/yallist/yallist.js"(exports, module2) {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/yallist/yallist.js
+var require_yallist = __commonJS({
+  "../../node_modules/yallist/yallist.js"(exports, module2) {
+>>>>>>> 83d3e8c (Rebase)
     "use strict";
     module2.exports = Yallist;
     Yallist.Node = Node;
@@ -12856,6 +13207,7 @@ var require_yallist = __commonJS({
 });
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 // ../../node_modules/lru-cache/index.js
 var require_lru_cache = __commonJS({
   "../../node_modules/lru-cache/index.js"(exports, module2) {
@@ -12864,6 +13216,11 @@ var require_lru_cache = __commonJS({
 var require_lru_cache = __commonJS({
   "node_modules/semver/node_modules/lru-cache/index.js"(exports, module2) {
 >>>>>>> c22869b (CodeQL await warning)
+=======
+// ../../node_modules/lru-cache/index.js
+var require_lru_cache = __commonJS({
+  "../../node_modules/lru-cache/index.js"(exports, module2) {
+>>>>>>> 83d3e8c (Rebase)
     "use strict";
     var Yallist = require_yallist();
     var MAX = Symbol("max");
@@ -12897,7 +13254,6 @@ var require_lru_cache = __commonJS({
         this[UPDATE_AGE_ON_GET] = options.updateAgeOnGet || false;
         this.reset();
       }
-      // resize the cache when the max changes.
       set max(mL) {
         if (typeof mL !== "number" || mL < 0)
           throw new TypeError("max must be a non-negative number");
@@ -12922,7 +13278,6 @@ var require_lru_cache = __commonJS({
       get maxAge() {
         return this[MAX_AGE];
       }
-      // resize the cache when the lengthCalculator changes.
       set lengthCalculator(lC) {
         if (typeof lC !== "function")
           lC = naiveLength;
@@ -13131,6 +13486,7 @@ var require_lru_cache = __commonJS({
   }
 });
 
+<<<<<<< HEAD
 // node_modules/semver/classes/range.js
 var require_range = __commonJS({
   "node_modules/semver/classes/range.js"(exports, module2) {
@@ -20852,6 +21208,8 @@ var require_lru_cache2 = __commonJS({
   }
 });
 
+=======
+>>>>>>> 83d3e8c (Rebase)
 // ../../node_modules/@octokit/auth-app/dist-node/index.js
 var require_dist_node19 = __commonJS({
   "../../node_modules/@octokit/auth-app/dist-node/index.js"(exports) {
@@ -20865,7 +21223,7 @@ var require_dist_node19 = __commonJS({
     var authOauthApp = require_dist_node17();
     var deprecation = require_dist_node3();
     var universalGithubAppJwt = require_dist_node18();
-    var LRU = _interopDefault(require_lru_cache2());
+    var LRU = _interopDefault(require_lru_cache());
     var authOauthUser = require_dist_node16();
     async function getAppAuthentication({
       appId,
@@ -20894,9 +21252,7 @@ var require_dist_node19 = __commonJS({
     }
     function getCache() {
       return new LRU({
-        // cache max. 15000 tokens, that will use less than 10mb memory
         max: 15e3,
-        // Cache for 1 minute less than GitHub expiry
         maxAge: 1e3 * 60 * 59
       });
     }
@@ -21073,7 +21429,6 @@ var require_dist_node19 = __commonJS({
           return getAppAuthentication(state);
         case "oauth":
           state.log.warn(
-            // @ts-expect-error `log.warn()` expects string
             new deprecation.Deprecation(`[@octokit/auth-app] {type: "oauth"} is deprecated. Use {type: "oauth-app"} instead`)
           );
         case "oauth-app":
@@ -21152,7 +21507,6 @@ var require_dist_node19 = __commonJS({
         createdAt
       } = await getInstallationAuthentication(
         state,
-        // @ts-expect-error TBD
         {},
         request2
       );
@@ -21180,7 +21534,7 @@ var require_dist_node19 = __commonJS({
         return sendRequestWithRetries(state, request2, options, createdAt, retries);
       }
     }
-    var VERSION = "4.0.8";
+    var VERSION = "4.0.7";
     function createAppAuth(options) {
       if (!options.appId) {
         throw new Error("[@octokit/auth-app] appId option is required");
@@ -21315,7 +21669,7 @@ var require_dist_node21 = __commonJS({
       return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
     }
     var OAuthAppAuth = require_dist_node17();
-    var core4 = require_dist_node8();
+    var core3 = require_dist_node8();
     var universalUserAgent = require_dist_node();
     var authOauthUser = require_dist_node16();
     var OAuthMethods = require_dist_node14();
@@ -21334,7 +21688,7 @@ var require_dist_node21 = __commonJS({
       }
       state.eventHandlers[eventName].push(eventHandler);
     }
-    var OAuthAppOctokit = core4.Octokit.defaults({
+    var OAuthAppOctokit = core3.Octokit.defaults({
       userAgent: `octokit-oauth-app.js/${VERSION} ${universalUserAgent.getUserAgent()}`
     });
     async function emitEvent(state, context) {
@@ -21432,7 +21786,6 @@ var require_dist_node21 = __commonJS({
     }
     async function checkTokenWithState(state, options) {
       const result = await OAuthMethods.checkToken({
-        // @ts-expect-error not worth the extra code to appease TS
         clientType: state.clientType,
         clientId: state.clientId,
         clientSecret: state.clientSecret,
@@ -21591,13 +21944,10 @@ var require_dist_node21 = __commonJS({
       const response = state.clientType === "oauth-app" ? await OAuthMethods.deleteToken({
         clientType: "oauth-app",
         ...optionsWithDefaults
-      }) : (
-        // istanbul ignore next
-        await OAuthMethods.deleteToken({
-          clientType: "github-app",
-          ...optionsWithDefaults
-        })
-      );
+      }) : await OAuthMethods.deleteToken({
+        clientType: "github-app",
+        ...optionsWithDefaults
+      });
       await emitEvent(state, {
         name: "token",
         action: "deleted",
@@ -21621,13 +21971,10 @@ var require_dist_node21 = __commonJS({
       const response = state.clientType === "oauth-app" ? await OAuthMethods.deleteAuthorization({
         clientType: "oauth-app",
         ...optionsWithDefaults
-      }) : (
-        // istanbul ignore next
-        await OAuthMethods.deleteAuthorization({
-          clientType: "github-app",
-          ...optionsWithDefaults
-        })
-      );
+      }) : await OAuthMethods.deleteAuthorization({
+        clientType: "github-app",
+        ...optionsWithDefaults
+      });
       await emitEvent(state, {
         name: "token",
         action: "deleted",
@@ -22071,7 +22418,6 @@ var require_dist_node21 = __commonJS({
           clientType: this.type,
           clientId: options.clientId,
           clientSecret: options.clientSecret,
-          // @ts-expect-error defaultScopes not permitted for GitHub Apps
           defaultScopes: options.defaultScopes || [],
           allowSignup: options.allowSignup,
           baseUrl: options.baseUrl,
@@ -22219,7 +22565,7 @@ var require_dist_node22 = __commonJS({
       Algorithm2["SHA1"] = "sha1";
       Algorithm2["SHA256"] = "sha256";
     })(Algorithm || (Algorithm = {}));
-    var VERSION = "3.0.2";
+    var VERSION = "3.0.1";
     async function sign(options, payload) {
       const {
         secret,
@@ -22283,7 +22629,7 @@ var require_dist_node23 = __commonJS({
       error: console.error.bind(console),
       ...logger
     });
-    var emitterEventNames = ["branch_protection_rule", "branch_protection_rule.created", "branch_protection_rule.deleted", "branch_protection_rule.edited", "check_run", "check_run.completed", "check_run.created", "check_run.requested_action", "check_run.rerequested", "check_suite", "check_suite.completed", "check_suite.requested", "check_suite.rerequested", "code_scanning_alert", "code_scanning_alert.appeared_in_branch", "code_scanning_alert.closed_by_user", "code_scanning_alert.created", "code_scanning_alert.fixed", "code_scanning_alert.reopened", "code_scanning_alert.reopened_by_user", "commit_comment", "commit_comment.created", "create", "delete", "dependabot_alert", "dependabot_alert.created", "dependabot_alert.dismissed", "dependabot_alert.fixed", "dependabot_alert.reintroduced", "dependabot_alert.reopened", "deploy_key", "deploy_key.created", "deploy_key.deleted", "deployment", "deployment.created", "deployment_status", "deployment_status.created", "discussion", "discussion.answered", "discussion.category_changed", "discussion.created", "discussion.deleted", "discussion.edited", "discussion.labeled", "discussion.locked", "discussion.pinned", "discussion.transferred", "discussion.unanswered", "discussion.unlabeled", "discussion.unlocked", "discussion.unpinned", "discussion_comment", "discussion_comment.created", "discussion_comment.deleted", "discussion_comment.edited", "fork", "github_app_authorization", "github_app_authorization.revoked", "gollum", "installation", "installation.created", "installation.deleted", "installation.new_permissions_accepted", "installation.suspend", "installation.unsuspend", "installation_repositories", "installation_repositories.added", "installation_repositories.removed", "issue_comment", "issue_comment.created", "issue_comment.deleted", "issue_comment.edited", "issues", "issues.assigned", "issues.closed", "issues.deleted", "issues.demilestoned", "issues.edited", "issues.labeled", "issues.locked", "issues.milestoned", "issues.opened", "issues.pinned", "issues.reopened", "issues.transferred", "issues.unassigned", "issues.unlabeled", "issues.unlocked", "issues.unpinned", "label", "label.created", "label.deleted", "label.edited", "marketplace_purchase", "marketplace_purchase.cancelled", "marketplace_purchase.changed", "marketplace_purchase.pending_change", "marketplace_purchase.pending_change_cancelled", "marketplace_purchase.purchased", "member", "member.added", "member.edited", "member.removed", "membership", "membership.added", "membership.removed", "merge_group", "merge_group.checks_requested", "meta", "meta.deleted", "milestone", "milestone.closed", "milestone.created", "milestone.deleted", "milestone.edited", "milestone.opened", "org_block", "org_block.blocked", "org_block.unblocked", "organization", "organization.deleted", "organization.member_added", "organization.member_invited", "organization.member_removed", "organization.renamed", "package", "package.published", "package.updated", "page_build", "ping", "project", "project.closed", "project.created", "project.deleted", "project.edited", "project.reopened", "project_card", "project_card.converted", "project_card.created", "project_card.deleted", "project_card.edited", "project_card.moved", "project_column", "project_column.created", "project_column.deleted", "project_column.edited", "project_column.moved", "projects_v2_item", "projects_v2_item.archived", "projects_v2_item.converted", "projects_v2_item.created", "projects_v2_item.deleted", "projects_v2_item.edited", "projects_v2_item.reordered", "projects_v2_item.restored", "public", "pull_request", "pull_request.assigned", "pull_request.auto_merge_disabled", "pull_request.auto_merge_enabled", "pull_request.closed", "pull_request.converted_to_draft", "pull_request.dequeued", "pull_request.edited", "pull_request.labeled", "pull_request.locked", "pull_request.opened", "pull_request.queued", "pull_request.ready_for_review", "pull_request.reopened", "pull_request.review_request_removed", "pull_request.review_requested", "pull_request.synchronize", "pull_request.unassigned", "pull_request.unlabeled", "pull_request.unlocked", "pull_request_review", "pull_request_review.dismissed", "pull_request_review.edited", "pull_request_review.submitted", "pull_request_review_comment", "pull_request_review_comment.created", "pull_request_review_comment.deleted", "pull_request_review_comment.edited", "pull_request_review_thread", "pull_request_review_thread.resolved", "pull_request_review_thread.unresolved", "push", "registry_package", "registry_package.published", "registry_package.updated", "release", "release.created", "release.deleted", "release.edited", "release.prereleased", "release.published", "release.released", "release.unpublished", "repository", "repository.archived", "repository.created", "repository.deleted", "repository.edited", "repository.privatized", "repository.publicized", "repository.renamed", "repository.transferred", "repository.unarchived", "repository_dispatch", "repository_import", "repository_vulnerability_alert", "repository_vulnerability_alert.create", "repository_vulnerability_alert.dismiss", "repository_vulnerability_alert.reopen", "repository_vulnerability_alert.resolve", "secret_scanning_alert", "secret_scanning_alert.created", "secret_scanning_alert.reopened", "secret_scanning_alert.resolved", "security_advisory", "security_advisory.performed", "security_advisory.published", "security_advisory.updated", "security_advisory.withdrawn", "sponsorship", "sponsorship.cancelled", "sponsorship.created", "sponsorship.edited", "sponsorship.pending_cancellation", "sponsorship.pending_tier_change", "sponsorship.tier_changed", "star", "star.created", "star.deleted", "status", "team", "team.added_to_repository", "team.created", "team.deleted", "team.edited", "team.removed_from_repository", "team_add", "watch", "watch.started", "workflow_dispatch", "workflow_job", "workflow_job.completed", "workflow_job.in_progress", "workflow_job.queued", "workflow_run", "workflow_run.completed", "workflow_run.in_progress", "workflow_run.requested"];
+    var emitterEventNames = ["branch_protection_rule", "branch_protection_rule.created", "branch_protection_rule.deleted", "branch_protection_rule.edited", "check_run", "check_run.completed", "check_run.created", "check_run.requested_action", "check_run.rerequested", "check_suite", "check_suite.completed", "check_suite.requested", "check_suite.rerequested", "code_scanning_alert", "code_scanning_alert.appeared_in_branch", "code_scanning_alert.closed_by_user", "code_scanning_alert.created", "code_scanning_alert.fixed", "code_scanning_alert.reopened", "code_scanning_alert.reopened_by_user", "commit_comment", "commit_comment.created", "create", "delete", "dependabot_alert", "dependabot_alert.created", "dependabot_alert.dismissed", "dependabot_alert.fixed", "dependabot_alert.reintroduced", "dependabot_alert.reopened", "deploy_key", "deploy_key.created", "deploy_key.deleted", "deployment", "deployment.created", "deployment_status", "deployment_status.created", "discussion", "discussion.answered", "discussion.category_changed", "discussion.created", "discussion.deleted", "discussion.edited", "discussion.labeled", "discussion.locked", "discussion.pinned", "discussion.transferred", "discussion.unanswered", "discussion.unlabeled", "discussion.unlocked", "discussion.unpinned", "discussion_comment", "discussion_comment.created", "discussion_comment.deleted", "discussion_comment.edited", "fork", "github_app_authorization", "github_app_authorization.revoked", "gollum", "installation", "installation.created", "installation.deleted", "installation.new_permissions_accepted", "installation.suspend", "installation.unsuspend", "installation_repositories", "installation_repositories.added", "installation_repositories.removed", "issue_comment", "issue_comment.created", "issue_comment.deleted", "issue_comment.edited", "issues", "issues.assigned", "issues.closed", "issues.deleted", "issues.demilestoned", "issues.edited", "issues.labeled", "issues.locked", "issues.milestoned", "issues.opened", "issues.pinned", "issues.reopened", "issues.transferred", "issues.unassigned", "issues.unlabeled", "issues.unlocked", "issues.unpinned", "label", "label.created", "label.deleted", "label.edited", "marketplace_purchase", "marketplace_purchase.cancelled", "marketplace_purchase.changed", "marketplace_purchase.pending_change", "marketplace_purchase.pending_change_cancelled", "marketplace_purchase.purchased", "member", "member.added", "member.edited", "member.removed", "membership", "membership.added", "membership.removed", "merge_group", "merge_group.checks_requested", "meta", "meta.deleted", "milestone", "milestone.closed", "milestone.created", "milestone.deleted", "milestone.edited", "milestone.opened", "org_block", "org_block.blocked", "org_block.unblocked", "organization", "organization.deleted", "organization.member_added", "organization.member_invited", "organization.member_removed", "organization.renamed", "package", "package.published", "package.updated", "page_build", "ping", "project", "project.closed", "project.created", "project.deleted", "project.edited", "project.reopened", "project_card", "project_card.converted", "project_card.created", "project_card.deleted", "project_card.edited", "project_card.moved", "project_column", "project_column.created", "project_column.deleted", "project_column.edited", "project_column.moved", "projects_v2_item", "projects_v2_item.archived", "projects_v2_item.converted", "projects_v2_item.created", "projects_v2_item.deleted", "projects_v2_item.edited", "projects_v2_item.reordered", "projects_v2_item.restored", "public", "pull_request", "pull_request.assigned", "pull_request.auto_merge_disabled", "pull_request.auto_merge_enabled", "pull_request.closed", "pull_request.converted_to_draft", "pull_request.dequeued", "pull_request.edited", "pull_request.labeled", "pull_request.locked", "pull_request.opened", "pull_request.queued", "pull_request.ready_for_review", "pull_request.reopened", "pull_request.review_request_removed", "pull_request.review_requested", "pull_request.synchronize", "pull_request.unassigned", "pull_request.unlabeled", "pull_request.unlocked", "pull_request_review", "pull_request_review.dismissed", "pull_request_review.edited", "pull_request_review.submitted", "pull_request_review_comment", "pull_request_review_comment.created", "pull_request_review_comment.deleted", "pull_request_review_comment.edited", "pull_request_review_thread", "pull_request_review_thread.resolved", "pull_request_review_thread.unresolved", "push", "release", "release.created", "release.deleted", "release.edited", "release.prereleased", "release.published", "release.released", "release.unpublished", "repository", "repository.archived", "repository.created", "repository.deleted", "repository.edited", "repository.privatized", "repository.publicized", "repository.renamed", "repository.transferred", "repository.unarchived", "repository_dispatch", "repository_import", "repository_vulnerability_alert", "repository_vulnerability_alert.create", "repository_vulnerability_alert.dismiss", "repository_vulnerability_alert.reopen", "repository_vulnerability_alert.resolve", "secret_scanning_alert", "secret_scanning_alert.created", "secret_scanning_alert.reopened", "secret_scanning_alert.resolved", "security_advisory", "security_advisory.performed", "security_advisory.published", "security_advisory.updated", "security_advisory.withdrawn", "sponsorship", "sponsorship.cancelled", "sponsorship.created", "sponsorship.edited", "sponsorship.pending_cancellation", "sponsorship.pending_tier_change", "sponsorship.tier_changed", "star", "star.created", "star.deleted", "status", "team", "team.added_to_repository", "team.created", "team.deleted", "team.edited", "team.removed_from_repository", "team_add", "watch", "watch.started", "workflow_dispatch", "workflow_job", "workflow_job.completed", "workflow_job.in_progress", "workflow_job.queued", "workflow_run", "workflow_run.completed", "workflow_run.in_progress", "workflow_run.requested"];
     function handleEventHandlers(state, webhookName, handler) {
       if (!state.hooks[webhookName]) {
         state.hooks[webhookName] = [];
@@ -22481,16 +22827,6 @@ var require_dist_node23 = __commonJS({
           return options.onUnhandledRequest(request, response);
         }
       }
-      if (!request.headers["content-type"].startsWith("application/json")) {
-        response.writeHead(415, {
-          "content-type": "application/json",
-          accept: "application/json"
-        });
-        response.end(JSON.stringify({
-          error: `Unsupported "Content-Type" header value. Must be "application/json"`
-        }));
-        return;
-      }
       const missingHeaders = getMissingHeaders(request).join(", ");
       if (missingHeaders) {
         response.writeHead(400, {
@@ -22549,13 +22885,9 @@ var require_dist_node23 = __commonJS({
       onUnhandledRequest = onUnhandledRequestDefault,
       log = createLogger()
     } = {}) {
-      const deprecateOnUnhandledRequest = (request, response) => {
-        console.error("[@octokit/webhooks] `onUnhandledRequest()` is deprecated and will be removed in a future release of `@octokit/webhooks`");
-        return onUnhandledRequest(request, response);
-      };
       return middleware.bind(null, webhooks, {
         path,
-        onUnhandledRequest: deprecateOnUnhandledRequest,
+        onUnhandledRequest,
         log
       });
     }
@@ -22571,23 +22903,13 @@ var require_dist_node23 = __commonJS({
           log: createLogger(options.log)
         };
         this.sign = sign.bind(null, options.secret);
-        this.verify = (eventPayload, signature) => {
-          if (typeof eventPayload === "object") {
-            console.error("[@octokit/webhooks] Passing a JSON payload object to `verify()` is deprecated and the functionality will be removed in a future release of `@octokit/webhooks`");
-          }
-          return verify(options.secret, eventPayload, signature);
-        };
+        this.verify = verify.bind(null, options.secret);
         this.on = state.eventHandler.on;
         this.onAny = state.eventHandler.onAny;
         this.onError = state.eventHandler.onError;
         this.removeListener = state.eventHandler.removeListener;
         this.receive = state.eventHandler.receive;
-        this.verifyAndReceive = (options2) => {
-          if (typeof options2.payload === "object") {
-            console.error("[@octokit/webhooks] Passing a JSON payload object to `verifyAndReceive()` is deprecated and the functionality will be removed in a future release of `@octokit/webhooks`");
-          }
-          return verifyAndReceive(state, options2);
-        };
+        this.verifyAndReceive = verifyAndReceive.bind(null, state);
       }
     };
     exports.Webhooks = Webhooks;
@@ -22602,13 +22924,13 @@ var require_dist_node24 = __commonJS({
   "../../node_modules/@octokit/app/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core4 = require_dist_node8();
+    var core3 = require_dist_node8();
     var authApp = require_dist_node19();
     var oauthApp = require_dist_node21();
     var authUnauthenticated = require_dist_node20();
     var webhooks$1 = require_dist_node23();
     var pluginPaginateRest = require_dist_node9();
-    var VERSION = "13.1.1";
+    var VERSION = "13.1.0";
     function webhooks(appOctokit, options) {
       return new webhooks$1.Webhooks({
         secret: options.secret,
@@ -22819,7 +23141,7 @@ var require_dist_node24 = __commonJS({
         return AppWithDefaults;
       }
       constructor(options) {
-        const Octokit2 = options.Octokit || core4.Octokit;
+        const Octokit2 = options.Octokit || core3.Octokit;
         const authOptions = Object.assign({
           appId: options.appId,
           privateKey: options.privateKey
@@ -22878,15 +23200,15 @@ var require_dist_node25 = __commonJS({
   "../../node_modules/octokit/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core4 = require_dist_node8();
+    var core3 = require_dist_node8();
     var pluginPaginateRest = require_dist_node9();
     var pluginRestEndpointMethods = require_dist_node10();
     var pluginRetry = require_dist_node11();
     var pluginThrottling = require_dist_node12();
     var app = require_dist_node24();
     var oauthApp = require_dist_node21();
-    var VERSION = "2.0.11";
-    var Octokit2 = core4.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
+    var VERSION = "2.0.10";
+    var Octokit2 = core3.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
       userAgent: `octokit.js/${VERSION}`,
       throttle: {
         onRateLimit,
@@ -22967,7 +23289,6 @@ var require_Node = __commonJS({
       constructor(type) {
         Object.defineProperty(this, NODE_TYPE, { value: type });
       }
-      /** Create a copy of this node.  */
       clone() {
         const copy = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this));
         if (this.range)
@@ -23180,10 +23501,6 @@ var require_directives = __commonJS({
         copy.docStart = this.docStart;
         return copy;
       }
-      /**
-       * During parsing, get a Directives instance for the current document and
-       * update the stream state according to the current version's spec.
-       */
       atDocument() {
         const res = new Directives(this.yaml, this.tags);
         switch (this.yaml.version) {
@@ -23201,10 +23518,6 @@ var require_directives = __commonJS({
         }
         return res;
       }
-      /**
-       * @param onError - May be called even if the action was successful
-       * @returns `true` on success
-       */
       add(line, onError) {
         if (this.atNextDocument) {
           this.yaml = { explicit: Directives.defaultYaml.explicit, version: "1.1" };
@@ -23245,12 +23558,6 @@ var require_directives = __commonJS({
             return false;
         }
       }
-      /**
-       * Resolves a tag, matching handles to those defined in %TAG directives.
-       *
-       * @returns Resolved tag, which may also be the non-specific tag `'!'` or a
-       *   `'!local'` tag, or `null` if unresolvable.
-       */
       tagName(source, onError) {
         if (source === "!")
           return "!";
@@ -23279,10 +23586,6 @@ var require_directives = __commonJS({
         onError(`Could not resolve tag: ${source}`);
         return null;
       }
-      /**
-       * Given a fully resolved tag, returns its printable string form,
-       * taking into account current tag prefixes and defaults.
-       */
       tagString(tag) {
         for (const [handle, prefix] of Object.entries(this.tags)) {
           if (tag.startsWith(prefix))
@@ -23362,11 +23665,6 @@ var require_anchors = __commonJS({
           prevAnchors.add(anchor);
           return anchor;
         },
-        /**
-         * With circular references, the source node is only resolved after all
-         * of its child nodes are. This is why anchors are set only after all of
-         * the nodes have been created.
-         */
         setAnchors: () => {
           for (const source of aliasObjects) {
             const ref = sourceObjects.get(source);
@@ -23406,10 +23704,6 @@ var require_Alias = __commonJS({
           }
         });
       }
-      /**
-       * Resolve the value of this alias within `doc`, finding the last
-       * instance of the `source` anchor before this node.
-       */
       resolve(doc) {
         let found = void 0;
         visit.visit(doc, {
@@ -23657,11 +23951,6 @@ var require_Collection = __commonJS({
           writable: true
         });
       }
-      /**
-       * Create a copy of this collection.
-       *
-       * @param schema - If defined, overwrites the original's schema
-       */
       clone(schema) {
         const copy = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this));
         if (schema)
@@ -23671,11 +23960,6 @@ var require_Collection = __commonJS({
           copy.range = this.range.slice();
         return copy;
       }
-      /**
-       * Adds a value to the collection. For `!!map` and `!!omap` the value must
-       * be a Pair instance or a `{ key, value }` object, which may not have a key
-       * that already exists in the map.
-       */
       addIn(path, value) {
         if (isEmptyPath(path))
           this.add(value);
@@ -23690,10 +23974,6 @@ var require_Collection = __commonJS({
             throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
         }
       }
-      /**
-       * Removes a value from the collection.
-       * @returns `true` if the item was found and removed.
-       */
       deleteIn(path) {
         const [key, ...rest] = path;
         if (rest.length === 0)
@@ -23704,11 +23984,6 @@ var require_Collection = __commonJS({
         else
           throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
       }
-      /**
-       * Returns item at `key`, or `undefined` if not found. By default unwraps
-       * scalar values from their surrounding node; to disable set `keepScalar` to
-       * `true` (collections are always returned intact).
-       */
       getIn(path, keepScalar) {
         const [key, ...rest] = path;
         const node = this.get(key, true);
@@ -23725,9 +24000,6 @@ var require_Collection = __commonJS({
           return n == null || allowScalar && Node.isScalar(n) && n.value == null && !n.commentBefore && !n.comment && !n.tag;
         });
       }
-      /**
-       * Checks if the collection includes a value with the key `key`.
-       */
       hasIn(path) {
         const [key, ...rest] = path;
         if (rest.length === 0)
@@ -23735,10 +24007,6 @@ var require_Collection = __commonJS({
         const node = this.get(key, true);
         return Node.isCollection(node) ? node.hasIn(rest) : false;
       }
-      /**
-       * Sets a value in this collection. For `!!set`, `value` needs to be a
-       * boolean to add/remove the item from the set.
-       */
       setIn(path, value) {
         const [key, ...rest] = path;
         if (rest.length === 0) {
@@ -24108,7 +24376,7 @@ ${indent}${body}`;
     }
     function plainString(item, ctx, onComment, onChompKeep) {
       const { type, value } = item;
-      const { actualString, implicitKey, indent, indentStep, inFlow } = ctx;
+      const { actualString, implicitKey, indent, inFlow } = ctx;
       if (implicitKey && /[\n[\]{},]/.test(value) || inFlow && /[[\]{},]/.test(value)) {
         return quotedString(value, ctx);
       }
@@ -24118,13 +24386,9 @@ ${indent}${body}`;
       if (!implicitKey && !inFlow && type !== Scalar.Scalar.PLAIN && value.includes("\n")) {
         return blockString(item, ctx, onComment, onChompKeep);
       }
-      if (containsDocumentMarker(value)) {
-        if (indent === "") {
-          ctx.forceBlockIndent = true;
-          return blockString(item, ctx, onComment, onChompKeep);
-        } else if (implicitKey && indent === indentStep) {
-          return quotedString(value, ctx);
-        }
+      if (indent === "" && containsDocumentMarker(value)) {
+        ctx.forceBlockIndent = true;
+        return blockString(item, ctx, onComment, onChompKeep);
       }
       const str = value.replace(/\n+/g, `$&
 ${indent}`);
@@ -24191,7 +24455,6 @@ var require_stringify = __commonJS({
         doubleQuotedAsJSON: false,
         doubleQuotedMinMultiLineLength: 40,
         falseStr: "false",
-        flowCollectionPadding: true,
         indentSeq: true,
         lineWidth: 80,
         minContentWidth: 20,
@@ -24215,7 +24478,6 @@ var require_stringify = __commonJS({
       return {
         anchors: /* @__PURE__ */ new Set(),
         doc,
-        flowCollectionPadding: opt.flowCollectionPadding ? " " : "",
         indent: "",
         indentStep: typeof opt.indent === "number" ? " ".repeat(opt.indent) : "  ",
         inFlow,
@@ -24352,64 +24614,43 @@ ${indent}:`;
         if (keyComment)
           str += stringifyComment.lineComment(str, ctx.indent, commentString(keyComment));
       }
-      let vsb, vcb, valueComment;
+      let vcb = "";
+      let valueComment = null;
       if (Node.isNode(value)) {
-        vsb = !!value.spaceBefore;
-        vcb = value.commentBefore;
+        if (value.spaceBefore)
+          vcb = "\n";
+        if (value.commentBefore) {
+          const cs = commentString(value.commentBefore);
+          vcb += `
+${stringifyComment.indentComment(cs, ctx.indent)}`;
+        }
         valueComment = value.comment;
-      } else {
-        vsb = false;
-        vcb = null;
-        valueComment = null;
-        if (value && typeof value === "object")
-          value = doc.createNode(value);
+      } else if (value && typeof value === "object") {
+        value = doc.createNode(value);
       }
       ctx.implicitKey = false;
       if (!explicitKey && !keyComment && Node.isScalar(value))
         ctx.indentAtStart = str.length + 1;
       chompKeep = false;
       if (!indentSeq && indentStep.length >= 2 && !ctx.inFlow && !explicitKey && Node.isSeq(value) && !value.flow && !value.tag && !value.anchor) {
-        ctx.indent = ctx.indent.substring(2);
+        ctx.indent = ctx.indent.substr(2);
       }
       let valueCommentDone = false;
       const valueStr = stringify2.stringify(value, ctx, () => valueCommentDone = true, () => chompKeep = true);
       let ws = " ";
-      if (keyComment || vsb || vcb) {
-        ws = vsb ? "\n" : "";
-        if (vcb) {
-          const cs = commentString(vcb);
-          ws += `
-${stringifyComment.indentComment(cs, ctx.indent)}`;
-        }
-        if (valueStr === "" && !ctx.inFlow) {
-          if (ws === "\n")
-            ws = "\n\n";
-        } else {
-          ws += `
+      if (vcb || keyComment) {
+        if (valueStr === "" && !ctx.inFlow)
+          ws = vcb === "\n" ? "\n\n" : vcb;
+        else
+          ws = `${vcb}
 ${ctx.indent}`;
-        }
       } else if (!explicitKey && Node.isCollection(value)) {
-        const vs0 = valueStr[0];
-        const nl0 = valueStr.indexOf("\n");
-        const hasNewline = nl0 !== -1;
-        const flow = ctx.inFlow ?? value.flow ?? value.items.length === 0;
-        if (hasNewline || !flow) {
-          let hasPropsLine = false;
-          if (hasNewline && (vs0 === "&" || vs0 === "!")) {
-            let sp0 = valueStr.indexOf(" ");
-            if (vs0 === "&" && sp0 !== -1 && sp0 < nl0 && valueStr[sp0 + 1] === "!") {
-              sp0 = valueStr.indexOf(" ", sp0 + 1);
-            }
-            if (sp0 === -1 || nl0 < sp0)
-              hasPropsLine = true;
-          }
-          if (!hasPropsLine)
-            ws = `
+        const flow = valueStr[0] === "[" || valueStr[0] === "{";
+        if (!flow || valueStr.includes("\n"))
+          ws = `
 ${ctx.indent}`;
-        }
-      } else if (valueStr === "" || valueStr[0] === "\n") {
+      } else if (valueStr === "" || valueStr[0] === "\n")
         ws = "";
-      }
       str += ws + valueStr;
       if (ctx.inFlow) {
         if (valueCommentDone && onComment)
@@ -24643,7 +24884,7 @@ ${indent}${line}` : "\n";
       return str;
     }
     function stringifyFlowCollection({ comment, items }, ctx, { flowChars, itemIndent, onComment }) {
-      const { indent, indentStep, flowCollectionPadding: fcPadding, options: { commentString } } = ctx;
+      const { indent, indentStep, options: { commentString } } = ctx;
       itemIndent += indentStep;
       const itemCtx = Object.assign({}, ctx, {
         indent: itemIndent,
@@ -24710,7 +24951,7 @@ ${indentStep}${indent}${line}` : "\n";
           str += `
 ${indent}${end}`;
         } else {
-          str = `${start}${fcPadding}${lines.join(" ")}${fcPadding}${end}`;
+          str = `${start} ${lines.join(" ")} ${end}`;
         }
       }
       if (comment) {
@@ -24755,19 +24996,13 @@ var require_YAMLMap = __commonJS({
       return void 0;
     }
     var YAMLMap = class extends Collection.Collection {
-      static get tagName() {
-        return "tag:yaml.org,2002:map";
-      }
       constructor(schema) {
         super(Node.MAP, schema);
         this.items = [];
       }
-      /**
-       * Adds a value to the collection.
-       *
-       * @param overwrite - If not set `true`, using a key that is already in the
-       *   collection will throw. Otherwise, overwrites the previous value.
-       */
+      static get tagName() {
+        return "tag:yaml.org,2002:map";
+      }
       add(pair, overwrite) {
         let _pair;
         if (Node.isPair(pair))
@@ -24813,11 +25048,6 @@ var require_YAMLMap = __commonJS({
       set(key, value) {
         this.add(new Pair.Pair(key, value), true);
       }
-      /**
-       * @param ctx - Conversion context, originally set in Document#toJS()
-       * @param {Class} Type - If set, forces the returned collection type
-       * @returns Instance of Type, Map, or Object
-       */
       toJSON(_, ctx, Type) {
         const map = Type ? new Type() : ctx?.mapAsMap ? /* @__PURE__ */ new Map() : {};
         if (ctx?.onCreate)
@@ -24905,24 +25135,16 @@ var require_YAMLSeq = __commonJS({
     var Scalar = require_Scalar();
     var toJS = require_toJS();
     var YAMLSeq = class extends Collection.Collection {
-      static get tagName() {
-        return "tag:yaml.org,2002:seq";
-      }
       constructor(schema) {
         super(Node.SEQ, schema);
         this.items = [];
       }
+      static get tagName() {
+        return "tag:yaml.org,2002:seq";
+      }
       add(value) {
         this.items.push(value);
       }
-      /**
-       * Removes a value from the collection.
-       *
-       * `key` must contain a representation of an integer for this to succeed.
-       * It may be wrapped in a `Scalar`.
-       *
-       * @returns `true` if the item was found and removed.
-       */
       delete(key) {
         const idx = asItemIndex(key);
         if (typeof idx !== "number")
@@ -24937,23 +25159,10 @@ var require_YAMLSeq = __commonJS({
         const it = this.items[idx];
         return !keepScalar && Node.isScalar(it) ? it.value : it;
       }
-      /**
-       * Checks if the collection includes a value with the key `key`.
-       *
-       * `key` must contain a representation of an integer for this to succeed.
-       * It may be wrapped in a `Scalar`.
-       */
       has(key) {
         const idx = asItemIndex(key);
         return typeof idx === "number" && idx < this.items.length;
       }
-      /**
-       * Sets a value in this collection. For `!!set`, `value` needs to be a
-       * boolean to add/remove the item from the set.
-       *
-       * If `key` does not contain a representation of an integer, this will throw.
-       * It may be wrapped in a `Scalar`.
-       */
       set(key, value) {
         const idx = asItemIndex(key);
         if (typeof idx !== "number")
@@ -25317,14 +25526,6 @@ var require_binary = __commonJS({
       identify: (value) => value instanceof Uint8Array,
       default: false,
       tag: "tag:yaml.org,2002:binary",
-      /**
-       * Returns a Buffer in node and an Uint8Array in browsers
-       *
-       * To use the resulting buffer as an image, you'll want to do something like:
-       *
-       *   const blob = new Blob([buffer], { type: 'image/jpeg' })
-       *   document.querySelector('#photo').src = URL.createObjectURL(blob)
-       */
       resolve(src, onError) {
         if (typeof Buffer === "function") {
           return Buffer.from(src, "base64");
@@ -25466,10 +25667,6 @@ var require_omap = __commonJS({
         this.set = YAMLMap.YAMLMap.prototype.set.bind(this);
         this.tag = YAMLOMap.tag;
       }
-      /**
-       * If `ctx` is given, the return type is actually `Map<unknown, unknown>`,
-       * but TypeScript won't allow widening the signature of a child method.
-       */
       toJSON(_, ctx) {
         if (!ctx)
           return super.toJSON(_);
@@ -25708,10 +25905,6 @@ var require_set = __commonJS({
         if (!prev)
           this.items.push(pair);
       }
-      /**
-       * If `keepPair` is `true`, returns the Pair matching `key`.
-       * Otherwise, returns the value of that Pair's key.
-       */
       get(key, keepPair) {
         const pair = YAMLMap.findPair(this.items, key);
         return !keepPair && Node.isPair(pair) ? Node.isScalar(pair.key) ? pair.key.value : pair.key : pair;
@@ -25832,9 +26025,6 @@ var require_timestamp = __commonJS({
       identify: (value) => value instanceof Date,
       default: true,
       tag: "tag:yaml.org,2002:timestamp",
-      // If the time zone is omitted, the timestamp is assumed to be specified in UTC. The time part
-      // may be omitted altogether, resulting in a date format. In such a case, the time part is
-      // assumed to be 00:00:00Z (start of day, UTC).
       test: RegExp("^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})(?:(?:t|T|[ \\t]+)([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}(\\.[0-9]+)?)(?:[ \\t]*(Z|[-+][012]?[0-9](?::[0-9]{2})?))?)?$"),
       resolve(str) {
         const match = str.match(timestamp.test);
@@ -26202,11 +26392,6 @@ var require_Document = __commonJS({
           this.contents = this.createNode(value, _replacer, options);
         }
       }
-      /**
-       * Create a deep copy of this Document and its contents.
-       *
-       * Custom Node values that inherit from `Object` still refer to their original instances.
-       */
       clone() {
         const copy = Object.create(Document.prototype, {
           [Node.NODE_TYPE]: { value: Node.DOC }
@@ -26224,30 +26409,18 @@ var require_Document = __commonJS({
           copy.range = this.range.slice();
         return copy;
       }
-      /** Adds a value to the document. */
       add(value) {
         if (assertCollection(this.contents))
           this.contents.add(value);
       }
-      /** Adds a value to the document. */
       addIn(path, value) {
         if (assertCollection(this.contents))
           this.contents.addIn(path, value);
       }
-      /**
-       * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
-       *
-       * If `node` already has an anchor, `name` is ignored.
-       * Otherwise, the `node.anchor` value will be set to `name`,
-       * or if an anchor with that name is already present in the document,
-       * `name` will be used as a prefix for a new unique anchor.
-       * If `name` is undefined, the generated anchor will use 'a' as a prefix.
-       */
       createAlias(node, name) {
         if (!node.anchor) {
           const prev = anchors.anchorNames(this);
-          node.anchor = // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-          !name || prev.has(name) ? anchors.findNewAnchor(name || "a", prev) : name;
+          node.anchor = !name || prev.has(name) ? anchors.findNewAnchor(name || "a", prev) : name;
         }
         return new Alias.Alias(node.anchor);
       }
@@ -26269,7 +26442,6 @@ var require_Document = __commonJS({
         const { aliasDuplicateObjects, anchorPrefix, flow, keepUndefined, onTagObj, tag } = options ?? {};
         const { onAnchor, setAnchors, sourceObjects } = anchors.createNodeAnchors(
           this,
-          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           anchorPrefix || "a"
         );
         const ctx = {
@@ -26287,26 +26459,14 @@ var require_Document = __commonJS({
         setAnchors();
         return node;
       }
-      /**
-       * Convert a key and a value into a `Pair` using the current schema,
-       * recursively wrapping all values as `Scalar` or `Collection` nodes.
-       */
       createPair(key, value, options = {}) {
         const k = this.createNode(key, null, options);
         const v = this.createNode(value, null, options);
         return new Pair.Pair(k, v);
       }
-      /**
-       * Removes a value from the document.
-       * @returns `true` if the item was found and removed.
-       */
       delete(key) {
         return assertCollection(this.contents) ? this.contents.delete(key) : false;
       }
-      /**
-       * Removes a value from the document.
-       * @returns `true` if the item was found and removed.
-       */
       deleteIn(path) {
         if (Collection.isEmptyPath(path)) {
           if (this.contents == null)
@@ -26316,42 +26476,22 @@ var require_Document = __commonJS({
         }
         return assertCollection(this.contents) ? this.contents.deleteIn(path) : false;
       }
-      /**
-       * Returns item at `key`, or `undefined` if not found. By default unwraps
-       * scalar values from their surrounding node; to disable set `keepScalar` to
-       * `true` (collections are always returned intact).
-       */
       get(key, keepScalar) {
         return Node.isCollection(this.contents) ? this.contents.get(key, keepScalar) : void 0;
       }
-      /**
-       * Returns item at `path`, or `undefined` if not found. By default unwraps
-       * scalar values from their surrounding node; to disable set `keepScalar` to
-       * `true` (collections are always returned intact).
-       */
       getIn(path, keepScalar) {
         if (Collection.isEmptyPath(path))
           return !keepScalar && Node.isScalar(this.contents) ? this.contents.value : this.contents;
         return Node.isCollection(this.contents) ? this.contents.getIn(path, keepScalar) : void 0;
       }
-      /**
-       * Checks if the document includes a value with the key `key`.
-       */
       has(key) {
         return Node.isCollection(this.contents) ? this.contents.has(key) : false;
       }
-      /**
-       * Checks if the document includes a value at `path`.
-       */
       hasIn(path) {
         if (Collection.isEmptyPath(path))
           return this.contents !== void 0;
         return Node.isCollection(this.contents) ? this.contents.hasIn(path) : false;
       }
-      /**
-       * Sets a value in this document. For `!!set`, `value` needs to be a
-       * boolean to add/remove the item from the set.
-       */
       set(key, value) {
         if (this.contents == null) {
           this.contents = Collection.collectionFromPath(this.schema, [key], value);
@@ -26359,10 +26499,6 @@ var require_Document = __commonJS({
           this.contents.set(key, value);
         }
       }
-      /**
-       * Sets a value in this document. For `!!set`, `value` needs to be a
-       * boolean to add/remove the item from the set.
-       */
       setIn(path, value) {
         if (Collection.isEmptyPath(path))
           this.contents = value;
@@ -26372,13 +26508,6 @@ var require_Document = __commonJS({
           this.contents.setIn(path, value);
         }
       }
-      /**
-       * Change the YAML version and schema used by the document.
-       * A `null` version disables support for directives, explicit tags, anchors, and aliases.
-       * It also requires the `schema` option to be given as a `Schema` instance value.
-       *
-       * Overrides all previously set schema options.
-       */
       setSchema(version2, options = {}) {
         if (typeof version2 === "number")
           version2 = String(version2);
@@ -26416,7 +26545,6 @@ var require_Document = __commonJS({
         else
           throw new Error(`With a null YAML version, the { schema: Schema } option is required`);
       }
-      // json & jsonArg are only used from toJSON()
       toJS({ json, jsonArg, mapAsMap, maxAliasCount, onAnchor, reviver } = {}) {
         const ctx = {
           anchors: /* @__PURE__ */ new Map(),
@@ -26433,16 +26561,9 @@ var require_Document = __commonJS({
             onAnchor(res2, count);
         return typeof reviver === "function" ? applyReviver.applyReviver(reviver, { "": res }, "", res) : res;
       }
-      /**
-       * A JSON representation of the document `contents`.
-       *
-       * @param jsonArg Used by `JSON.stringify` to indicate the array index or
-       *   property name.
-       */
       toJSON(jsonArg, onAnchor) {
         return this.toJS({ json: true, jsonArg, mapAsMap: false, onAnchor });
       }
-      /** A YAML representation of the document. */
       toString(options = {}) {
         if (this.errors.length > 0)
           throw new Error("Document with errors cannot be stringified");
@@ -26972,7 +27093,6 @@ var require_resolve_flow_collection = __commonJS({
           if (!isMap && ctx.options.strict && utilContainsNewline.containsNewline(key))
             onError(
               key,
-              // checked by containsNewline()
               "MULTILINE_IMPLICIT_KEY",
               "Implicit keys of flow sequence pairs need to be on a single line"
             );
@@ -27880,11 +28000,6 @@ ${cb}` : comment;
         this.errors = [];
         this.warnings = [];
       }
-      /**
-       * Current stream status information.
-       *
-       * Mostly useful at the end of input for an empty stream.
-       */
       streamInfo() {
         return {
           comment: parsePrelude(this.prelude).comment,
@@ -27893,18 +28008,11 @@ ${cb}` : comment;
           warnings: this.warnings
         };
       }
-      /**
-       * Compose tokens into documents.
-       *
-       * @param forceDoc - If the stream contains no document, still emit a final document including any comments and directives that would be applied to a subsequent document.
-       * @param endOffset - Should be set if `forceDoc` is also set, to set the document range end and to indicate errors correctly.
-       */
       *compose(tokens, forceDoc = false, endOffset = -1) {
         for (const token of tokens)
           yield* this.next(token);
         yield* this.end(forceDoc, endOffset);
       }
-      /** Advance the composer by one CST token. */
       *next(token) {
         if (process.env.LOG_STREAM)
           console.dir(token, { depth: null });
@@ -27966,12 +28074,6 @@ ${end.comment}` : end.comment;
             this.errors.push(new errors.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", `Unsupported token ${token.type}`));
         }
       }
-      /**
-       * Call at end of input to yield any remaining document.
-       *
-       * @param forceDoc - If the stream contains no document, still emit a final document including any comments and directives that would be applied to a subsequent document.
-       * @param endOffset - Should be set if `forceDoc` is also set, to set the document range end and to indicate errors correctly.
-       */
       *end(forceDoc = false, endOffset = -1) {
         if (this.doc) {
           this.decorate(this.doc, true);
@@ -28438,12 +28540,6 @@ var require_lexer = __commonJS({
         this.next = null;
         this.pos = 0;
       }
-      /**
-       * Generate YAML tokens from the `source` string. If `incomplete`,
-       * a part of the last line may be left as a buffer for the next call.
-       *
-       * @returns A generator of lexical tokens
-       */
       *lex(source, incomplete = false) {
         if (source) {
           this.buffer = this.buffer ? this.buffer + source : source;
@@ -29086,10 +29182,6 @@ var require_parser = __commonJS({
       }
     }
     var Parser = class {
-      /**
-       * @param onNewLine - If defined, called separately with the start position of
-       *   each new line (in `parse()`, including the start of input).
-       */
       constructor(onNewLine) {
         this.atNewLine = true;
         this.atScalar = false;
@@ -29102,14 +29194,6 @@ var require_parser = __commonJS({
         this.lexer = new lexer.Lexer();
         this.onNewLine = onNewLine;
       }
-      /**
-       * Parse `source` as a YAML stream.
-       * If `incomplete`, a part of the last line may be left as a buffer for the next call.
-       *
-       * Errors are not thrown, but yielded as `{ type: 'error', message }` tokens.
-       *
-       * @returns A generator of tokens representing each directive, document, and other structure.
-       */
       *parse(source, incomplete = false) {
         if (this.onNewLine && this.offset === 0)
           this.onNewLine(0);
@@ -29118,9 +29202,6 @@ var require_parser = __commonJS({
         if (!incomplete)
           yield* this.end();
       }
-      /**
-       * Advance the parser by the `source` of one lexical token.
-       */
       *next(source) {
         this.source = source;
         if (process.env.LOG_TOKENS)
@@ -29169,7 +29250,6 @@ var require_parser = __commonJS({
           this.offset += source.length;
         }
       }
-      /** Call at end of input to push out any remaining constructions */
       *end() {
         while (this.stack.length > 0)
           yield* this.pop();
@@ -30964,9 +31044,7 @@ var require_moment = __commonJS({
       }
       var defaultLocaleWeek = {
         dow: 0,
-        // Sunday is the first day of the week.
         doy: 6
-        // The week that contains Jan 6th is the first week of the year.
       };
       function localeFirstDayOfWeek() {
         return this._week.dow;
@@ -32171,9 +32249,7 @@ var require_moment = __commonJS({
       function Duration(duration) {
         var normalizedInput = normalizeObjectUnits(duration), years2 = normalizedInput.year || 0, quarters = normalizedInput.quarter || 0, months2 = normalizedInput.month || 0, weeks2 = normalizedInput.week || normalizedInput.isoWeek || 0, days2 = normalizedInput.day || 0, hours2 = normalizedInput.hour || 0, minutes2 = normalizedInput.minute || 0, seconds2 = normalizedInput.second || 0, milliseconds2 = normalizedInput.millisecond || 0;
         this._isValid = isDurationValid(normalizedInput);
-        this._milliseconds = +milliseconds2 + seconds2 * 1e3 + // 1000
-        minutes2 * 6e4 + // 1000 * 60
-        hours2 * 1e3 * 60 * 60;
+        this._milliseconds = +milliseconds2 + seconds2 * 1e3 + minutes2 * 6e4 + hours2 * 1e3 * 60 * 60;
         this._days = +days2 + weeks2 * 7;
         this._months = +months2 + quarters * 3 + years2 * 12;
         this._data = {};
@@ -32382,7 +32458,6 @@ var require_moment = __commonJS({
             m: toInt(match[MINUTE]) * sign2,
             s: toInt(match[SECOND]) * sign2,
             ms: toInt(absRound(match[MILLISECOND] * 1e3)) * sign2
-            // the millisecond decimal point is included in the match
           };
         } else if (match = isoRegex.exec(input)) {
           sign2 = match[1] === "-" ? -1 : 1;
@@ -33718,19 +33793,12 @@ var require_moment = __commonJS({
       }
       var round = Math.round, thresholds = {
         ss: 44,
-        // a few seconds to seconds
         s: 45,
-        // seconds to minute
         m: 45,
-        // minutes to hour
         h: 22,
-        // hours to day
         d: 26,
-        // days to month/week
         w: null,
-        // weeks to month
         M: 11
-        // months to year
       };
       function substituteTimeAgo(string, number, withoutSuffix, isFuture, locale2) {
         return locale2.relativeTime(number || 1, !!withoutSuffix, string, isFuture);
@@ -33898,23 +33966,14 @@ var require_moment = __commonJS({
       hooks.prototype = proto;
       hooks.HTML5_FMT = {
         DATETIME_LOCAL: "YYYY-MM-DDTHH:mm",
-        // <input type="datetime-local" />
         DATETIME_LOCAL_SECONDS: "YYYY-MM-DDTHH:mm:ss",
-        // <input type="datetime-local" step="1" />
         DATETIME_LOCAL_MS: "YYYY-MM-DDTHH:mm:ss.SSS",
-        // <input type="datetime-local" step="0.001" />
         DATE: "YYYY-MM-DD",
-        // <input type="date" />
         TIME: "HH:mm",
-        // <input type="time" />
         TIME_SECONDS: "HH:mm:ss",
-        // <input type="time" step="1" />
         TIME_MS: "HH:mm:ss.SSS",
-        // <input type="time" step="0.001" />
         WEEK: "GGGG-[W]WW",
-        // <input type="week" />
         MONTH: "YYYY-MM"
-        // <input type="month" />
       };
       return hooks;
     });
@@ -34074,14 +34133,18 @@ var require_main = __commonJS({
 var main_exports = {};
 __export(main_exports, {
 <<<<<<< HEAD
+<<<<<<< HEAD
   Content: () => Content
 =======
   Content: () => Content,
   Repository: () => Repository2
 >>>>>>> 0f6c4eb (Moved optional actions; object checking fix; build main.js)
+=======
+  Content: () => Content
+>>>>>>> 83d3e8c (Rebase)
 });
 module.exports = __toCommonJS(main_exports);
-var core3 = __toESM(require_core());
+var core2 = __toESM(require_core());
 var import_octokit = __toESM(require_dist_node25());
 var import_yaml = __toESM(require_dist());
 
@@ -34089,51 +34152,6 @@ var import_yaml = __toESM(require_dist());
 var import_moment = __toESM(require_moment());
 function GetDateFormatted(date) {
   return (0, import_moment.default)(date).format("YYYYMMDD_HHmm");
-}
-function fetchParentInfo(repo, client) {
-  return __async(this, null, function* () {
-    const { data: repoinfo } = yield client.rest.repos.get({
-      owner: repo.owner,
-      repo: repo.name
-    });
-    if (repoinfo.parent) {
-      return repoinfo.parent.full_name;
-    }
-  });
-}
-function fetchYaml(repo, client, pathElement) {
-  return __async(this, null, function* () {
-    const result = new Content();
-    const parentinfo = yield fetchParentInfo(repo, client);
-    const { data: yaml } = yield client.rest.repos.getContent({
-      owner: repo.owner,
-      repo: repo.name,
-      path: pathElement
-    });
-    if ("name" in yaml && "download_url" in yaml) {
-      result.name = yaml.name;
-      result.repo = repo.name;
-      result.forkedfrom = parentinfo;
-      result.downloadUrl = yaml.download_url || void 0;
-    }
-    return result;
-  });
-}
-function searchForActionYaml(repo, client) {
-  return __async(this, null, function* () {
-    let result;
-    const searchQuery = "+filename:action+language:YAML+repo:" + repo.owner + "/" + repo.name;
-    const searchResultforRepository = yield client.request("GET /search/code", {
-      q: searchQuery
-    });
-    if (Object.keys(searchResultforRepository.data.items).length > 0) {
-      for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
-        const pathElement = searchResultforRepository.data.items[index].path;
-        result = fetchYaml(repo, client, pathElement);
-      }
-      return result;
-    }
-  });
 }
 
 // src/main.ts
@@ -34145,6 +34163,7 @@ function getReadmeContent(client, repo, owner) {
   return __async(this, null, function* () {
     try {
 <<<<<<< HEAD
+<<<<<<< HEAD
       const { data: readme } = yield client.rest.repos.getContent({
         owner,
         repo,
@@ -34153,6 +34172,11 @@ function getReadmeContent(client, repo, owner) {
         owner: repo.owner,
         repo: repo.name,
 >>>>>>> 599133d (Adjustmest for tests)
+=======
+      const { data: readme } = yield client.rest.repos.getContent({
+        owner,
+        repo,
+>>>>>>> 83d3e8c (Rebase)
         path: "README.md"
       });
       return readme.content;
@@ -34162,46 +34186,14 @@ function getReadmeContent(client, repo, owner) {
   });
 }
 
-// src/coreFunctions.ts
-var core2 = __toESM(require_core());
-function findAllRepos(client, username, organization) {
-  return __async(this, null, function* () {
-    var _a, _b;
-    const result = [];
-    let repos;
-    if (username) {
-      repos = yield client.paginate(client.rest.repos.listForUser, {
-        username
-      });
-    }
-    if (organization) {
-      repos = yield client.paginate(client.rest.repos.listForOrg, {
-        org: organization
-      });
-      console.log(`Found [${organization}] as orgname parameter`);
-    }
-    core2.info(`Found [${repos.length}] repositories`);
-    for (let num = 0; num < repos.length; num++) {
-      const repo = repos[num];
-      const repository = new Repository2(
-        ((_a = repo.owner) == null ? void 0 : _a.login) || "",
-        repo.name,
-        (_b = repo.visibility) != null ? _b : ""
-      );
-      result.push(repository);
-    }
-    return result;
-  });
-}
-
 // src/main.ts
 import_dotenv.default.config();
-var getInputOrEnv = (input) => core3.getInput(input) || process.env.input || "";
+var getInputOrEnv = (input) => core2.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 function run() {
   return __async(this, null, function* () {
-    core3.info("Starting");
+    core2.info("Starting");
     try {
       const PAT = getInputOrEnv("PAT");
       const user = getInputOrEnv("user");
@@ -34209,17 +34201,21 @@ function run() {
       const baseUrl = process.env.GITHUB_API_URL || "https://api.github.com";
       const isEnterpriseServer = baseUrl !== "https://api.github.com";
       if (!PAT) {
-        core3.setFailed(
+        core2.setFailed(
           "Parameter 'PAT' is required to load all actions from the organization or user account"
         );
         return;
       }
       if (!user && !organization) {
 <<<<<<< HEAD
+<<<<<<< HEAD
         core2.setFailed(
 =======
         core3.setFailed(
 >>>>>>> 0f6c4eb (Moved optional actions; object checking fix; build main.js)
+=======
+        core2.setFailed(
+>>>>>>> 83d3e8c (Rebase)
           "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
         );
         return;
@@ -34230,7 +34226,7 @@ function run() {
       });
       try {
       } catch (error) {
-        core3.setFailed(
+        core2.setFailed(
           `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
         );
         return;
@@ -34249,12 +34245,13 @@ function run() {
         user
       };
       const json = JSON.stringify(output);
-      core3.setOutput("actions", json);
+      core2.setOutput("actions", json);
     } catch (error) {
-      core3.setFailed(`Error running action: : ${error.message}`);
+      core2.setFailed(`Error running action: : ${error.message}`);
     }
   });
 }
+<<<<<<< HEAD
 <<<<<<< HEAD
 var Content = class {
 };
@@ -34371,6 +34368,14 @@ function enrichActionFiles(client, actionFiles) {
       core2.debug(`Enrich : ${action.downloadUrl}`);
 =======
 >>>>>>> 599133d (Adjustmest for tests)
+=======
+var Content = class {
+};
+function enrichActionFiles(client, actionFiles) {
+  return __async(this, null, function* () {
+    for (const action of actionFiles) {
+      core2.debug(`Enrich : ${action.downloadUrl}`);
+>>>>>>> 83d3e8c (Rebase)
       if (action.downloadUrl) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         try {
@@ -34477,36 +34482,3 @@ run();
 0 && (module.exports = {
   Content
 });
-/*! Bundled license information:
-
-is-plain-object/dist/is-plain-object.js:
-  (*!
-   * is-plain-object <https://github.com/jonschlinkert/is-plain-object>
-   *
-   * Copyright (c) 2014-2017, Jon Schlinkert.
-   * Released under the MIT License.
-   *)
-
-safe-buffer/index.js:
-  (*! safe-buffer. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> *)
-
-lodash/lodash.js:
-  (**
-   * @license
-   * Lodash <https://lodash.com/>
-   * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>
-   * Released under MIT license <https://lodash.com/license>
-   * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
-   * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
-   *)
-
-fromentries/index.js:
-  (*! fromentries. MIT License. Feross Aboukhadijeh <https://feross.org/opensource> *)
-
-moment/moment.js:
-  (*! moment.js *)
-  (*! version : 2.29.4 *)
-  (*! authors : Tim Wood, Iskren Chernev, Moment.js contributors *)
-  (*! license : MIT *)
-  (*! momentjs.com *)
-*/
