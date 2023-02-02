@@ -1,6 +1,16 @@
 import {Octokit} from 'octokit'
 import * as core from '@actions/core'
 
+<<<<<<< HEAD
+=======
+export const removeToken = (content: Content) => {
+  if (content && content.downloadUrl) {
+    content.downloadUrl = content.downloadUrl.replace(/\?(.*)/, '')
+  }
+  return content
+}
+
+>>>>>>> 0f6c4eb (Moved optional actions; object checking fix; build main.js)
 export async function getReadmeContent(
   client: Octokit,
   repo: string,

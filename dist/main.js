@@ -1135,12 +1135,12 @@ var require_lib = __commonJS({
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info2 = this._prepareRequest(verb, parsedUrl, headers);
+          let info3 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info2, data);
+            response = yield this.requestRaw(info3, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler of this.handlers) {
@@ -1150,7 +1150,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info2, data);
+                return authenticationHandler.handleAuthentication(this, info3, data);
               } else {
                 return response;
               }
@@ -1173,8 +1173,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info2 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info2, data);
+              info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info3, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -1195,7 +1195,7 @@ var require_lib = __commonJS({
         }
         this._disposed = true;
       }
-      requestRaw(info2, data) {
+      requestRaw(info3, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -1207,16 +1207,16 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info2, data, callbackForResult);
+            this.requestRawWithCallback(info3, data, callbackForResult);
           });
         });
       }
-      requestRawWithCallback(info2, data, onResult) {
+      requestRawWithCallback(info3, data, onResult) {
         if (typeof data === "string") {
-          if (!info2.options.headers) {
-            info2.options.headers = {};
+          if (!info3.options.headers) {
+            info3.options.headers = {};
           }
-          info2.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -1225,7 +1225,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info2.httpModule.request(info2.options, (msg) => {
+        const req = info3.httpModule.request(info3.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -1237,7 +1237,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info2.options.path}`));
+          handleResult(new Error(`Request timeout: ${info3.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -1259,27 +1259,27 @@ var require_lib = __commonJS({
         return this._getAgent(parsedUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info2 = {};
-        info2.parsedUrl = requestUrl;
-        const usingSsl = info2.parsedUrl.protocol === "https:";
-        info2.httpModule = usingSsl ? https : http;
+        const info3 = {};
+        info3.parsedUrl = requestUrl;
+        const usingSsl = info3.parsedUrl.protocol === "https:";
+        info3.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info2.options = {};
-        info2.options.host = info2.parsedUrl.hostname;
-        info2.options.port = info2.parsedUrl.port ? parseInt(info2.parsedUrl.port) : defaultPort;
-        info2.options.path = (info2.parsedUrl.pathname || "") + (info2.parsedUrl.search || "");
-        info2.options.method = method;
-        info2.options.headers = this._mergeHeaders(headers);
+        info3.options = {};
+        info3.options.host = info3.parsedUrl.hostname;
+        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
+        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
+        info3.options.method = method;
+        info3.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info2.options.headers["user-agent"] = this.userAgent;
+          info3.options.headers["user-agent"] = this.userAgent;
         }
-        info2.options.agent = this._getAgent(info2.parsedUrl);
+        info3.options.agent = this._getAgent(info3.parsedUrl);
         if (this.handlers) {
           for (const handler of this.handlers) {
-            handler.prepareRequest(info2.options);
+            handler.prepareRequest(info3.options);
           }
         }
-        return info2;
+        return info3;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -1987,10 +1987,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info2(message) {
+    function info3(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info2;
+    exports.info = info3;
     function startGroup(name) {
       command_1.issue("group", name);
     }
@@ -8466,11 +8466,11 @@ var require_dist_node11 = __commonJS({
     }
     async function wrapRequest(state, request, options) {
       const limiter = new Bottleneck();
-      limiter.on("failed", function(error, info2) {
+      limiter.on("failed", function(error, info3) {
         const maxRetries = ~~error.request.request.retries;
         const after = ~~error.request.request.retryAfter;
-        options.request.retryCount = info2.retryCount + 1;
-        if (maxRetries > info2.retryCount) {
+        options.request.retryCount = info3.retryCount + 1;
+        if (maxRetries > info3.retryCount) {
           return after * state.retryAfterBaseValue;
         }
       });
@@ -8640,8 +8640,8 @@ var require_dist_node12 = __commonJS({
       } : state.onSecondaryRateLimit);
       events.on("rate-limit", state.onRateLimit);
       events.on("error", (e) => octokit.log.warn("Error in throttling-plugin limit handler", e));
-      state.retryLimiter.on("failed", async function(error, info2) {
-        const [state2, request, options] = info2.args;
+      state.retryLimiter.on("failed", async function(error, info3) {
+        const [state2, request, options] = info3.args;
         const {
           pathname
         } = new URL(options.url, "http://github.test");
@@ -13398,7 +13398,7 @@ var require_dist_node21 = __commonJS({
       return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
     }
     var OAuthAppAuth = require_dist_node17();
-    var core3 = require_dist_node8();
+    var core4 = require_dist_node8();
     var universalUserAgent = require_dist_node();
     var authOauthUser = require_dist_node16();
     var OAuthMethods = require_dist_node14();
@@ -13417,7 +13417,7 @@ var require_dist_node21 = __commonJS({
       }
       state.eventHandlers[eventName].push(eventHandler);
     }
-    var OAuthAppOctokit = core3.Octokit.defaults({
+    var OAuthAppOctokit = core4.Octokit.defaults({
       userAgent: `octokit-oauth-app.js/${VERSION} ${universalUserAgent.getUserAgent()}`
     });
     async function emitEvent(state, context) {
@@ -14653,7 +14653,7 @@ var require_dist_node24 = __commonJS({
   "../../node_modules/@octokit/app/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core3 = require_dist_node8();
+    var core4 = require_dist_node8();
     var authApp = require_dist_node19();
     var oauthApp = require_dist_node21();
     var authUnauthenticated = require_dist_node20();
@@ -14870,7 +14870,7 @@ var require_dist_node24 = __commonJS({
         return AppWithDefaults;
       }
       constructor(options) {
-        const Octokit2 = options.Octokit || core3.Octokit;
+        const Octokit2 = options.Octokit || core4.Octokit;
         const authOptions = Object.assign({
           appId: options.appId,
           privateKey: options.privateKey
@@ -14929,7 +14929,7 @@ var require_dist_node25 = __commonJS({
   "../../node_modules/octokit/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core3 = require_dist_node8();
+    var core4 = require_dist_node8();
     var pluginPaginateRest = require_dist_node9();
     var pluginRestEndpointMethods = require_dist_node10();
     var pluginRetry = require_dist_node11();
@@ -14937,7 +14937,7 @@ var require_dist_node25 = __commonJS({
     var app = require_dist_node24();
     var oauthApp = require_dist_node21();
     var VERSION = "2.0.10";
-    var Octokit2 = core3.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
+    var Octokit2 = core4.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
       userAgent: `octokit.js/${VERSION}`,
       throttle: {
         onRateLimit,
@@ -25861,10 +25861,15 @@ var require_main = __commonJS({
 // src/main.ts
 var main_exports = {};
 __export(main_exports, {
+<<<<<<< HEAD
   Content: () => Content
+=======
+  Content: () => Content,
+  Repository: () => Repository2
+>>>>>>> 0f6c4eb (Moved optional actions; object checking fix; build main.js)
 });
 module.exports = __toCommonJS(main_exports);
-var core2 = __toESM(require_core());
+var core3 = __toESM(require_core());
 var import_octokit = __toESM(require_dist_node25());
 var import_yaml = __toESM(require_dist());
 
@@ -25872,6 +25877,51 @@ var import_yaml = __toESM(require_dist());
 var import_moment = __toESM(require_moment());
 function GetDateFormatted(date) {
   return (0, import_moment.default)(date).format("YYYYMMDD_HHmm");
+}
+function fetchParentInfo(repo, client) {
+  return __async(this, null, function* () {
+    const { data: repoinfo } = yield client.rest.repos.get({
+      owner: repo.owner,
+      repo: repo.name
+    });
+    if (repoinfo.parent) {
+      return repoinfo.parent.full_name;
+    }
+  });
+}
+function fetchYaml(repo, client, pathElement) {
+  return __async(this, null, function* () {
+    const result = new Content();
+    const parentinfo = yield fetchParentInfo(repo, client);
+    const { data: yaml } = yield client.rest.repos.getContent({
+      owner: repo.owner,
+      repo: repo.name,
+      path: pathElement
+    });
+    if ("name" in yaml && "download_url" in yaml) {
+      result.name = yaml.name;
+      result.repo = repo.name;
+      result.forkedfrom = parentinfo;
+      result.downloadUrl = yaml.download_url || void 0;
+    }
+    return result;
+  });
+}
+function searchForActionYaml(repo, client) {
+  return __async(this, null, function* () {
+    let result;
+    const searchQuery = "+filename:action+language:YAML+repo:" + repo.owner + "/" + repo.name;
+    const searchResultforRepository = yield client.request("GET /search/code", {
+      q: searchQuery
+    });
+    if (Object.keys(searchResultforRepository.data.items).length > 0) {
+      for (let index = 0; index < Object.keys(searchResultforRepository.data.items).length; index++) {
+        const pathElement = searchResultforRepository.data.items[index].path;
+        result = fetchYaml(repo, client, pathElement);
+      }
+      return result;
+    }
+  });
 }
 
 // src/main.ts
@@ -25894,14 +25944,46 @@ function getReadmeContent(client, repo, owner) {
   });
 }
 
+// src/coreFunctions.ts
+var core2 = __toESM(require_core());
+function findAllRepos(client, username, organization) {
+  return __async(this, null, function* () {
+    var _a, _b;
+    const result = [];
+    let repos;
+    if (username) {
+      repos = yield client.paginate(client.rest.repos.listForUser, {
+        username
+      });
+    }
+    if (organization) {
+      repos = yield client.paginate(client.rest.repos.listForOrg, {
+        org: organization
+      });
+      console.log(`Found [${organization}] as orgname parameter`);
+    }
+    core2.info(`Found [${repos.length}] repositories`);
+    for (let num = 0; num < repos.length; num++) {
+      const repo = repos[num];
+      const repository = new Repository2(
+        ((_a = repo.owner) == null ? void 0 : _a.login) || "",
+        repo.name,
+        (_b = repo.visibility) != null ? _b : ""
+      );
+      result.push(repository);
+    }
+    return result;
+  });
+}
+
 // src/main.ts
 import_dotenv.default.config();
-var getInputOrEnv = (input) => core2.getInput(input) || process.env.input || "";
+var getInputOrEnv = (input) => core3.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 function run() {
   return __async(this, null, function* () {
-    core2.info("Starting");
+    core3.info("Starting");
     try {
       const PAT = getInputOrEnv("PAT");
       const user = getInputOrEnv("user");
@@ -25909,13 +25991,17 @@ function run() {
       const baseUrl = process.env.GITHUB_API_URL || "https://api.github.com";
       const isEnterpriseServer = baseUrl !== "https://api.github.com";
       if (!PAT) {
-        core2.setFailed(
+        core3.setFailed(
           "Parameter 'PAT' is required to load all actions from the organization or user account"
         );
         return;
       }
       if (!user && !organization) {
+<<<<<<< HEAD
         core2.setFailed(
+=======
+        core3.setFailed(
+>>>>>>> 0f6c4eb (Moved optional actions; object checking fix; build main.js)
           "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
         );
         return;
@@ -25926,7 +26012,7 @@ function run() {
       });
       try {
       } catch (error) {
-        core2.setFailed(
+        core3.setFailed(
           `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
         );
         return;
@@ -25945,14 +26031,121 @@ function run() {
         user
       };
       const json = JSON.stringify(output);
-      core2.setOutput("actions", json);
+      core3.setOutput("actions", json);
     } catch (error) {
-      core2.setFailed(`Error running action: : ${error.message}`);
+      core3.setFailed(`Error running action: : ${error.message}`);
     }
   });
 }
+<<<<<<< HEAD
 var Content = class {
 };
+=======
+var Repository2 = class {
+  constructor(owner, name, visibility) {
+    this.name = name;
+    this.owner = owner;
+    this.visibility = visibility;
+  }
+};
+var Content = class {
+};
+function optional_actions(content, client, repo) {
+  return __async(this, null, function* () {
+    content = removeTokenSetting ? removeToken(content) : content;
+    if (fetchReadmesSetting) {
+      const readmeLink = yield getReadmeContent(client, repo);
+      if (readmeLink) {
+        content.readme = readmeLink;
+      }
+    }
+    return content;
+  });
+}
+function findAllActions(client, repos, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    const result = [];
+    for (const repo of repos) {
+      core3.debug(`Searching repository for actions: ${repo.name}`);
+      let content = yield getActionFile(client, repo, isEnterpriseServer);
+      if (content && content.name) {
+        content = yield optional_actions(content, client, repo);
+        core3.info(
+          `Found action file in repository: [${repo.name}] with filename [${content.name}] download url [${content.downloadUrl}]. Visibility of repo is [${repo.visibility}]`
+        );
+        if (repo.visibility == "internal") {
+          core3.debug(
+            `Get access settings for repository [${repo.owner}/${repo.name}]..............`
+          );
+          try {
+            const { data: accessSettings } = yield client.rest.actions.getWorkflowAccessToRepository({
+              owner: repo.owner,
+              repo: repo.name
+            });
+            if (accessSettings.access_level == "none") {
+              core3.info(
+                `Access to use action [${repo.owner}/${repo.name}] is disabled`
+              );
+              continue;
+            }
+          } catch (error) {
+            core3.info(
+              `Error retrieving acces level for the action(s) in [${repo.owner}/${repo.name}]. Make sure the Access Token used has the 'Administration: read' scope. Error: ${error.message}`
+            );
+            continue;
+          }
+        } else if (repo.visibility == "private") {
+          core3.debug(`[${repo.owner}/${repo.name}] is private repo, skipping.`);
+          continue;
+        }
+        result.push(content);
+      }
+    }
+    console.log(`Found [${result.length}] actions in [${repos.length}] repos`);
+    return result;
+  });
+}
+function getActionFile(client, repo, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    let result;
+    try {
+      result = yield fetchYaml(repo, client, "action.yml");
+      if (!result) {
+        result = yield fetchYaml(repo, client, "action.yaml");
+      }
+    } catch (error) {
+      core3.debug(`No action.yml file found in repository: ${repo.name}`);
+    }
+    if (!isEnterpriseServer) {
+      const ratelimit = yield client.rest.rateLimit.get();
+      if (ratelimit.data.resources.search.remaining <= 2) {
+        const resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+        core3.debug(`Search API reset time: ${resetTime}`);
+        let waitTime = resetTime.getTime() - new Date().getTime();
+        if (waitTime < 0) {
+          waitTime = 2500;
+        } else {
+          waitTime = waitTime + 1e3;
+        }
+        core3.info(
+          `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
+        );
+        yield new Promise((r) => setTimeout(r, waitTime));
+      }
+    }
+    if (!result) {
+      core3.info(`No actions found at root level in repository: ${repo.name}`);
+      core3.info(`Checking subdirectories in repository: ${repo.name}`);
+      result = searchForActionYaml(repo, client);
+      if (!result) {
+        core3.info(`No actions found in repository: ${repo.name}`);
+        return null;
+      }
+    }
+    return result;
+  });
+}
+>>>>>>> 0f6c4eb (Moved optional actions; object checking fix; build main.js)
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
