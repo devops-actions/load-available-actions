@@ -25932,9 +25932,15 @@ var core = __toESM(require_core());
 function getReadmeContent(client, repo, owner) {
   return __async(this, null, function* () {
     try {
+<<<<<<< HEAD
       const { data: readme } = yield client.rest.repos.getContent({
         owner,
         repo,
+=======
+      const readme = yield client.rest.repos.getContent({
+        owner: repo.owner,
+        repo: repo.name,
+>>>>>>> 599133d (Adjustmest for tests)
         path: "README.md"
       });
       return readme.content;
@@ -26149,7 +26155,10 @@ function getActionFile(client, repo, isEnterpriseServer) {
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
+<<<<<<< HEAD
       core2.debug(`Enrich : ${action.downloadUrl}`);
+=======
+>>>>>>> 599133d (Adjustmest for tests)
       if (action.downloadUrl) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         try {

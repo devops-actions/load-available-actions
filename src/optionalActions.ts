@@ -17,9 +17,15 @@ export async function getReadmeContent(
   owner: string
 ): Promise<string | undefined> {
   try {
+<<<<<<< HEAD
     const {data: readme} = await client.rest.repos.getContent({
       owner,
       repo,
+=======
+    const readme: any = await client.rest.repos.getContent({
+      owner: repo.owner,
+      repo: repo.name,
+>>>>>>> 599133d (Adjustmest for tests)
       path: 'README.md'
     })
 
