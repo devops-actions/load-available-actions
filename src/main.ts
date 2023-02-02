@@ -205,13 +205,13 @@ async function getActionFile(
   // we can probably load it from an api call and see if it is enabled, or try .. catch
   if (!isEnterpriseServer) {
     // search API has a strict rate limit, prevent errors
-    var ratelimit = await client.rest.rateLimit.get()
+    const ratelimit = await client.rest.rateLimit.get()
     if (ratelimit.data.resources.search.remaining <= 2) {
       // show the reset time
-      var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+      const resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
       core.debug(`Search API reset time: ${resetTime}`)
       // wait until the reset time
-      var waitTime = resetTime.getTime() - new Date().getTime()
+      let waitTime = resetTime.getTime() - new Date().getTime()
       if (waitTime < 0) {
         // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
         waitTime = 2500
@@ -230,10 +230,10 @@ async function getActionFile(
   if (!result.name) {
     core.info(`No actions found at root level in repository: ${repo.name}`)
     core.info(`Checking subdirectories in repository: ${repo.name}`)
-    var searchQuery =
+    const searchQuery =
       '+filename:action+language:YAML+repo:' + repo.owner + '/' + repo.name
 
-    var searchResultforRepository = await client.request('GET /search/code', {
+    const searchResultforRepository = await client.request('GET /search/code', {
       q: searchQuery
     })
 
