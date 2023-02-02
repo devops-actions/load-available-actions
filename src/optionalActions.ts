@@ -12,6 +12,7 @@ export async function getReadmeContent(
       repo,
       path: 'README.md'
     })
+
     return readme.content
   } catch (error) {
     core.debug(`No readme file found in repository: ${repo}`)
