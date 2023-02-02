@@ -6,10 +6,14 @@ export default function GetDateFormatted(date: Date): string {
   return moment(date).format('YYYYMMDD_HHmm')
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
 async function fetchParentInfo(repo: Repository, client: Octokit) {
 =======
 async function fetchParentInfo(client: Octokit, repo: Repository) {
 >>>>>>> 2c9d7bf (Moved search to utils; removed more duplicate code)
+=======
+async function fetchParentInfo(repo: Repository, client: Octokit) {
+>>>>>>> 03e3616 (Moved searching for yaml to utils)
   const {data: repoinfo} = await client.rest.repos.get({
     owner: repo.owner,
     repo: repo.name
@@ -25,10 +29,14 @@ export async function fetchYaml(
 ) {
   const result = new Content()
 <<<<<<< HEAD
+<<<<<<< HEAD
   const parentinfo = await fetchParentInfo(repo, client)
 =======
   const parentinfo = await fetchParentInfo(client, repo)
 >>>>>>> 2c9d7bf (Moved search to utils; removed more duplicate code)
+=======
+  const parentinfo = await fetchParentInfo(repo, client)
+>>>>>>> 03e3616 (Moved searching for yaml to utils)
   const {data: yaml} = await client.rest.repos.getContent({
     owner: repo.owner,
     repo: repo.name,
@@ -43,6 +51,9 @@ export async function fetchYaml(
   return result
 }
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 03e3616 (Moved searching for yaml to utils)
 
 export async function searchForActionYaml(repo: Repository, client: Octokit) {
   let result: any
@@ -65,5 +76,8 @@ export async function searchForActionYaml(repo: Repository, client: Octokit) {
     return result
   }
 }
+<<<<<<< HEAD
 =======
 >>>>>>> 2c9d7bf (Moved search to utils; removed more duplicate code)
+=======
+>>>>>>> 03e3616 (Moved searching for yaml to utils)

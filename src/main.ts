@@ -243,26 +243,11 @@ async function getActionFile(
         index < Object.keys(searchResultforRepository.data.items).length;
         index++
       ) {
-        var element = searchResultforRepository.data.items[index].path
-        const {data: yaml} = await client.rest.repos.getContent({
-          owner: repo.owner,
-          repo: repo.name,
-          path: element
-        })
-        if ('name' in yaml && 'download_url' in yaml) {
-          result.name = yaml.name
-          result.repo = repo.name
-          result.forkedfrom = parentinfo
-          if (yaml.download_url !== null) {
-            result.downloadUrl = yaml.download_url
-          }
-        }
+        const pathElement = searchResultforRepository.data.items[index].path
+        result = fetchYaml(repo, client, pathElement)
       }
       return result
     }
-
-    core.info(`No actions found in repository: ${repo.name}`)
-    return null
   }
 
   return result
