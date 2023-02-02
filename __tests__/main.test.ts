@@ -1,13 +1,6 @@
 import {wait} from '../src/wait'
 import {expect, test} from '@jest/globals'
 import GetDateFormatted from '../src/utils'
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-import {removeToken} from '../src/optionalActions'
->>>>>>> b1b2388 (Added test for trimming token)
-=======
->>>>>>> 83d3e8c (Rebase)
 import {Content} from '../src/main'
 import assert from 'assert'
 test('throws invalid number', async () => {
