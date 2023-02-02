@@ -5,7 +5,11 @@ import {Repository, Content} from './main'
 export default function GetDateFormatted(date: Date): string {
   return moment(date).format('YYYYMMDD_HHmm')
 }
+<<<<<<< HEAD
 async function fetchParentInfo(repo: Repository, client: Octokit) {
+=======
+async function fetchParentInfo(client: Octokit, repo: Repository) {
+>>>>>>> 2c9d7bf (Moved search to utils; removed more duplicate code)
   const {data: repoinfo} = await client.rest.repos.get({
     owner: repo.owner,
     repo: repo.name
@@ -20,7 +24,11 @@ export async function fetchYaml(
   pathElement: string
 ) {
   const result = new Content()
+<<<<<<< HEAD
   const parentinfo = await fetchParentInfo(repo, client)
+=======
+  const parentinfo = await fetchParentInfo(client, repo)
+>>>>>>> 2c9d7bf (Moved search to utils; removed more duplicate code)
   const {data: yaml} = await client.rest.repos.getContent({
     owner: repo.owner,
     repo: repo.name,
@@ -34,6 +42,7 @@ export async function fetchYaml(
   }
   return result
 }
+<<<<<<< HEAD
 
 export async function searchForActionYaml(repo: Repository, client: Octokit) {
   let result: any
@@ -56,3 +65,5 @@ export async function searchForActionYaml(repo: Repository, client: Octokit) {
     return result
   }
 }
+=======
+>>>>>>> 2c9d7bf (Moved search to utils; removed more duplicate code)
