@@ -24,6 +24,10 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
+  // If the importer is in node compatibility mode or this is not an ESM
+  // file that has been converted to a CommonJS file using a Babel-
+  // compatible transform (i.e. "__esModule" has not been set), then set
+  // "default" to the CommonJS "module.exports" for node compatibility.
   isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
   mod
 ));
@@ -1095,6 +1099,10 @@ var require_lib = __commonJS({
           return this.request(verb, requestUrl, stream, additionalHeaders);
         });
       }
+      /**
+       * Gets a typed object from an endpoint
+       * Be aware that not found returns a null.  Other errors (4xx, 5xx) reject the promise
+       */
       getJson(requestUrl, additionalHeaders = {}) {
         return __awaiter(this, void 0, void 0, function* () {
           additionalHeaders[Headers.Accept] = this._getExistingOrDefaultHeader(additionalHeaders, Headers.Accept, MediaTypes.ApplicationJson);
@@ -1129,6 +1137,11 @@ var require_lib = __commonJS({
           return this._processResponse(res, this.requestOptions);
         });
       }
+      /**
+       * Makes a raw http request.
+       * All other methods such as get, post, patch, and request ultimately call this.
+       * Prefer get, del, post and patch
+       */
       request(verb, requestUrl, data, headers) {
         return __awaiter(this, void 0, void 0, function* () {
           if (this._disposed) {
@@ -1189,12 +1202,20 @@ var require_lib = __commonJS({
           return response;
         });
       }
+      /**
+       * Needs to be called if keepAlive is set to true in request options.
+       */
       dispose() {
         if (this._agent) {
           this._agent.destroy();
         }
         this._disposed = true;
       }
+      /**
+       * Raw request.
+       * @param info
+       * @param data
+       */
       requestRaw(info2, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
@@ -1211,6 +1232,12 @@ var require_lib = __commonJS({
           });
         });
       }
+      /**
+       * Raw request with callback.
+       * @param info
+       * @param data
+       * @param onResult
+       */
       requestRawWithCallback(info2, data, onResult) {
         if (typeof data === "string") {
           if (!info2.options.headers) {
@@ -1254,6 +1281,11 @@ var require_lib = __commonJS({
           req.end();
         }
       }
+      /**
+       * Gets an http agent. This function is useful when you need an http agent that handles
+       * routing through a proxy server - depending upon the url and proxy environment variables.
+       * @param serverUrl  The server URL where the request will be sent. For example, https://api.github.com
+       */
       getAgent(serverUrl) {
         const parsedUrl = new URL(serverUrl);
         return this._getAgent(parsedUrl);
@@ -1456,6 +1488,7 @@ var require_auth = __commonJS({
         }
         options.headers["Authorization"] = `Basic ${Buffer.from(`${this.username}:${this.password}`).toString("base64")}`;
       }
+      // This handler cannot handle 401
       canHandleAuthentication() {
         return false;
       }
@@ -1470,12 +1503,15 @@ var require_auth = __commonJS({
       constructor(token) {
         this.token = token;
       }
+      // currently implements pre-authorization
+      // TODO: support preAuth = false where it hooks on 401
       prepareRequest(options) {
         if (!options.headers) {
           throw Error("The request has no headers");
         }
         options.headers["Authorization"] = `Bearer ${this.token}`;
       }
+      // This handler cannot handle 401
       canHandleAuthentication() {
         return false;
       }
@@ -1490,12 +1526,15 @@ var require_auth = __commonJS({
       constructor(token) {
         this.token = token;
       }
+      // currently implements pre-authorization
+      // TODO: support preAuth = false where it hooks on 401
       prepareRequest(options) {
         if (!options.headers) {
           throw Error("The request has no headers");
         }
         options.headers["Authorization"] = `Basic ${Buffer.from(`PAT:${this.token}`).toString("base64")}`;
       }
+      // This handler cannot handle 401
       canHandleAuthentication() {
         return false;
       }
@@ -1649,6 +1688,12 @@ var require_summary = __commonJS({
       constructor() {
         this._buffer = "";
       }
+      /**
+       * Finds the summary file path from the environment, rejects if env var is not found or file does not exist
+       * Also checks r/w permissions.
+       *
+       * @returns step summary file path
+       */
       filePath() {
         return __awaiter(this, void 0, void 0, function* () {
           if (this._filePath) {
@@ -1667,6 +1712,15 @@ var require_summary = __commonJS({
           return this._filePath;
         });
       }
+      /**
+       * Wraps content in an HTML tag, adding any HTML attributes
+       *
+       * @param {string} tag HTML tag to wrap
+       * @param {string | null} content content within the tag
+       * @param {[attribute: string]: string} attrs key-value list of HTML attributes to add
+       *
+       * @returns {string} content wrapped in HTML element
+       */
       wrap(tag, content, attrs = {}) {
         const htmlAttrs = Object.entries(attrs).map(([key, value]) => ` ${key}="${value}"`).join("");
         if (!content) {
@@ -1674,6 +1728,13 @@ var require_summary = __commonJS({
         }
         return `<${tag}${htmlAttrs}>${content}</${tag}>`;
       }
+      /**
+       * Writes text in the buffer to the summary buffer file and empties buffer. Will append by default.
+       *
+       * @param {SummaryWriteOptions} [options] (optional) options for write operation
+       *
+       * @returns {Promise<Summary>} summary instance
+       */
       write(options) {
         return __awaiter(this, void 0, void 0, function* () {
           const overwrite = !!(options === null || options === void 0 ? void 0 : options.overwrite);
@@ -1683,39 +1744,95 @@ var require_summary = __commonJS({
           return this.emptyBuffer();
         });
       }
+      /**
+       * Clears the summary buffer and wipes the summary file
+       *
+       * @returns {Summary} summary instance
+       */
       clear() {
         return __awaiter(this, void 0, void 0, function* () {
           return this.emptyBuffer().write({ overwrite: true });
         });
       }
+      /**
+       * Returns the current summary buffer as a string
+       *
+       * @returns {string} string of summary buffer
+       */
       stringify() {
         return this._buffer;
       }
+      /**
+       * If the summary buffer is empty
+       *
+       * @returns {boolen} true if the buffer is empty
+       */
       isEmptyBuffer() {
         return this._buffer.length === 0;
       }
+      /**
+       * Resets the summary buffer without writing to summary file
+       *
+       * @returns {Summary} summary instance
+       */
       emptyBuffer() {
         this._buffer = "";
         return this;
       }
+      /**
+       * Adds raw text to the summary buffer
+       *
+       * @param {string} text content to add
+       * @param {boolean} [addEOL=false] (optional) append an EOL to the raw text (default: false)
+       *
+       * @returns {Summary} summary instance
+       */
       addRaw(text, addEOL = false) {
         this._buffer += text;
         return addEOL ? this.addEOL() : this;
       }
+      /**
+       * Adds the operating system-specific end-of-line marker to the buffer
+       *
+       * @returns {Summary} summary instance
+       */
       addEOL() {
         return this.addRaw(os_1.EOL);
       }
+      /**
+       * Adds an HTML codeblock to the summary buffer
+       *
+       * @param {string} code content to render within fenced code block
+       * @param {string} lang (optional) language to syntax highlight code
+       *
+       * @returns {Summary} summary instance
+       */
       addCodeBlock(code, lang) {
         const attrs = Object.assign({}, lang && { lang });
         const element = this.wrap("pre", this.wrap("code", code), attrs);
         return this.addRaw(element).addEOL();
       }
+      /**
+       * Adds an HTML list to the summary buffer
+       *
+       * @param {string[]} items list of items to render
+       * @param {boolean} [ordered=false] (optional) if the rendered list should be ordered or not (default: false)
+       *
+       * @returns {Summary} summary instance
+       */
       addList(items, ordered = false) {
         const tag = ordered ? "ol" : "ul";
         const listItems = items.map((item) => this.wrap("li", item)).join("");
         const element = this.wrap(tag, listItems);
         return this.addRaw(element).addEOL();
       }
+      /**
+       * Adds an HTML table to the summary buffer
+       *
+       * @param {SummaryTableCell[]} rows table rows
+       *
+       * @returns {Summary} summary instance
+       */
       addTable(rows) {
         const tableBody = rows.map((row) => {
           const cells = row.map((cell) => {
@@ -1732,35 +1849,86 @@ var require_summary = __commonJS({
         const element = this.wrap("table", tableBody);
         return this.addRaw(element).addEOL();
       }
+      /**
+       * Adds a collapsable HTML details element to the summary buffer
+       *
+       * @param {string} label text for the closed state
+       * @param {string} content collapsable content
+       *
+       * @returns {Summary} summary instance
+       */
       addDetails(label, content) {
         const element = this.wrap("details", this.wrap("summary", label) + content);
         return this.addRaw(element).addEOL();
       }
+      /**
+       * Adds an HTML image tag to the summary buffer
+       *
+       * @param {string} src path to the image you to embed
+       * @param {string} alt text description of the image
+       * @param {SummaryImageOptions} options (optional) addition image attributes
+       *
+       * @returns {Summary} summary instance
+       */
       addImage(src, alt, options) {
         const { width, height } = options || {};
         const attrs = Object.assign(Object.assign({}, width && { width }), height && { height });
         const element = this.wrap("img", null, Object.assign({ src, alt }, attrs));
         return this.addRaw(element).addEOL();
       }
+      /**
+       * Adds an HTML section heading element
+       *
+       * @param {string} text heading text
+       * @param {number | string} [level=1] (optional) the heading level, default: 1
+       *
+       * @returns {Summary} summary instance
+       */
       addHeading(text, level) {
         const tag = `h${level}`;
         const allowedTag = ["h1", "h2", "h3", "h4", "h5", "h6"].includes(tag) ? tag : "h1";
         const element = this.wrap(allowedTag, text);
         return this.addRaw(element).addEOL();
       }
+      /**
+       * Adds an HTML thematic break (<hr>) to the summary buffer
+       *
+       * @returns {Summary} summary instance
+       */
       addSeparator() {
         const element = this.wrap("hr", null);
         return this.addRaw(element).addEOL();
       }
+      /**
+       * Adds an HTML line break (<br>) to the summary buffer
+       *
+       * @returns {Summary} summary instance
+       */
       addBreak() {
         const element = this.wrap("br", null);
         return this.addRaw(element).addEOL();
       }
+      /**
+       * Adds an HTML blockquote to the summary buffer
+       *
+       * @param {string} text quote text
+       * @param {string} cite (optional) citation url
+       *
+       * @returns {Summary} summary instance
+       */
       addQuote(text, cite) {
         const attrs = Object.assign({}, cite && { cite });
         const element = this.wrap("blockquote", text, attrs);
         return this.addRaw(element).addEOL();
       }
+      /**
+       * Adds an HTML anchor tag to the summary buffer
+       *
+       * @param {string} text link text/content
+       * @param {string} href hyperlink
+       *
+       * @returns {Summary} summary instance
+       */
       addLink(text, href) {
         const element = this.wrap("a", text, { href });
         return this.addRaw(element).addEOL();
@@ -3655,7 +3823,9 @@ var require_url_state_machine = __commonJS({
           this.url.fragment = "";
           this.state = "fragment";
         } else {
-          if (this.input.length - this.pointer - 1 === 0 || !isWindowsDriveLetterCodePoints(c, this.input[this.pointer + 1]) || this.input.length - this.pointer - 1 >= 2 && !fileOtherwiseCodePoints.has(this.input[this.pointer + 2])) {
+          if (this.input.length - this.pointer - 1 === 0 || // remaining consists of 0 code points
+          !isWindowsDriveLetterCodePoints(c, this.input[this.pointer + 1]) || this.input.length - this.pointer - 1 >= 2 && // remaining has at least 2 code points
+          !fileOtherwiseCodePoints.has(this.input[this.pointer + 2])) {
             this.url.host = this.base.host;
             this.url.path = this.base.path.slice();
             shortenPath(this.url);
@@ -4486,15 +4656,26 @@ var require_lib3 = __commonJS({
       get bodyUsed() {
         return this[INTERNALS].disturbed;
       },
+      /**
+       * Decode response as ArrayBuffer
+       *
+       * @return  Promise
+       */
       arrayBuffer() {
         return consumeBody.call(this).then(function(buf) {
           return buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
         });
       },
+      /**
+       * Return raw response as Blob
+       *
+       * @return Promise
+       */
       blob() {
         let ct = this.headers && this.headers.get("content-type") || "";
         return consumeBody.call(this).then(function(buf) {
           return Object.assign(
+            // Prevent copying
             new Blob([], {
               type: ct.toLowerCase()
             }),
@@ -4504,6 +4685,11 @@ var require_lib3 = __commonJS({
           );
         });
       },
+      /**
+       * Decode response as json
+       *
+       * @return  Promise
+       */
       json() {
         var _this2 = this;
         return consumeBody.call(this).then(function(buffer) {
@@ -4514,14 +4700,30 @@ var require_lib3 = __commonJS({
           }
         });
       },
+      /**
+       * Decode response as text
+       *
+       * @return  Promise
+       */
       text() {
         return consumeBody.call(this).then(function(buffer) {
           return buffer.toString();
         });
       },
+      /**
+       * Decode response as buffer (non-spec api)
+       *
+       * @return  Promise
+       */
       buffer() {
         return consumeBody.call(this);
       },
+      /**
+       * Decode response as text, while automatically detecting the encoding and
+       * trying to decode to UTF-8 (non-spec api)
+       *
+       * @return  Promise
+       */
       textConverted() {
         var _this3 = this;
         return consumeBody.call(this).then(function(buffer) {
@@ -4705,7 +4907,8 @@ var require_lib3 = __commonJS({
       } else if (Buffer.isBuffer(body)) {
         return body.length;
       } else if (body && typeof body.getLengthSync === "function") {
-        if (body._lengthRetrievers && body._lengthRetrievers.length == 0 || body.hasKnownLength && body.hasKnownLength()) {
+        if (body._lengthRetrievers && body._lengthRetrievers.length == 0 || // 1.x
+        body.hasKnownLength && body.hasKnownLength()) {
           return body.getLengthSync();
         }
         return null;
@@ -4752,6 +4955,12 @@ var require_lib3 = __commonJS({
     }
     var MAP = Symbol("map");
     var Headers = class {
+      /**
+       * Headers class
+       *
+       * @param   Object  headers  Response headers
+       * @return  Void
+       */
       constructor() {
         let init = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : void 0;
         this[MAP] = /* @__PURE__ */ Object.create(null);
@@ -4796,6 +5005,12 @@ var require_lib3 = __commonJS({
           throw new TypeError("Provided initializer must be an object");
         }
       }
+      /**
+       * Return combined header value given name
+       *
+       * @param   String  name  Header name
+       * @return  Mixed
+       */
       get(name) {
         name = `${name}`;
         validateName(name);
@@ -4805,6 +5020,13 @@ var require_lib3 = __commonJS({
         }
         return this[MAP][key].join(", ");
       }
+      /**
+       * Iterate over all headers
+       *
+       * @param   Function  callback  Executed for each item with parameters (value, name, thisArg)
+       * @param   Boolean   thisArg   `this` context for callback function
+       * @return  Void
+       */
       forEach(callback) {
         let thisArg = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : void 0;
         let pairs = getHeaders(this);
@@ -4817,6 +5039,13 @@ var require_lib3 = __commonJS({
           i++;
         }
       }
+      /**
+       * Overwrite header values given name
+       *
+       * @param   String  name   Header name
+       * @param   String  value  Header value
+       * @return  Void
+       */
       set(name, value) {
         name = `${name}`;
         value = `${value}`;
@@ -4825,6 +5054,13 @@ var require_lib3 = __commonJS({
         const key = find(this[MAP], name);
         this[MAP][key !== void 0 ? key : name] = [value];
       }
+      /**
+       * Append a value onto existing header
+       *
+       * @param   String  name   Header name
+       * @param   String  value  Header value
+       * @return  Void
+       */
       append(name, value) {
         name = `${name}`;
         value = `${value}`;
@@ -4837,11 +5073,23 @@ var require_lib3 = __commonJS({
           this[MAP][name] = [value];
         }
       }
+      /**
+       * Check for header name existence
+       *
+       * @param   String   name  Header name
+       * @return  Boolean
+       */
       has(name) {
         name = `${name}`;
         validateName(name);
         return find(this[MAP], name) !== void 0;
       }
+      /**
+       * Delete all header values given name
+       *
+       * @param   String  name  Header name
+       * @return  Void
+       */
       delete(name) {
         name = `${name}`;
         validateName(name);
@@ -4850,15 +5098,37 @@ var require_lib3 = __commonJS({
           delete this[MAP][key];
         }
       }
+      /**
+       * Return raw headers (non-spec api)
+       *
+       * @return  Object
+       */
       raw() {
         return this[MAP];
       }
+      /**
+       * Get an iterator on keys.
+       *
+       * @return  Iterator
+       */
       keys() {
         return createHeadersIterator(this, "key");
       }
+      /**
+       * Get an iterator on values.
+       *
+       * @return  Iterator
+       */
       values() {
         return createHeadersIterator(this, "value");
       }
+      /**
+       * Get an iterator on entries.
+       *
+       * This is the default iterator of the Headers object.
+       *
+       * @return  Iterator
+       */
       [Symbol.iterator]() {
         return createHeadersIterator(this, "key+value");
       }
@@ -4990,6 +5260,9 @@ var require_lib3 = __commonJS({
       get status() {
         return this[INTERNALS$1].status;
       }
+      /**
+       * Convenience property representing if the request ended normally
+       */
       get ok() {
         return this[INTERNALS$1].status >= 200 && this[INTERNALS$1].status < 300;
       }
@@ -5002,6 +5275,11 @@ var require_lib3 = __commonJS({
       get headers() {
         return this[INTERNALS$1].headers;
       }
+      /**
+       * Clone this response
+       *
+       * @return  Response
+       */
       clone() {
         return new Response2(clone(this), {
           url: this.url,
@@ -5111,6 +5389,11 @@ var require_lib3 = __commonJS({
       get signal() {
         return this[INTERNALS$2].signal;
       }
+      /**
+       * Clone this request
+       *
+       * @return  Request
+       */
       clone() {
         return new Request(this);
       }
@@ -5557,7 +5840,8 @@ var require_dist_node5 = __commonJS({
       let headers = {};
       let status;
       let url;
-      const fetch = requestOptions.request && requestOptions.request.fetch || globalThis.fetch || nodeFetch;
+      const fetch = requestOptions.request && requestOptions.request.fetch || globalThis.fetch || /* istanbul ignore next */
+      nodeFetch;
       return fetch(requestOptions.url, Object.assign(
         {
           method: requestOptions.method,
@@ -5565,6 +5849,8 @@ var require_dist_node5 = __commonJS({
           headers: requestOptions.headers,
           redirect: requestOptions.redirect
         },
+        // `requestOptions.request.agent` type is incompatible
+        // see https://github.com/octokit/types.ts/pull/264
         requestOptions.request
       )).then(async (response) => {
         url = response.url;
@@ -5849,6 +6135,7 @@ var require_dist_node8 = __commonJS({
           baseUrl: request.request.endpoint.DEFAULTS.baseUrl,
           headers: {},
           request: Object.assign({}, options.request, {
+            // @ts-ignore internal usage only, no need to type
             hook: hook.bind(null, "request")
           }),
           mediaType: {
@@ -5895,6 +6182,11 @@ var require_dist_node8 = __commonJS({
           const auth = authStrategy(Object.assign({
             request: this.request,
             log: this.log,
+            // we pass the current octokit instance as well as its constructor options
+            // to allow for authentication strategies that return a new octokit instance
+            // that shares the same internal state as the current one. The original
+            // requirement for this was the "event-octokit" authentication strategy
+            // of https://github.com/probot/octokit-auth-probot.
             octokit: this,
             octokitOptions: otherOptions
           }, options.auth));
@@ -5921,6 +6213,12 @@ var require_dist_node8 = __commonJS({
         };
         return OctokitWithDefaults;
       }
+      /**
+       * Attach a plugin (or many) to your Octokit instance.
+       *
+       * @example
+       * const API = Octokit.plugin(plugin1, plugin2, plugin3, ...)
+       */
       static plugin(...newPlugins) {
         var _a;
         const currentPlugins = this.plugins;
@@ -8547,7 +8845,8 @@ var require_dist_node12 = __commonJS({
       const req = state.global.key(state.id).schedule(jobOptions, request, options);
       if (isGraphQL) {
         const res = await req;
-        if (res.data.errors != null && res.data.errors.some((error) => error.type === "RATE_LIMITED")) {
+        if (res.data.errors != null && // @ts-expect-error
+        res.data.errors.some((error) => error.type === "RATE_LIMITED")) {
           const error = Object.assign(new Error("GraphQL Rate Limit Exceeded"), {
             response: res,
             data: res.data
@@ -8597,6 +8896,7 @@ var require_dist_node12 = __commonJS({
         Bottleneck = BottleneckLight,
         id = "no-id",
         timeout = 1e3 * 60 * 2,
+        // Redis TTL: 2 minutes
         connection
       } = octokitOptions.throttle || {};
       if (!enabled) {
@@ -8795,7 +9095,8 @@ var require_dist_node14 = __commonJS({
       });
     }
     async function exchangeWebFlowCode(options) {
-      const request$1 = options.request || request.request;
+      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
+      request.request;
       const response = await oauthRequest(request$1, "POST /login/oauth/access_token", {
         client_id: options.clientId,
         client_secret: options.clientSecret,
@@ -8825,7 +9126,8 @@ var require_dist_node14 = __commonJS({
       return new Date(apiTimeInMs + expirationInSeconds * 1e3).toISOString();
     }
     async function createDeviceCode(options) {
-      const request$1 = options.request || request.request;
+      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
+      request.request;
       const parameters = {
         client_id: options.clientId
       };
@@ -8835,7 +9137,8 @@ var require_dist_node14 = __commonJS({
       return oauthRequest(request$1, "POST /login/device/code", parameters);
     }
     async function exchangeDeviceCode(options) {
-      const request$1 = options.request || request.request;
+      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
+      request.request;
       const response = await oauthRequest(request$1, "POST /login/oauth/access_token", {
         client_id: options.clientId,
         device_code: options.code,
@@ -8866,7 +9169,8 @@ var require_dist_node14 = __commonJS({
       return new Date(apiTimeInMs + expirationInSeconds * 1e3).toISOString();
     }
     async function checkToken(options) {
-      const request$1 = options.request || request.request;
+      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
+      request.request;
       const response = await request$1("POST /applications/{client_id}/token", {
         headers: {
           authorization: `basic ${btoa2(`${options.clientId}:${options.clientSecret}`)}`
@@ -8892,7 +9196,8 @@ var require_dist_node14 = __commonJS({
       };
     }
     async function refreshToken(options) {
-      const request$1 = options.request || request.request;
+      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
+      request.request;
       const response = await oauthRequest(request$1, "POST /login/oauth/access_token", {
         client_id: options.clientId,
         client_secret: options.clientSecret,
@@ -8926,7 +9231,8 @@ var require_dist_node14 = __commonJS({
         token,
         ...requestOptions
       } = options;
-      const request$1 = optionsRequest || request.request;
+      const request$1 = optionsRequest || /* istanbul ignore next: we always pass a custom request in tests */
+      request.request;
       const response = await request$1("POST /applications/{client_id}/token/scoped", {
         headers: {
           authorization: `basic ${btoa2(`${clientId}:${clientSecret}`)}`
@@ -8949,7 +9255,8 @@ var require_dist_node14 = __commonJS({
       };
     }
     async function resetToken(options) {
-      const request$1 = options.request || request.request;
+      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
+      request.request;
       const auth = btoa2(`${options.clientId}:${options.clientSecret}`);
       const response = await request$1("PATCH /applications/{client_id}/token", {
         headers: {
@@ -8976,7 +9283,8 @@ var require_dist_node14 = __commonJS({
       };
     }
     async function deleteToken(options) {
-      const request$1 = options.request || request.request;
+      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
+      request.request;
       const auth = btoa2(`${options.clientId}:${options.clientSecret}`);
       return request$1("DELETE /applications/{client_id}/token", {
         headers: {
@@ -8987,7 +9295,8 @@ var require_dist_node14 = __commonJS({
       });
     }
     async function deleteAuthorization(options) {
-      const request$1 = options.request || request.request;
+      const request$1 = options.request || /* istanbul ignore next: we always pass a custom request in tests */
+      request.request;
       const auth = btoa2(`${options.clientId}:${options.clientSecret}`);
       return request$1("DELETE /applications/{client_id}/grant", {
         headers: {
@@ -9029,6 +9338,7 @@ var require_dist_node15 = __commonJS({
         clientType: state.clientType,
         clientId: state.clientId,
         request: options.request || state.request,
+        // @ts-expect-error the extra code to make TS happy is not worth it
         scopes: options.auth.scopes || state.scopes
       });
       await state.onVerification(verification);
@@ -9211,7 +9521,7 @@ var require_dist_node16 = __commonJS({
       }
       const currentAuthentication = state.authentication;
       if ("expiresAt" in currentAuthentication) {
-        if (options.type === "refresh" || new Date(currentAuthentication.expiresAt) < new Date()) {
+        if (options.type === "refresh" || new Date(currentAuthentication.expiresAt) < /* @__PURE__ */ new Date()) {
           const {
             authentication
           } = await oauthMethods.refreshToken({
@@ -9242,6 +9552,7 @@ var require_dist_node16 = __commonJS({
           const {
             authentication
           } = await method({
+            // @ts-expect-error making TS happy would require unnecessary code so no
             clientType: state.clientType,
             clientId: state.clientId,
             clientSecret: state.clientSecret,
@@ -9251,6 +9562,7 @@ var require_dist_node16 = __commonJS({
           state.authentication = {
             tokenType: "oauth",
             type: "token",
+            // @ts-expect-error TBD
             ...authentication
           };
           return state.authentication;
@@ -9266,6 +9578,7 @@ var require_dist_node16 = __commonJS({
         const method = options.type === "delete" ? oauthMethods.deleteToken : oauthMethods.deleteAuthorization;
         try {
           await method({
+            // @ts-expect-error making TS happy would require unnecessary code so no
             clientType: state.clientType,
             clientId: state.clientId,
             clientSecret: state.clientSecret,
@@ -9326,6 +9639,7 @@ var require_dist_node16 = __commonJS({
         request: request$1
       });
       return Object.assign(auth.bind(null, state), {
+        // @ts-expect-error not worth the extra code needed to appease TS
         hook: hook.bind(null, state)
       });
     }
@@ -10393,7 +10707,8 @@ var require_constants = __commonJS({
   "node_modules/jsonwebtoken/node_modules/semver/internal/constants.js"(exports, module2) {
     var SEMVER_SPEC_VERSION = "2.0.0";
     var MAX_LENGTH = 256;
-    var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || 9007199254740991;
+    var MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER || /* istanbul ignore next */
+    9007199254740991;
     var MAX_SAFE_COMPONENT_LENGTH = 16;
     module2.exports = {
       SEMVER_SPEC_VERSION,
@@ -10651,6 +10966,8 @@ var require_semver = __commonJS({
           }
         } while (++i);
       }
+      // preminor will bump the version up to the next minor release, and immediately
+      // down to pre-release. premajor and prepatch work the same way.
       inc(release, identifier) {
         switch (release) {
           case "premajor":
@@ -11499,6 +11816,7 @@ var require_lru_cache = __commonJS({
         this[UPDATE_AGE_ON_GET] = options.updateAgeOnGet || false;
         this.reset();
       }
+      // resize the cache when the max changes.
       set max(mL) {
         if (typeof mL !== "number" || mL < 0)
           throw new TypeError("max must be a non-negative number");
@@ -11523,6 +11841,7 @@ var require_lru_cache = __commonJS({
       get maxAge() {
         return this[MAX_AGE];
       }
+      // resize the cache when the lengthCalculator changes.
       set lengthCalculator(lC) {
         if (typeof lC !== "function")
           lC = naiveLength;
@@ -11837,6 +12156,7 @@ var require_range = __commonJS({
           });
         });
       }
+      // if ANY of the sets match ALL of its comparators, then pass
       test(version2) {
         if (!version2) {
           return false;
@@ -13150,6 +13470,7 @@ var require_lodash = __commonJS({
       cloneableTags[argsTag] = cloneableTags[arrayTag] = cloneableTags[arrayBufferTag] = cloneableTags[dataViewTag] = cloneableTags[boolTag] = cloneableTags[dateTag] = cloneableTags[float32Tag] = cloneableTags[float64Tag] = cloneableTags[int8Tag] = cloneableTags[int16Tag] = cloneableTags[int32Tag] = cloneableTags[mapTag] = cloneableTags[numberTag] = cloneableTags[objectTag] = cloneableTags[regexpTag] = cloneableTags[setTag] = cloneableTags[stringTag] = cloneableTags[symbolTag] = cloneableTags[uint8Tag] = cloneableTags[uint8ClampedTag] = cloneableTags[uint16Tag] = cloneableTags[uint32Tag] = true;
       cloneableTags[errorTag] = cloneableTags[funcTag] = cloneableTags[weakMapTag] = false;
       var deburredLetters = {
+        // Latin-1 Supplement block.
         "\xC0": "A",
         "\xC1": "A",
         "\xC2": "A",
@@ -13212,6 +13533,7 @@ var require_lodash = __commonJS({
         "\xDE": "Th",
         "\xFE": "th",
         "\xDF": "ss",
+        // Latin Extended-A block.
         "\u0100": "A",
         "\u0102": "A",
         "\u0104": "A",
@@ -13797,11 +14119,47 @@ var require_lodash = __commonJS({
           this.__values__ = undefined2;
         }
         lodash.templateSettings = {
+          /**
+           * Used to detect `data` property values to be HTML-escaped.
+           *
+           * @memberOf _.templateSettings
+           * @type {RegExp}
+           */
           "escape": reEscape,
+          /**
+           * Used to detect code to be evaluated.
+           *
+           * @memberOf _.templateSettings
+           * @type {RegExp}
+           */
           "evaluate": reEvaluate,
+          /**
+           * Used to detect `data` property values to inject.
+           *
+           * @memberOf _.templateSettings
+           * @type {RegExp}
+           */
           "interpolate": reInterpolate,
+          /**
+           * Used to reference the data object in the template text.
+           *
+           * @memberOf _.templateSettings
+           * @type {string}
+           */
           "variable": "",
+          /**
+           * Used to import variables into the compiled template.
+           *
+           * @memberOf _.templateSettings
+           * @type {Object}
+           */
           "imports": {
+            /**
+             * A reference to the `lodash` function.
+             *
+             * @memberOf _.templateSettings.imports
+             * @type {Function}
+             */
             "_": lodash
           }
         };
@@ -14051,7 +14409,11 @@ var require_lodash = __commonJS({
         function arrayLikeKeys(value, inherited) {
           var isArr = isArray(value), isArg = !isArr && isArguments(value), isBuff = !isArr && !isArg && isBuffer(value), isType = !isArr && !isArg && !isBuff && isTypedArray(value), skipIndexes = isArr || isArg || isBuff || isType, result2 = skipIndexes ? baseTimes(value.length, String2) : [], length = result2.length;
           for (var key in value) {
-            if ((inherited || hasOwnProperty.call(value, key)) && !(skipIndexes && (key == "length" || isBuff && (key == "offset" || key == "parent") || isType && (key == "buffer" || key == "byteLength" || key == "byteOffset") || isIndex(key, length)))) {
+            if ((inherited || hasOwnProperty.call(value, key)) && !(skipIndexes && // Safari 9 has enumerable `arguments.length` in strict mode.
+            (key == "length" || // Node.js 0.10 has enumerable non-index properties on buffers.
+            isBuff && (key == "offset" || key == "parent") || // PhantomJS 2 has enumerable non-index properties on typed arrays.
+            isType && (key == "buffer" || key == "byteLength" || key == "byteOffset") || // Skip index properties.
+            isIndex(key, length)))) {
               result2.push(key);
             }
           }
@@ -18594,7 +18956,8 @@ var require_sign = __commonJS({
         if (secretOrPrivateKey.type !== "private") {
           return failure(new Error(`secretOrPrivateKey must be an asymmetric key when using ${header.alg}`));
         }
-        if (!options.allowInsecureKeySizes && !header.alg.startsWith("ES") && secretOrPrivateKey.asymmetricKeyDetails !== void 0 && secretOrPrivateKey.asymmetricKeyDetails.modulusLength < 2048) {
+        if (!options.allowInsecureKeySizes && !header.alg.startsWith("ES") && secretOrPrivateKey.asymmetricKeyDetails !== void 0 && //KeyObject.asymmetricKeyDetails is supported in Node 15+
+        secretOrPrivateKey.asymmetricKeyDetails.modulusLength < 2048) {
           return failure(new Error(`secretOrPrivateKey has a minimum key size of 2048 bits for ${header.alg}`));
         }
       }
@@ -18797,7 +19160,9 @@ var require_dist_node19 = __commonJS({
     }
     function getCache() {
       return new LRU({
+        // cache max. 15000 tokens, that will use less than 10mb memory
         max: 15e3,
+        // Cache for 1 minute less than GitHub expiry
         maxAge: 1e3 * 60 * 59
       });
     }
@@ -18945,7 +19310,7 @@ var require_dist_node19 = __commonJS({
       const repositorySelection = repositorySelectionOptional || "all";
       const repositoryIds = repositories ? repositories.map((r) => r.id) : void 0;
       const repositoryNames = repositories ? repositories.map((repo) => repo.name) : void 0;
-      const createdAt = new Date().toISOString();
+      const createdAt = (/* @__PURE__ */ new Date()).toISOString();
       await set(state.cache, optionsWithInstallationTokenFromState, {
         token,
         createdAt,
@@ -18974,6 +19339,7 @@ var require_dist_node19 = __commonJS({
           return getAppAuthentication(state);
         case "oauth":
           state.log.warn(
+            // @ts-expect-error `log.warn()` expects string
             new deprecation.Deprecation(`[@octokit/auth-app] {type: "oauth"} is deprecated. Use {type: "oauth-app"} instead`)
           );
         case "oauth-app":
@@ -19026,7 +19392,7 @@ var require_dist_node19 = __commonJS({
           if (typeof error.response.headers.date === "undefined") {
             throw error;
           }
-          const diff = Math.floor((Date.parse(error.response.headers.date) - Date.parse(new Date().toString())) / 1e3);
+          const diff = Math.floor((Date.parse(error.response.headers.date) - Date.parse((/* @__PURE__ */ new Date()).toString())) / 1e3);
           state.log.warn(error.message);
           state.log.warn(`[@octokit/auth-app] GitHub API time and system time are different by ${diff} seconds. Retrying request with the difference accounted for.`);
           const {
@@ -19052,6 +19418,7 @@ var require_dist_node19 = __commonJS({
         createdAt
       } = await getInstallationAuthentication(
         state,
+        // @ts-expect-error TBD
         {},
         request2
       );
@@ -19059,7 +19426,7 @@ var require_dist_node19 = __commonJS({
       return sendRequestWithRetries(state, request2, endpoint, createdAt);
     }
     async function sendRequestWithRetries(state, request2, options, createdAt, retries = 0) {
-      const timeSinceTokenCreationInMs = +new Date() - +new Date(createdAt);
+      const timeSinceTokenCreationInMs = +/* @__PURE__ */ new Date() - +new Date(createdAt);
       try {
         return await request2(options);
       } catch (error) {
@@ -19331,6 +19698,7 @@ var require_dist_node21 = __commonJS({
     }
     async function checkTokenWithState(state, options) {
       const result = await OAuthMethods.checkToken({
+        // @ts-expect-error not worth the extra code to appease TS
         clientType: state.clientType,
         clientId: state.clientId,
         clientSecret: state.clientSecret,
@@ -19489,10 +19857,13 @@ var require_dist_node21 = __commonJS({
       const response = state.clientType === "oauth-app" ? await OAuthMethods.deleteToken({
         clientType: "oauth-app",
         ...optionsWithDefaults
-      }) : await OAuthMethods.deleteToken({
-        clientType: "github-app",
-        ...optionsWithDefaults
-      });
+      }) : (
+        // istanbul ignore next
+        await OAuthMethods.deleteToken({
+          clientType: "github-app",
+          ...optionsWithDefaults
+        })
+      );
       await emitEvent(state, {
         name: "token",
         action: "deleted",
@@ -19516,10 +19887,13 @@ var require_dist_node21 = __commonJS({
       const response = state.clientType === "oauth-app" ? await OAuthMethods.deleteAuthorization({
         clientType: "oauth-app",
         ...optionsWithDefaults
-      }) : await OAuthMethods.deleteAuthorization({
-        clientType: "github-app",
-        ...optionsWithDefaults
-      });
+      }) : (
+        // istanbul ignore next
+        await OAuthMethods.deleteAuthorization({
+          clientType: "github-app",
+          ...optionsWithDefaults
+        })
+      );
       await emitEvent(state, {
         name: "token",
         action: "deleted",
@@ -19963,6 +20337,7 @@ var require_dist_node21 = __commonJS({
           clientType: this.type,
           clientId: options.clientId,
           clientSecret: options.clientSecret,
+          // @ts-expect-error defaultScopes not permitted for GitHub Apps
           defaultScopes: options.defaultScopes || [],
           allowSignup: options.allowSignup,
           baseUrl: options.baseUrl,
@@ -20834,6 +21209,7 @@ var require_Node = __commonJS({
       constructor(type) {
         Object.defineProperty(this, NODE_TYPE, { value: type });
       }
+      /** Create a copy of this node.  */
       clone() {
         const copy = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this));
         if (this.range)
@@ -21046,6 +21422,10 @@ var require_directives = __commonJS({
         copy.docStart = this.docStart;
         return copy;
       }
+      /**
+       * During parsing, get a Directives instance for the current document and
+       * update the stream state according to the current version's spec.
+       */
       atDocument() {
         const res = new Directives(this.yaml, this.tags);
         switch (this.yaml.version) {
@@ -21063,6 +21443,10 @@ var require_directives = __commonJS({
         }
         return res;
       }
+      /**
+       * @param onError - May be called even if the action was successful
+       * @returns `true` on success
+       */
       add(line, onError) {
         if (this.atNextDocument) {
           this.yaml = { explicit: Directives.defaultYaml.explicit, version: "1.1" };
@@ -21103,6 +21487,12 @@ var require_directives = __commonJS({
             return false;
         }
       }
+      /**
+       * Resolves a tag, matching handles to those defined in %TAG directives.
+       *
+       * @returns Resolved tag, which may also be the non-specific tag `'!'` or a
+       *   `'!local'` tag, or `null` if unresolvable.
+       */
       tagName(source, onError) {
         if (source === "!")
           return "!";
@@ -21131,6 +21521,10 @@ var require_directives = __commonJS({
         onError(`Could not resolve tag: ${source}`);
         return null;
       }
+      /**
+       * Given a fully resolved tag, returns its printable string form,
+       * taking into account current tag prefixes and defaults.
+       */
       tagString(tag) {
         for (const [handle, prefix] of Object.entries(this.tags)) {
           if (tag.startsWith(prefix))
@@ -21210,6 +21604,11 @@ var require_anchors = __commonJS({
           prevAnchors.add(anchor);
           return anchor;
         },
+        /**
+         * With circular references, the source node is only resolved after all
+         * of its child nodes are. This is why anchors are set only after all of
+         * the nodes have been created.
+         */
         setAnchors: () => {
           for (const source of aliasObjects) {
             const ref = sourceObjects.get(source);
@@ -21249,6 +21648,10 @@ var require_Alias = __commonJS({
           }
         });
       }
+      /**
+       * Resolve the value of this alias within `doc`, finding the last
+       * instance of the `source` anchor before this node.
+       */
       resolve(doc) {
         let found = void 0;
         visit.visit(doc, {
@@ -21496,6 +21899,11 @@ var require_Collection = __commonJS({
           writable: true
         });
       }
+      /**
+       * Create a copy of this collection.
+       *
+       * @param schema - If defined, overwrites the original's schema
+       */
       clone(schema) {
         const copy = Object.create(Object.getPrototypeOf(this), Object.getOwnPropertyDescriptors(this));
         if (schema)
@@ -21505,6 +21913,11 @@ var require_Collection = __commonJS({
           copy.range = this.range.slice();
         return copy;
       }
+      /**
+       * Adds a value to the collection. For `!!map` and `!!omap` the value must
+       * be a Pair instance or a `{ key, value }` object, which may not have a key
+       * that already exists in the map.
+       */
       addIn(path, value) {
         if (isEmptyPath(path))
           this.add(value);
@@ -21519,6 +21932,10 @@ var require_Collection = __commonJS({
             throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
         }
       }
+      /**
+       * Removes a value from the collection.
+       * @returns `true` if the item was found and removed.
+       */
       deleteIn(path) {
         const [key, ...rest] = path;
         if (rest.length === 0)
@@ -21529,6 +21946,11 @@ var require_Collection = __commonJS({
         else
           throw new Error(`Expected YAML collection at ${key}. Remaining path: ${rest}`);
       }
+      /**
+       * Returns item at `key`, or `undefined` if not found. By default unwraps
+       * scalar values from their surrounding node; to disable set `keepScalar` to
+       * `true` (collections are always returned intact).
+       */
       getIn(path, keepScalar) {
         const [key, ...rest] = path;
         const node = this.get(key, true);
@@ -21545,6 +21967,9 @@ var require_Collection = __commonJS({
           return n == null || allowScalar && Node.isScalar(n) && n.value == null && !n.commentBefore && !n.comment && !n.tag;
         });
       }
+      /**
+       * Checks if the collection includes a value with the key `key`.
+       */
       hasIn(path) {
         const [key, ...rest] = path;
         if (rest.length === 0)
@@ -21552,6 +21977,10 @@ var require_Collection = __commonJS({
         const node = this.get(key, true);
         return Node.isCollection(node) ? node.hasIn(rest) : false;
       }
+      /**
+       * Sets a value in this collection. For `!!set`, `value` needs to be a
+       * boolean to add/remove the item from the set.
+       */
       setIn(path, value) {
         const [key, ...rest] = path;
         if (rest.length === 0) {
@@ -22548,6 +22977,12 @@ var require_YAMLMap = __commonJS({
       static get tagName() {
         return "tag:yaml.org,2002:map";
       }
+      /**
+       * Adds a value to the collection.
+       *
+       * @param overwrite - If not set `true`, using a key that is already in the
+       *   collection will throw. Otherwise, overwrites the previous value.
+       */
       add(pair, overwrite) {
         let _pair;
         if (Node.isPair(pair))
@@ -22593,6 +23028,11 @@ var require_YAMLMap = __commonJS({
       set(key, value) {
         this.add(new Pair.Pair(key, value), true);
       }
+      /**
+       * @param ctx - Conversion context, originally set in Document#toJS()
+       * @param {Class} Type - If set, forces the returned collection type
+       * @returns Instance of Type, Map, or Object
+       */
       toJSON(_, ctx, Type) {
         const map = Type ? new Type() : ctx?.mapAsMap ? /* @__PURE__ */ new Map() : {};
         if (ctx?.onCreate)
@@ -22690,6 +23130,14 @@ var require_YAMLSeq = __commonJS({
       add(value) {
         this.items.push(value);
       }
+      /**
+       * Removes a value from the collection.
+       *
+       * `key` must contain a representation of an integer for this to succeed.
+       * It may be wrapped in a `Scalar`.
+       *
+       * @returns `true` if the item was found and removed.
+       */
       delete(key) {
         const idx = asItemIndex(key);
         if (typeof idx !== "number")
@@ -22704,10 +23152,23 @@ var require_YAMLSeq = __commonJS({
         const it = this.items[idx];
         return !keepScalar && Node.isScalar(it) ? it.value : it;
       }
+      /**
+       * Checks if the collection includes a value with the key `key`.
+       *
+       * `key` must contain a representation of an integer for this to succeed.
+       * It may be wrapped in a `Scalar`.
+       */
       has(key) {
         const idx = asItemIndex(key);
         return typeof idx === "number" && idx < this.items.length;
       }
+      /**
+       * Sets a value in this collection. For `!!set`, `value` needs to be a
+       * boolean to add/remove the item from the set.
+       *
+       * If `key` does not contain a representation of an integer, this will throw.
+       * It may be wrapped in a `Scalar`.
+       */
       set(key, value) {
         const idx = asItemIndex(key);
         if (typeof idx !== "number")
@@ -23071,6 +23532,14 @@ var require_binary = __commonJS({
       identify: (value) => value instanceof Uint8Array,
       default: false,
       tag: "tag:yaml.org,2002:binary",
+      /**
+       * Returns a Buffer in node and an Uint8Array in browsers
+       *
+       * To use the resulting buffer as an image, you'll want to do something like:
+       *
+       *   const blob = new Blob([buffer], { type: 'image/jpeg' })
+       *   document.querySelector('#photo').src = URL.createObjectURL(blob)
+       */
       resolve(src, onError) {
         if (typeof Buffer === "function") {
           return Buffer.from(src, "base64");
@@ -23212,6 +23681,10 @@ var require_omap = __commonJS({
         this.set = YAMLMap.YAMLMap.prototype.set.bind(this);
         this.tag = YAMLOMap.tag;
       }
+      /**
+       * If `ctx` is given, the return type is actually `Map<unknown, unknown>`,
+       * but TypeScript won't allow widening the signature of a child method.
+       */
       toJSON(_, ctx) {
         if (!ctx)
           return super.toJSON(_);
@@ -23450,6 +23923,10 @@ var require_set = __commonJS({
         if (!prev)
           this.items.push(pair);
       }
+      /**
+       * If `keepPair` is `true`, returns the Pair matching `key`.
+       * Otherwise, returns the value of that Pair's key.
+       */
       get(key, keepPair) {
         const pair = YAMLMap.findPair(this.items, key);
         return !keepPair && Node.isPair(pair) ? Node.isScalar(pair.key) ? pair.key.value : pair.key : pair;
@@ -23570,6 +24047,9 @@ var require_timestamp = __commonJS({
       identify: (value) => value instanceof Date,
       default: true,
       tag: "tag:yaml.org,2002:timestamp",
+      // If the time zone is omitted, the timestamp is assumed to be specified in UTC. The time part
+      // may be omitted altogether, resulting in a date format. In such a case, the time part is
+      // assumed to be 00:00:00Z (start of day, UTC).
       test: RegExp("^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})(?:(?:t|T|[ \\t]+)([0-9]{1,2}):([0-9]{1,2}):([0-9]{1,2}(\\.[0-9]+)?)(?:[ \\t]*(Z|[-+][012]?[0-9](?::[0-9]{2})?))?)?$"),
       resolve(str) {
         const match = str.match(timestamp.test);
@@ -23937,6 +24417,11 @@ var require_Document = __commonJS({
           this.contents = this.createNode(value, _replacer, options);
         }
       }
+      /**
+       * Create a deep copy of this Document and its contents.
+       *
+       * Custom Node values that inherit from `Object` still refer to their original instances.
+       */
       clone() {
         const copy = Object.create(Document.prototype, {
           [Node.NODE_TYPE]: { value: Node.DOC }
@@ -23954,18 +24439,30 @@ var require_Document = __commonJS({
           copy.range = this.range.slice();
         return copy;
       }
+      /** Adds a value to the document. */
       add(value) {
         if (assertCollection(this.contents))
           this.contents.add(value);
       }
+      /** Adds a value to the document. */
       addIn(path, value) {
         if (assertCollection(this.contents))
           this.contents.addIn(path, value);
       }
+      /**
+       * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
+       *
+       * If `node` already has an anchor, `name` is ignored.
+       * Otherwise, the `node.anchor` value will be set to `name`,
+       * or if an anchor with that name is already present in the document,
+       * `name` will be used as a prefix for a new unique anchor.
+       * If `name` is undefined, the generated anchor will use 'a' as a prefix.
+       */
       createAlias(node, name) {
         if (!node.anchor) {
           const prev = anchors.anchorNames(this);
-          node.anchor = !name || prev.has(name) ? anchors.findNewAnchor(name || "a", prev) : name;
+          node.anchor = // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+          !name || prev.has(name) ? anchors.findNewAnchor(name || "a", prev) : name;
         }
         return new Alias.Alias(node.anchor);
       }
@@ -23987,6 +24484,7 @@ var require_Document = __commonJS({
         const { aliasDuplicateObjects, anchorPrefix, flow, keepUndefined, onTagObj, tag } = options ?? {};
         const { onAnchor, setAnchors, sourceObjects } = anchors.createNodeAnchors(
           this,
+          // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
           anchorPrefix || "a"
         );
         const ctx = {
@@ -24004,14 +24502,26 @@ var require_Document = __commonJS({
         setAnchors();
         return node;
       }
+      /**
+       * Convert a key and a value into a `Pair` using the current schema,
+       * recursively wrapping all values as `Scalar` or `Collection` nodes.
+       */
       createPair(key, value, options = {}) {
         const k = this.createNode(key, null, options);
         const v = this.createNode(value, null, options);
         return new Pair.Pair(k, v);
       }
+      /**
+       * Removes a value from the document.
+       * @returns `true` if the item was found and removed.
+       */
       delete(key) {
         return assertCollection(this.contents) ? this.contents.delete(key) : false;
       }
+      /**
+       * Removes a value from the document.
+       * @returns `true` if the item was found and removed.
+       */
       deleteIn(path) {
         if (Collection.isEmptyPath(path)) {
           if (this.contents == null)
@@ -24021,22 +24531,42 @@ var require_Document = __commonJS({
         }
         return assertCollection(this.contents) ? this.contents.deleteIn(path) : false;
       }
+      /**
+       * Returns item at `key`, or `undefined` if not found. By default unwraps
+       * scalar values from their surrounding node; to disable set `keepScalar` to
+       * `true` (collections are always returned intact).
+       */
       get(key, keepScalar) {
         return Node.isCollection(this.contents) ? this.contents.get(key, keepScalar) : void 0;
       }
+      /**
+       * Returns item at `path`, or `undefined` if not found. By default unwraps
+       * scalar values from their surrounding node; to disable set `keepScalar` to
+       * `true` (collections are always returned intact).
+       */
       getIn(path, keepScalar) {
         if (Collection.isEmptyPath(path))
           return !keepScalar && Node.isScalar(this.contents) ? this.contents.value : this.contents;
         return Node.isCollection(this.contents) ? this.contents.getIn(path, keepScalar) : void 0;
       }
+      /**
+       * Checks if the document includes a value with the key `key`.
+       */
       has(key) {
         return Node.isCollection(this.contents) ? this.contents.has(key) : false;
       }
+      /**
+       * Checks if the document includes a value at `path`.
+       */
       hasIn(path) {
         if (Collection.isEmptyPath(path))
           return this.contents !== void 0;
         return Node.isCollection(this.contents) ? this.contents.hasIn(path) : false;
       }
+      /**
+       * Sets a value in this document. For `!!set`, `value` needs to be a
+       * boolean to add/remove the item from the set.
+       */
       set(key, value) {
         if (this.contents == null) {
           this.contents = Collection.collectionFromPath(this.schema, [key], value);
@@ -24044,6 +24574,10 @@ var require_Document = __commonJS({
           this.contents.set(key, value);
         }
       }
+      /**
+       * Sets a value in this document. For `!!set`, `value` needs to be a
+       * boolean to add/remove the item from the set.
+       */
       setIn(path, value) {
         if (Collection.isEmptyPath(path))
           this.contents = value;
@@ -24053,6 +24587,13 @@ var require_Document = __commonJS({
           this.contents.setIn(path, value);
         }
       }
+      /**
+       * Change the YAML version and schema used by the document.
+       * A `null` version disables support for directives, explicit tags, anchors, and aliases.
+       * It also requires the `schema` option to be given as a `Schema` instance value.
+       *
+       * Overrides all previously set schema options.
+       */
       setSchema(version2, options = {}) {
         if (typeof version2 === "number")
           version2 = String(version2);
@@ -24090,6 +24631,7 @@ var require_Document = __commonJS({
         else
           throw new Error(`With a null YAML version, the { schema: Schema } option is required`);
       }
+      // json & jsonArg are only used from toJSON()
       toJS({ json, jsonArg, mapAsMap, maxAliasCount, onAnchor, reviver } = {}) {
         const ctx = {
           anchors: /* @__PURE__ */ new Map(),
@@ -24106,9 +24648,16 @@ var require_Document = __commonJS({
             onAnchor(res2, count);
         return typeof reviver === "function" ? applyReviver.applyReviver(reviver, { "": res }, "", res) : res;
       }
+      /**
+       * A JSON representation of the document `contents`.
+       *
+       * @param jsonArg Used by `JSON.stringify` to indicate the array index or
+       *   property name.
+       */
       toJSON(jsonArg, onAnchor) {
         return this.toJS({ json: true, jsonArg, mapAsMap: false, onAnchor });
       }
+      /** A YAML representation of the document. */
       toString(options = {}) {
         if (this.errors.length > 0)
           throw new Error("Document with errors cannot be stringified");
@@ -24638,6 +25187,7 @@ var require_resolve_flow_collection = __commonJS({
           if (!isMap && ctx.options.strict && utilContainsNewline.containsNewline(key))
             onError(
               key,
+              // checked by containsNewline()
               "MULTILINE_IMPLICIT_KEY",
               "Implicit keys of flow sequence pairs need to be on a single line"
             );
@@ -25545,6 +26095,11 @@ ${cb}` : comment;
         this.errors = [];
         this.warnings = [];
       }
+      /**
+       * Current stream status information.
+       *
+       * Mostly useful at the end of input for an empty stream.
+       */
       streamInfo() {
         return {
           comment: parsePrelude(this.prelude).comment,
@@ -25553,11 +26108,18 @@ ${cb}` : comment;
           warnings: this.warnings
         };
       }
+      /**
+       * Compose tokens into documents.
+       *
+       * @param forceDoc - If the stream contains no document, still emit a final document including any comments and directives that would be applied to a subsequent document.
+       * @param endOffset - Should be set if `forceDoc` is also set, to set the document range end and to indicate errors correctly.
+       */
       *compose(tokens, forceDoc = false, endOffset = -1) {
         for (const token of tokens)
           yield* this.next(token);
         yield* this.end(forceDoc, endOffset);
       }
+      /** Advance the composer by one CST token. */
       *next(token) {
         if (process.env.LOG_STREAM)
           console.dir(token, { depth: null });
@@ -25619,6 +26181,12 @@ ${end.comment}` : end.comment;
             this.errors.push(new errors.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", `Unsupported token ${token.type}`));
         }
       }
+      /**
+       * Call at end of input to yield any remaining document.
+       *
+       * @param forceDoc - If the stream contains no document, still emit a final document including any comments and directives that would be applied to a subsequent document.
+       * @param endOffset - Should be set if `forceDoc` is also set, to set the document range end and to indicate errors correctly.
+       */
       *end(forceDoc = false, endOffset = -1) {
         if (this.doc) {
           this.decorate(this.doc, true);
@@ -26085,6 +26653,12 @@ var require_lexer = __commonJS({
         this.next = null;
         this.pos = 0;
       }
+      /**
+       * Generate YAML tokens from the `source` string. If `incomplete`,
+       * a part of the last line may be left as a buffer for the next call.
+       *
+       * @returns A generator of lexical tokens
+       */
       *lex(source, incomplete = false) {
         if (source) {
           this.buffer = this.buffer ? this.buffer + source : source;
@@ -26727,6 +27301,10 @@ var require_parser = __commonJS({
       }
     }
     var Parser = class {
+      /**
+       * @param onNewLine - If defined, called separately with the start position of
+       *   each new line (in `parse()`, including the start of input).
+       */
       constructor(onNewLine) {
         this.atNewLine = true;
         this.atScalar = false;
@@ -26739,6 +27317,14 @@ var require_parser = __commonJS({
         this.lexer = new lexer.Lexer();
         this.onNewLine = onNewLine;
       }
+      /**
+       * Parse `source` as a YAML stream.
+       * If `incomplete`, a part of the last line may be left as a buffer for the next call.
+       *
+       * Errors are not thrown, but yielded as `{ type: 'error', message }` tokens.
+       *
+       * @returns A generator of tokens representing each directive, document, and other structure.
+       */
       *parse(source, incomplete = false) {
         if (this.onNewLine && this.offset === 0)
           this.onNewLine(0);
@@ -26747,6 +27333,9 @@ var require_parser = __commonJS({
         if (!incomplete)
           yield* this.end();
       }
+      /**
+       * Advance the parser by the `source` of one lexical token.
+       */
       *next(source) {
         this.source = source;
         if (process.env.LOG_TOKENS)
@@ -26795,6 +27384,7 @@ var require_parser = __commonJS({
           this.offset += source.length;
         }
       }
+      /** Call at end of input to push out any remaining constructions */
       *end() {
         while (this.stack.length > 0)
           yield* this.pop();
@@ -27799,7 +28389,7 @@ var require_moment = __commonJS({
         copyConfig(this, config);
         this._d = new Date(config._d != null ? config._d.getTime() : NaN);
         if (!this.isValid()) {
-          this._d = new Date(NaN);
+          this._d = /* @__PURE__ */ new Date(NaN);
         }
         if (updateInProgress === false) {
           updateInProgress = true;
@@ -28589,7 +29179,9 @@ var require_moment = __commonJS({
       }
       var defaultLocaleWeek = {
         dow: 0,
+        // Sunday is the first day of the week.
         doy: 6
+        // The week that contains Jan 6th is the first week of the year.
       };
       function localeFirstDayOfWeek() {
         return this._week.dow;
@@ -29358,7 +29950,7 @@ var require_moment = __commonJS({
       function configFromString(config) {
         var matched = aspNetJsonRegex.exec(config._i);
         if (matched !== null) {
-          config._d = new Date(+matched[1]);
+          config._d = /* @__PURE__ */ new Date(+matched[1]);
           return;
         }
         configFromISO(config);
@@ -29382,7 +29974,7 @@ var require_moment = __commonJS({
       hooks.createFromInputFallback = deprecate(
         "value provided is not in a recognized RFC2822 or ISO format. moment construction falls back to js Date(), which is not reliable across all browsers and versions. Non RFC2822/ISO date formats are discouraged. Please refer to http://momentjs.com/guides/#/warnings/js-date/ for more info.",
         function(config) {
-          config._d = new Date(config._i + (config._useUTC ? " UTC" : ""));
+          config._d = /* @__PURE__ */ new Date(config._i + (config._useUTC ? " UTC" : ""));
         }
       );
       function defaults(a, b, c) {
@@ -29581,7 +30173,7 @@ var require_moment = __commonJS({
         var tempConfig, bestMoment, scoreToBeat, i, currentScore, validFormatFound, bestFormatIsValid = false, configfLen = config._f.length;
         if (configfLen === 0) {
           getParsingFlags(config).invalidFormat = true;
-          config._d = new Date(NaN);
+          config._d = /* @__PURE__ */ new Date(NaN);
           return;
         }
         for (i = 0; i < configfLen; i++) {
@@ -29753,7 +30345,7 @@ var require_moment = __commonJS({
         return pickBy("isAfter", args);
       }
       var now = function() {
-        return Date.now ? Date.now() : +new Date();
+        return Date.now ? Date.now() : +/* @__PURE__ */ new Date();
       };
       var ordering = [
         "year",
@@ -29794,7 +30386,9 @@ var require_moment = __commonJS({
       function Duration(duration) {
         var normalizedInput = normalizeObjectUnits(duration), years2 = normalizedInput.year || 0, quarters = normalizedInput.quarter || 0, months2 = normalizedInput.month || 0, weeks2 = normalizedInput.week || normalizedInput.isoWeek || 0, days2 = normalizedInput.day || 0, hours2 = normalizedInput.hour || 0, minutes2 = normalizedInput.minute || 0, seconds2 = normalizedInput.second || 0, milliseconds2 = normalizedInput.millisecond || 0;
         this._isValid = isDurationValid(normalizedInput);
-        this._milliseconds = +milliseconds2 + seconds2 * 1e3 + minutes2 * 6e4 + hours2 * 1e3 * 60 * 60;
+        this._milliseconds = +milliseconds2 + seconds2 * 1e3 + // 1000
+        minutes2 * 6e4 + // 1000 * 60
+        hours2 * 1e3 * 60 * 60;
         this._days = +days2 + weeks2 * 7;
         this._months = +months2 + quarters * 3 + years2 * 12;
         this._data = {};
@@ -30003,6 +30597,7 @@ var require_moment = __commonJS({
             m: toInt(match[MINUTE]) * sign2,
             s: toInt(match[SECOND]) * sign2,
             ms: toInt(absRound(match[MILLISECOND] * 1e3)) * sign2
+            // the millisecond decimal point is included in the match
           };
         } else if (match = isoRegex.exec(input)) {
           sign2 = match[1] === "-" ? -1 : 1;
@@ -31338,12 +31933,19 @@ var require_moment = __commonJS({
       }
       var round = Math.round, thresholds = {
         ss: 44,
+        // a few seconds to seconds
         s: 45,
+        // seconds to minute
         m: 45,
+        // minutes to hour
         h: 22,
+        // hours to day
         d: 26,
+        // days to month/week
         w: null,
+        // weeks to month
         M: 11
+        // months to year
       };
       function substituteTimeAgo(string, number, withoutSuffix, isFuture, locale2) {
         return locale2.relativeTime(number || 1, !!withoutSuffix, string, isFuture);
@@ -31511,14 +32113,23 @@ var require_moment = __commonJS({
       hooks.prototype = proto;
       hooks.HTML5_FMT = {
         DATETIME_LOCAL: "YYYY-MM-DDTHH:mm",
+        // <input type="datetime-local" />
         DATETIME_LOCAL_SECONDS: "YYYY-MM-DDTHH:mm:ss",
+        // <input type="datetime-local" step="1" />
         DATETIME_LOCAL_MS: "YYYY-MM-DDTHH:mm:ss.SSS",
+        // <input type="datetime-local" step="0.001" />
         DATE: "YYYY-MM-DD",
+        // <input type="date" />
         TIME: "HH:mm",
+        // <input type="time" />
         TIME_SECONDS: "HH:mm:ss",
+        // <input type="time" step="1" />
         TIME_MS: "HH:mm:ss.SSS",
+        // <input type="time" step="0.001" />
         WEEK: "GGGG-[W]WW",
+        // <input type="week" />
         MONTH: "YYYY-MM"
+        // <input type="month" />
       };
       return hooks;
     });
@@ -31730,7 +32341,7 @@ function run() {
         );
         return;
       }
-      if (user === "" && organization === "") {
+      if (!user && !organization) {
         core2.setFailed(
           "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
         );
@@ -31747,10 +32358,15 @@ function run() {
         );
         return;
       }
-      let actionFiles = yield getAllActions(octokit, user, organization, isEnterpriseServer);
+      let actionFiles = yield getAllActions(
+        octokit,
+        user,
+        organization,
+        isEnterpriseServer
+      );
       actionFiles = yield enrichActionFiles(octokit, actionFiles);
       const output = {
-        lastUpdated: GetDateFormatted(new Date()),
+        lastUpdated: GetDateFormatted(/* @__PURE__ */ new Date()),
         actions: actionFiles,
         organization,
         user
@@ -31768,7 +32384,7 @@ function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
       core2.debug(`Enrich : ${action.downloadUrl}`);
-      if (action.downloadUrl !== null) {
+      if (action.downloadUrl) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         try {
           const parsed = import_yaml.default.parse(content);
@@ -31800,7 +32416,9 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
       searchQuery = searchQuery.concat("+user:", username);
     }
     if (organization !== "") {
-      core2.info(`Search for action files under the organization [ ${organization} ]`);
+      core2.info(
+        `Search for action files under the organization [ ${organization} ]`
+      );
       searchQuery = searchQuery.concat("+org:", organization);
     }
     core2.debug(`searchQuery : ${searchQuery}`);
@@ -31814,13 +32432,15 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
           if (ratelimit.data.resources.search.remaining <= 2) {
             var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
             core2.debug(`Search API reset time: ${resetTime}`);
-            var waitTime = resetTime.getTime() - new Date().getTime();
+            var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
             if (waitTime < 0) {
               waitTime = 2500;
             } else {
               waitTime = waitTime + 1e3;
             }
-            core2.info(`Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`);
+            core2.info(
+              `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
+            );
             yield new Promise((r) => setTimeout(r, waitTime));
           }
         }
@@ -31899,5 +32519,4 @@ moment/moment.js:
   (*! authors : Tim Wood, Iskren Chernev, Moment.js contributors *)
   (*! license : MIT *)
   (*! momentjs.com *)
-  (*! moment.js *)
 */

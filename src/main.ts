@@ -1,10 +1,11 @@
 import * as core from '@actions/core'
-import { Octokit } from 'octokit'
+import {Octokit} from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
-import { getReadmeContent } from './optionalActions'
-// always import the config
+
+import {getReadmeContent} from './optionalActions'
+
 dotenv.config()
 
 const getInputOrEnv = (input: string) =>
@@ -29,7 +30,7 @@ async function run(): Promise<void> {
       return
     }
 
-    if (user === '' && organization === '') {
+    if (!user && !organization) {
       core.setFailed(
         "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
       )
@@ -52,7 +53,12 @@ async function run(): Promise<void> {
       return
     }
 
-    let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
+    let actionFiles = await getAllActions(
+      octokit,
+      user,
+      organization,
+      isEnterpriseServer
+    )
     // load the information in the files
     actionFiles = await enrichActionFiles(octokit, actionFiles)
 
@@ -71,11 +77,10 @@ async function run(): Promise<void> {
 
     const json = JSON.stringify(output)
     core.setOutput('actions', json)
-  } catch (error) {
+  } catch (error: any) {
     core.setFailed(`Error running action: : ${error.message}`)
   }
 }
-
 export class Content {
   name: string | undefined
   owner: string | undefined
@@ -94,16 +99,18 @@ async function enrichActionFiles(
   for (const action of actionFiles) {
     core.debug(`Enrich : ${action.downloadUrl}`)
     // download the file in it and parse it
-    if (action.downloadUrl !== null) {
-      const { data: content } = await client.request({ url: action.downloadUrl })
+    if (action.downloadUrl) {
+      const {data: content} = await client.request({url: action.downloadUrl})
 
       // try to parse the yaml
       try {
         const parsed = YAML.parse(content)
-        const defaultValue = "Undefined" // Default value when json field is not defined
+        const defaultValue = 'Undefined' // Default value when json field is not defined
         action.name = parsed.name ? parsed.name : defaultValue
         action.author = parsed.author ? parsed.author : defaultValue
-        action.description = parsed.description ? parsed.description : defaultValue
+        action.description = parsed.description
+          ? parsed.description
+          : defaultValue
       } catch (error) {
         // this happens in https://github.com/gaurav-nelson/github-action-markdown-link-check/blob/9de9db77de3b29b650d2e2e99f0ee290f435214b/action.yml#L9
         // because of invalid yaml
@@ -128,15 +135,16 @@ async function getAllActions(
 ): Promise<Content[]> {
   const actions: Content[] = []
 
-
-  var searchQuery = '+filename:action+language:YAML';
+  var searchQuery = '+filename:action+language:YAML'
   if (username) {
     core.info(`Search for action files of the user [ ${username} ]`)
     searchQuery = searchQuery.concat('+user:', username)
   }
 
   if (organization !== '') {
-    core.info(`Search for action files under the organization [ ${organization} ]`)
+    core.info(
+      `Search for action files under the organization [ ${organization} ]`
+    )
     searchQuery = searchQuery.concat('+org:', organization)
   }
 
@@ -148,9 +156,8 @@ async function getAllActions(
 
   if (searchResult) {
     for (let index = 0; index < searchResult.length; index++) {
-
       // todo: ratelimiting can be enabled on GHES as well, but is off by default
-      // we can probably load it from an api call and see if it is enabled, or try .. catch 
+      // we can probably load it from an api call and see if it is enabled, or try .. catch
       if (!isEnterpriseServer) {
         // search API has a strict rate limit, prevent errors
         var ratelimit = await client.rest.rateLimit.get()
@@ -167,23 +174,27 @@ async function getAllActions(
             // back off a bit more to be more certain
             waitTime = waitTime + 1000
           }
-          core.info(`Waiting ${waitTime / 1000} seconds to prevent the search API rate limit`)
-          await new Promise(r => setTimeout(r, waitTime));
+          core.info(
+            `Waiting ${
+              waitTime / 1000
+            } seconds to prevent the search API rate limit`
+          )
+          await new Promise(r => setTimeout(r, waitTime))
         }
       }
 
       const result = new Content()
-      var fileName = searchResult[index].name;
-      var element = searchResult[index].path;
-      var repoName = searchResult[index].repository.name;
-      var repoOwner = searchResult[index].repository.owner.login;
+      var fileName = searchResult[index].name
+      var element = searchResult[index].path
+      var repoName = searchResult[index].repository.name
+      var repoOwner = searchResult[index].repository.owner.login
 
       // Push file to action list if filename matches action.yaml or action.yml
       // Search result will contains list of files matching action files ex: reposyncer_action.yml
       if (fileName == 'action.yaml' || fileName == 'action.yml') {
         core.info(`Found action in ${repoName}/${element}`)
         // Get Forked from Info for the repo
-        const { data: repoinfo } = await client.rest.repos.get({
+        const {data: repoinfo} = await client.rest.repos.get({
           owner: repoOwner,
           repo: repoName
         })
@@ -193,7 +204,7 @@ async function getAllActions(
         }
 
         // Get File content
-        const { data: yaml } = await client.rest.repos.getContent({
+        const {data: yaml} = await client.rest.repos.getContent({
           owner: repoOwner,
           repo: repoName,
           path: element
@@ -203,10 +214,12 @@ async function getAllActions(
           result.repo = repoName
           result.forkedfrom = parentinfo
           if (yaml.download_url !== null) {
-            result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, '') : yaml.download_url
+            result.downloadUrl = removeTokenSetting
+              ? yaml.download_url.replace(/\?(.*)/, '')
+              : yaml.download_url
           }
         }
-        
+
         if (fetchReadmesSetting && yaml) {
           const readmeLink = await getReadmeContent(client, repoName, repoOwner)
           if (readmeLink) {
@@ -222,4 +235,3 @@ async function getAllActions(
 }
 
 run()
-
