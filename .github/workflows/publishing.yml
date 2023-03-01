@@ -21,7 +21,7 @@ jobs:
           user: rajbos
         id: load-actions
 
-      - uses: devops-actions/json-to-file@f4dfed5916186ad86a993f72d3d8182e543598ea # v1.0.1
+      - uses: devops-actions/json-to-file@b66686a25ff9da09a2731ec0a5d9a82980b89c28 # v1.0.2
         with: 
           json: ${{ steps.load-actions.outputs.actions }}
           filename: actions.json
