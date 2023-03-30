@@ -41,7 +41,7 @@ jobs:
         run: |
           # check if the file has actions in it 
           if [ $(cat "${{ steps.load-actions.outputs.actions-file-path }}" | jq '.actions | length') -eq 0 ]; then
-            echo "The result file does not contain any actions" | tee $GITHUB_STEP_SUMMARY
+            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 
@@ -65,7 +65,7 @@ jobs:
       - name: Check if the second result file is not empty
         run: | 
           if [ ! -s '${{ steps.load-actions-second-run.outputs.actions-file-path }}' ]; then
-            echo "The result file is empty" | tee $GITHUB_STEP_SUMMARY
+            echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 
@@ -80,10 +80,10 @@ jobs:
       - name: Validate that the two files have different names
         run: | 
           if [ ${{ steps.load-actions.outputs.actions-file-path }} == ${{ steps.load-actions-second-run.outputs.actions-file-path }} ]; then
-            echo "The two files have the same name, this is not good" | tee $GITHUB_STEP_SUMMARY
+            echo "The two files have the same name, this is not good" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           else
-            echo "The two files have different names, this is good" | tee $GITHUB_STEP_SUMMARY
+            echo "The two files have different names, this is good" | tee "$GITHUB_STEP_SUMMARY"
           fi
   
   test-load-from-organization-with-forks: # test the action for the organization space
@@ -112,7 +112,7 @@ jobs:
       - name: Check if the result file is not empty
         run: | 
           if [ ! -s '${{ steps.load-actions.outputs.actions-file-path }}' ]; then
-            echo "The result file is empty" | tee $GITHUB_STEP_SUMMARY
+            echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 
@@ -121,7 +121,7 @@ jobs:
         run: | 
           # check if the file has actions in it 
           if [ $(cat '${{ steps.load-actions.outputs.actions-file-path }}' | jq '.actions | length') -eq 0 ]; then
-            echo "The result file does not contain any actions" | tee $GITHUB_STEP_SUMMARY
+            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
             
