@@ -3,6 +3,7 @@ import {Octokit} from 'octokit'
 import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
+import fs from 'fs'
 
 import {getReadmeContent} from './optionalActions'
 
@@ -76,7 +77,11 @@ async function run(): Promise<void> {
     }
 
     const json = JSON.stringify(output)
-    core.setOutput('actions', json)
+    // store the json in a file
+    const resultFilePath = 'actions.json'
+    fs.writeFileSync(resultFilePath, json)
+    core.setOutput('actions-file-path', resultFilePath)
+    core.info(`Results file written to [${resultFilePath}]`)
   } catch (error: any) {
     core.setFailed(`Error running action: : ${error.message}`)
   }

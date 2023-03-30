@@ -37,18 +37,21 @@ jobs:
         with: 
           PAT: ${{ secrets.PAT }} 
           user: rajbos
-        id: load-actions
+        id: load-actions      
 
-      - uses: devops-actions/json-to-file@b66686a25ff9da09a2731ec0a5d9a82980b89c28 # v1.0.2
-        with: 
-          json: ${{ steps.load-actions.outputs.actions }}
-          filename: actions-user.json
+      # check if the result file is not empty
+      - name: Check if the result file is not empty
+        run: | 
+          if [ ! -s ${{ steps.load-actions.outputs.actions-file-path }} ]; then
+            echo "The result file is empty"
+            exit 1
+          fi
         
       - name: Upload result file as artefact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with: 
-          name: actions
-          path: actions-user.json
+          name: actions-user
+          path: ${{ steps.load-actions.outputs.actions-file-path }}
   
   test-load-from-organization: # test the action for the organization space
     runs-on: ubuntu-latest
@@ -69,13 +72,16 @@ jobs:
           organization: rajbos-actions
         id: load-actions
 
-      - uses: devops-actions/json-to-file@b66686a25ff9da09a2731ec0a5d9a82980b89c28 # v1.0.2
-        with: 
-          json: ${{ steps.load-actions.outputs.actions }}
-          filename: actions-organization.json
+      # check if the result file is not empty
+      - name: Check if the result file is not empty
+        run: | 
+          if [ ! -s ${{ steps.load-actions.outputs.actions-file-path }} ]; then
+            echo "The result file is empty"
+            exit 1
+          fi
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with: 
           name: actions-organization
-          path: actions-organization.json
+          path: ${{ steps.load-actions.outputs.actions-file-path }}
