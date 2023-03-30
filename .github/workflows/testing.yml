@@ -9,19 +9,9 @@ on:
 permissions: read-all
     
 jobs:
-  build: # make sure build/ci work properly
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' # don't run on PRs
-    steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - name: Compile with NPM
-        run: | 
-          npm ci
-          npm run all
-
   test-load-from-user: # test the action for the user space
+    name: User space
     runs-on: ubuntu-latest
-    concurrency: single-run
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -33,19 +23,29 @@ jobs:
 
       # run the test
       - uses: ./
-        name: Load used actions
+        name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }} 
           user: rajbos
         id: load-actions 
-      
+
       # check if the result file is not empty
       - name: Check if the result file is not empty
         run: | 
-          if [ ! -s ${{ steps.load-actions.outputs.actions-file-path }} ]; then
-            echo "The result file is empty"
+          if [ ! -s "${{ steps.load-actions.outputs.actions-file-path }}" ]; then
+            echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
-          fi      
+          fi
+
+          ls -la
+
+      - name: Check if the result file has actions in it
+        run: |
+          # check if the file has actions in it 
+          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
+            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
 
       # upload the second result file as an artefact 
       - name: Upload result file as artefact
@@ -66,8 +66,8 @@ jobs:
       # check if the second result file is not empty
       - name: Check if the second result file is not empty
         run: | 
-          if [ ! -s ${{ steps.load-actions-second-run.outputs.actions-file-path }} ]; then
-            echo "The result file is empty"
+          if [ ! -s '${{ steps.load-actions-second-run.outputs.actions-file-path }}' ]; then
+            echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 
@@ -82,14 +82,61 @@ jobs:
       - name: Validate that the two files have different names
         run: | 
           if [ ${{ steps.load-actions.outputs.actions-file-path }} == ${{ steps.load-actions-second-run.outputs.actions-file-path }} ]; then
-            echo "The two files have the same name, this is not good"
+            echo "The two files have the same name, this is not good" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           else
-            echo "The two files have different names, this is good"
+            echo "The two files have different names, this is good" | tee "$GITHUB_STEP_SUMMARY"
           fi
   
-  test-load-from-organization: # test the action for the organization space
+  test-load-from-organization-with-forks: # test the action for the organization space
+    needs: test-load-from-user
     runs-on: ubuntu-latest
+    concurrency: single-run
+    name: Org with forks
+    #if: github.ref == 'refs/heads/main' # don't run on PRs
+    steps: 
+      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      # make sure we have a new build, in case the dist folder was not updated
+      - name: Compile with NPM
+        run: | 
+          npm ci
+          npm run all
+
+      # run the test
+      - uses: ./
+        name: Load available actions
+        with: 
+          PAT: ${{ secrets.PAT }}
+          organization: rajbos-actions
+        id: load-actions
+
+      # check if the result file is not empty
+      - name: Check if the result file is not empty
+        run: | 
+          if [ ! -s "${{ steps.load-actions.outputs.actions-file-path }}" ]; then
+            echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Check if the result file has actions in it
+        continue-on-error: true #temporarily ignore this error, until we have a better way to handle forks
+        run: | 
+          # check if the file has actions in it 
+          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
+            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+            
+      - name: Upload result file as artefact
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with: 
+          name: actions-organization-with-forks
+          path: ${{ steps.load-actions.outputs.actions-file-path }}
+    
+  test-load-from-organization: # test the action for the organization space
+    name: Org without forks
+    runs-on: ubuntu-latest
+    needs: test-load-from-user
     concurrency: single-run
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
@@ -104,14 +151,22 @@ jobs:
         name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }}
-          organization: rajbos-actions
+          organization: actions
         id: load-actions
 
       # check if the result file is not empty
       - name: Check if the result file is not empty
         run: | 
-          if [ ! -s ${{ steps.load-actions.outputs.actions-file-path }} ]; then
+          if [ ! -s '${{ steps.load-actions.outputs.actions-file-path }}' ]; then
             echo "The result file is empty"
+            exit 1
+          fi
+
+      - name: Check if the result file has actions in it
+        run: |
+          # check if the file has actions in it 
+          if [ "$(jq ".actions | length" "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
+            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
             
@@ -120,3 +175,4 @@ jobs:
         with: 
           name: actions-organization
           path: ${{ steps.load-actions.outputs.actions-file-path }}
+
