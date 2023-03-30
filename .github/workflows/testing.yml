@@ -33,19 +33,25 @@ jobs:
 
       # run the test
       - uses: ./
-        name: Load used actions
+        name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }} 
           user: rajbos
         id: load-actions 
-      
+
       # check if the result file is not empty
       - name: Check if the result file is not empty
         run: | 
           if [ ! -s ${{ steps.load-actions.outputs.actions-file-path }} ]; then
             echo "The result file is empty"
             exit 1
-          fi      
+          fi
+
+          # check if the file has actions in it 
+          if [ $(cat ${{ steps.load-actions.outputs.actions-file-path }} | jq '.actions | length') -eq 0 ]; then
+            echo "The result file does not contain any actions"
+            exit 1
+          fi
 
       # upload the second result file as an artefact 
       - name: Upload result file as artefact
@@ -112,6 +118,12 @@ jobs:
         run: | 
           if [ ! -s ${{ steps.load-actions.outputs.actions-file-path }} ]; then
             echo "The result file is empty"
+            exit 1
+          fi
+
+          # check if the file has actions in it 
+          if [ $(cat ${{ steps.load-actions.outputs.actions-file-path }} | jq '.actions | length') -eq 0 ]; then
+            echo "The result file does not contain any actions"
             exit 1
           fi
             
