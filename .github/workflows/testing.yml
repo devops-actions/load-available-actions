@@ -37,6 +37,8 @@ jobs:
             exit 1
           fi
 
+          ls -la
+
       - name: Check if the result file has actions in it
         run: |
           # check if the file has actions in it 
