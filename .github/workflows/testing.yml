@@ -163,7 +163,7 @@ jobs:
       - name: Check if the result file has actions in it
         run: |
           # check if the file has actions in it 
-          if [ $(cat "${{ steps.load-actions.outputs.actions-file-path }}" | jq ".actions | length") -eq 0 ]; then
+          if [ "$(cat "${{ steps.load-actions.outputs.actions-file-path }}" | jq ".actions | length")" -eq 0 ]; then
             echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
