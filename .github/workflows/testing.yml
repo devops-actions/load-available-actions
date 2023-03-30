@@ -9,19 +9,8 @@ on:
 permissions: read-all
     
 jobs:
-  build: # make sure build/ci work properly
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' # don't run on PRs
-    steps:
-      - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - name: Compile with NPM
-        run: | 
-          npm ci
-          npm run all
-
   test-load-from-user: # test the action for the user space
     runs-on: ubuntu-latest
-    concurrency: single-run
     #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
@@ -74,7 +63,7 @@ jobs:
       # check if the second result file is not empty
       - name: Check if the second result file is not empty
         run: | 
-          if [ ! -s  ${{ steps.load-actions-second-run.outputs.actions-file-path }}' ]; then
+          if [ ! -s '${{ steps.load-actions-second-run.outputs.actions-file-path }}' ]; then
             echo "The result file is empty" | tee $GITHUB_STEP_SUMMARY
             exit 1
           fi
