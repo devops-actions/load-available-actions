@@ -79,10 +79,11 @@ async function run(): Promise<void> {
     }
 
     const json = JSON.stringify(output)
-    // get the current file location
-    const fullPath = path(outputFilename)
-    core.info(`Writing results to [${fullPath}]`)
     fs.writeFileSync(outputFilename, json)
+    // get the current file location
+    const fullPath = path.resolve(outputFilename)
+    core.info(`Writing results to [${fullPath}]`)
+
     core.setOutput('actions-file-path', outputFilename)
     core.info(`Results file written to [${outputFilename}]`)
   } catch (error: any) {

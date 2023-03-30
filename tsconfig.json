@@ -11,5 +11,6 @@
     "inlineSourceMap": true,                  /* Enables inline source maps. */
     "types": ["node", "jest"],                /* Type declaration files to be included in compilation. */
   },
-  "exclude": ["node_modules", "**/*.test.ts"]
+  "exclude": ["node_modules", "**/*.test.ts"],
+  "type": "module"
 }

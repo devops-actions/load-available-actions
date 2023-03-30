@@ -32439,9 +32439,9 @@ function run() {
         user
       };
       const json = JSON.stringify(output);
-      const fullPath = (0, import_path.default)(outputFilename);
-      core2.info(`Writing results to [${fullPath}]`);
       import_fs.default.writeFileSync(outputFilename, json);
+      const fullPath = import_path.default.resolve(outputFilename);
+      core2.info(`Writing results to [${fullPath}]`);
       core2.setOutput("actions-file-path", outputFilename);
       core2.info(`Results file written to [${outputFilename}]`);
     } catch (error) {
