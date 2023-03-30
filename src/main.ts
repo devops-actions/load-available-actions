@@ -78,14 +78,14 @@ async function run(): Promise<void> {
       user
     }
 
+    // log the number of actions found
+    core.info(`Found [${actionFiles.length}] actions`)
     const json = JSON.stringify(output)
     fs.writeFileSync(outputFilename, json)
-    // get the current file location
     const fullPath = path.resolve(outputFilename)
     core.info(`Writing results to [${fullPath}]`)
 
-    core.setOutput('actions-file-path', outputFilename)
-    core.info(`Results file written to [${outputFilename}]`)
+    core.setOutput('actions-file-path', fullPath)
   } catch (error: any) {
     core.setFailed(`Error running action: : ${error.message}`)
   }

@@ -32438,12 +32438,12 @@ function run() {
         organization,
         user
       };
+      core2.info(`Found [${actionFiles.length}] actions`);
       const json = JSON.stringify(output);
       import_fs.default.writeFileSync(outputFilename, json);
       const fullPath = import_path.default.resolve(outputFilename);
       core2.info(`Writing results to [${fullPath}]`);
-      core2.setOutput("actions-file-path", outputFilename);
-      core2.info(`Results file written to [${outputFilename}]`);
+      core2.setOutput("actions-file-path", fullPath);
     } catch (error) {
       core2.setFailed(`Error running action: : ${error.message}`);
     }
