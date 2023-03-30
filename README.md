@@ -14,6 +14,7 @@ The output is stored with the name `actions`, which can be retrieved in another 
 |PAT|The Access Token to use for the API calls.|
 |_removeToken (optional)_|Removes token from remote url.|
 |_fetchReadmes (optional_)|Adds readmes of repositories to json in a base64 format.|
+|outputFilename (optional)|The name of the output file. Defaults to `actions.json`|
 
 ### Scopes needed for the access token
 Repo permissions needed for the access token:
