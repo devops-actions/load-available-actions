@@ -23,6 +23,7 @@ async function run(): Promise<void> {
     const organization = getInputOrEnv('organization')
     const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com'
     const isEnterpriseServer = baseUrl !== 'https://api.github.com'
+    const outputFilename = getInputOrEnv('outputFilename') || 'actions.json'
 
     if (!PAT) {
       core.setFailed(
@@ -77,11 +78,9 @@ async function run(): Promise<void> {
     }
 
     const json = JSON.stringify(output)
-    // store the json in a file
-    const resultFilePath = 'actions.json'
-    fs.writeFileSync(resultFilePath, json)
-    core.setOutput('actions-file-path', resultFilePath)
-    core.info(`Results file written to [${resultFilePath}]`)
+    fs.writeFileSync(outputFilename, json)
+    core.setOutput('actions-file-path', outputFilename)
+    core.info(`Results file written to [${outputFilename}]`)
   } catch (error: any) {
     core.setFailed(`Error running action: : ${error.message}`)
   }

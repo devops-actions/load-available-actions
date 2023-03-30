@@ -32400,6 +32400,7 @@ function run() {
       const organization = getInputOrEnv("organization");
       const baseUrl = process.env.GITHUB_API_URL || "https://api.github.com";
       const isEnterpriseServer = baseUrl !== "https://api.github.com";
+      const outputFilename = getInputOrEnv("outputFilename") || "actions.json";
       if (!PAT) {
         core2.setFailed(
           "Parameter 'PAT' is required to load all actions from the organization or user account"
@@ -32437,10 +32438,9 @@ function run() {
         user
       };
       const json = JSON.stringify(output);
-      const resultFilePath = "actions.json";
-      import_fs.default.writeFileSync(resultFilePath, json);
-      core2.setOutput("actions-file-path", resultFilePath);
-      core2.info(`Results file written to [${resultFilePath}]`);
+      import_fs.default.writeFileSync(outputFilename, json);
+      core2.setOutput("actions-file-path", outputFilename);
+      core2.info(`Results file written to [${outputFilename}]`);
     } catch (error) {
       core2.setFailed(`Error running action: : ${error.message}`);
     }
