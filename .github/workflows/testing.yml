@@ -56,7 +56,7 @@ jobs:
 
       # run the test with a different filename
       - uses: ./
-        name: Load used actions
+        name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }} 
           user: rajbos
@@ -101,7 +101,7 @@ jobs:
           npm run all
       # run the test
       - uses: ./
-        name: Load used actions
+        name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }}
           organization: rajbos-actions

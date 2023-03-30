@@ -158,7 +158,12 @@ async function getAllActions(
     q: searchQuery
   })
 
-  if (searchResult) {
+  if (!searchResult) {
+    var searchType = username ? 'user' : 'organization'
+    var searchValue = username ? username : organization
+    core.info(`No actions found in the ${searchType} [${searchValue}]`)
+  }
+  else{
     for (let index = 0; index < searchResult.length; index++) {
       // todo: ratelimiting can be enabled on GHES as well, but is off by default
       // we can probably load it from an api call and see if it is enabled, or try .. catch

@@ -32493,7 +32493,11 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
     const searchResult = yield client.paginate(client.rest.search.code, {
       q: searchQuery
     });
-    if (searchResult) {
+    if (!searchResult) {
+      var searchType = username ? "user" : "organization";
+      var searchValue = username ? username : organization;
+      core2.info(`No actions found in the ${searchType} [${searchValue}]`);
+    } else {
       for (let index = 0; index < searchResult.length; index++) {
         if (!isEnterpriseServer) {
           var ratelimit = yield client.rest.rateLimit.get();
