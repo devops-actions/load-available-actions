@@ -22,7 +22,7 @@ Repo permissions needed for the access token:
 - Contents: Read
 
 ## Outputs
-Actions: path to the file containing a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
+- actions-file-path: path to the file containing a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
 ``` 
 {
     "lastUpdated": "20210818_1534",
