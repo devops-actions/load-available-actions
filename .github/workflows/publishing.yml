@@ -15,22 +15,17 @@ jobs:
       - uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
       - uses: ./
-        name: Load used actions
+        name: Load used actions as a test
         with: 
           PAT: ${{ secrets.PAT }}
           user: rajbos
         id: load-actions
-
-      - uses: devops-actions/json-to-file@b66686a25ff9da09a2731ec0a5d9a82980b89c28 # v1.0.2
-        with: 
-          json: ${{ steps.load-actions.outputs.actions }}
-          filename: actions.json
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with: 
           name: actions
-          path: actions.json
+          path: ${{ steps.load-actions.outputs.actions-file-path }}
     
   publish:
     needs: test-local-action
