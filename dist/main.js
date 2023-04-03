@@ -2921,8 +2921,8 @@ var require_tr46 = __commonJS({
       return null;
     }
     var regexAstralSymbols = /[\uD800-\uDBFF][\uDC00-\uDFFF]/g;
-    function countSymbols(string) {
-      return string.replace(regexAstralSymbols, "_").length;
+    function countSymbols(string2) {
+      return string2.replace(regexAstralSymbols, "_").length;
     }
     function mapChars(domain_name, useSTD3, processing_option) {
       var hasError = false;
@@ -3096,17 +3096,17 @@ var require_url_state_machine = __commonJS({
     function isWindowsDriveLetterCodePoints(cp1, cp2) {
       return isASCIIAlpha(cp1) && (cp2 === 58 || cp2 === 124);
     }
-    function isWindowsDriveLetterString(string) {
-      return string.length === 2 && isASCIIAlpha(string.codePointAt(0)) && (string[1] === ":" || string[1] === "|");
+    function isWindowsDriveLetterString(string2) {
+      return string2.length === 2 && isASCIIAlpha(string2.codePointAt(0)) && (string2[1] === ":" || string2[1] === "|");
     }
-    function isNormalizedWindowsDriveLetterString(string) {
-      return string.length === 2 && isASCIIAlpha(string.codePointAt(0)) && string[1] === ":";
+    function isNormalizedWindowsDriveLetterString(string2) {
+      return string2.length === 2 && isASCIIAlpha(string2.codePointAt(0)) && string2[1] === ":";
     }
-    function containsForbiddenHostCodePoint(string) {
-      return string.search(/\u0000|\u0009|\u000A|\u000D|\u0020|#|%|\/|:|\?|@|\[|\\|\]/) !== -1;
+    function containsForbiddenHostCodePoint(string2) {
+      return string2.search(/\u0000|\u0009|\u000A|\u000D|\u0020|#|%|\/|:|\?|@|\[|\\|\]/) !== -1;
     }
-    function containsForbiddenHostCodePointExcludingPercent(string) {
-      return string.search(/\u0000|\u0009|\u000A|\u000D|\u0020|#|\/|:|\?|@|\[|\\|\]/) !== -1;
+    function containsForbiddenHostCodePointExcludingPercent(string2) {
+      return string2.search(/\u0000|\u0009|\u000A|\u000D|\u0020|#|\/|:|\?|@|\[|\\|\]/) !== -1;
     }
     function isSpecialScheme(scheme) {
       return specialSchemes[scheme] !== void 0;
@@ -3456,8 +3456,8 @@ var require_url_state_machine = __commonJS({
     function cannotHaveAUsernamePasswordPort(url) {
       return url.host === null || url.host === "" || url.cannotBeABaseURL || url.scheme === "file";
     }
-    function isNormalizedWindowsDriveLetter(string) {
-      return /^[A-Za-z]:$/.test(string);
+    function isNormalizedWindowsDriveLetter(string2) {
+      return /^[A-Za-z]:$/.test(string2);
     }
     function URLStateMachine(input, base, encodingOverride, url, stateOverride) {
       this.pointer = 0;
@@ -4039,8 +4039,8 @@ var require_url_state_machine = __commonJS({
       if (url.cannotBeABaseURL) {
         output += url.path[0];
       } else {
-        for (const string of url.path) {
-          output += "/" + string;
+        for (const string2 of url.path) {
+          output += "/" + string2;
         }
       }
       if (url.query !== null) {
@@ -10364,8 +10364,8 @@ var require_sign_stream = __commonJS({
     var Stream = require("stream");
     var toString = require_tostring();
     var util = require("util");
-    function base64url(string, encoding) {
-      return Buffer2.from(string, encoding).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+    function base64url(string2, encoding) {
+      return Buffer2.from(string2, encoding).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
     }
     function jwsSecuredInput(header, payload, encoding) {
       encoding = encoding || "utf8";
@@ -10462,8 +10462,8 @@ var require_verify_stream = __commonJS({
       var payload = jwsSig.split(".")[1];
       return Buffer2.from(payload, "base64").toString(encoding);
     }
-    function isValidJws(string) {
-      return JWS_REGEX.test(string) && !!headerFromJWS(string);
+    function isValidJws(string2) {
+      return JWS_REGEX.test(string2) && !!headerFromJWS(string2);
     }
     function jwsVerify(jwsSig, algorithm, secretOrKey) {
       if (!algorithm) {
@@ -13854,11 +13854,11 @@ var require_lodash = __commonJS({
         return false;
       }
       var asciiSize = baseProperty("length");
-      function asciiToArray(string) {
-        return string.split("");
+      function asciiToArray(string2) {
+        return string2.split("");
       }
-      function asciiWords(string) {
-        return string.match(reAsciiWord) || [];
+      function asciiWords(string2) {
+        return string2.match(reAsciiWord) || [];
       }
       function baseFindKey(collection, predicate, eachFunc) {
         var result;
@@ -13944,8 +13944,8 @@ var require_lodash = __commonJS({
           return [key, object[key]];
         });
       }
-      function baseTrim(string) {
-        return string ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, "") : string;
+      function baseTrim(string2) {
+        return string2 ? string2.slice(0, trimmedEndIndex(string2) + 1).replace(reTrimStart, "") : string2;
       }
       function baseUnary(func) {
         return function(value) {
@@ -13989,11 +13989,11 @@ var require_lodash = __commonJS({
       function getValue(object, key) {
         return object == null ? undefined2 : object[key];
       }
-      function hasUnicode(string) {
-        return reHasUnicode.test(string);
+      function hasUnicode(string2) {
+        return reHasUnicode.test(string2);
       }
-      function hasUnicodeWord(string) {
-        return reHasUnicodeWord.test(string);
+      function hasUnicodeWord(string2) {
+        return reHasUnicodeWord.test(string2);
       }
       function iteratorToArray(iterator) {
         var data, result = [];
@@ -14057,31 +14057,31 @@ var require_lodash = __commonJS({
         }
         return index;
       }
-      function stringSize(string) {
-        return hasUnicode(string) ? unicodeSize(string) : asciiSize(string);
+      function stringSize(string2) {
+        return hasUnicode(string2) ? unicodeSize(string2) : asciiSize(string2);
       }
-      function stringToArray(string) {
-        return hasUnicode(string) ? unicodeToArray(string) : asciiToArray(string);
+      function stringToArray(string2) {
+        return hasUnicode(string2) ? unicodeToArray(string2) : asciiToArray(string2);
       }
-      function trimmedEndIndex(string) {
-        var index = string.length;
-        while (index-- && reWhitespace.test(string.charAt(index))) {
+      function trimmedEndIndex(string2) {
+        var index = string2.length;
+        while (index-- && reWhitespace.test(string2.charAt(index))) {
         }
         return index;
       }
       var unescapeHtmlChar = basePropertyOf(htmlUnescapes);
-      function unicodeSize(string) {
+      function unicodeSize(string2) {
         var result = reUnicode.lastIndex = 0;
-        while (reUnicode.test(string)) {
+        while (reUnicode.test(string2)) {
           ++result;
         }
         return result;
       }
-      function unicodeToArray(string) {
-        return string.match(reUnicode) || [];
+      function unicodeToArray(string2) {
+        return string2.match(reUnicode) || [];
       }
-      function unicodeWords(string) {
-        return string.match(reUnicodeWord) || [];
+      function unicodeWords(string2) {
+        return string2.match(reUnicodeWord) || [];
       }
       var runInContext = function runInContext2(context) {
         context = context == null ? root : _.defaults(root.Object(), context, _.pick(root, contextProps));
@@ -15118,18 +15118,18 @@ var require_lodash = __commonJS({
           }
           return result2;
         }
-        function baseRepeat(string, n) {
+        function baseRepeat(string2, n) {
           var result2 = "";
-          if (!string || n < 1 || n > MAX_SAFE_INTEGER) {
+          if (!string2 || n < 1 || n > MAX_SAFE_INTEGER) {
             return result2;
           }
           do {
             if (n % 2) {
-              result2 += string;
+              result2 += string2;
             }
             n = nativeFloor(n / 2);
             if (n) {
-              string += string;
+              string2 += string2;
             }
           } while (n);
           return result2;
@@ -15171,11 +15171,11 @@ var require_lodash = __commonJS({
           metaMap.set(func, data);
           return func;
         };
-        var baseSetToString = !defineProperty ? identity : function(func, string) {
+        var baseSetToString = !defineProperty ? identity : function(func, string2) {
           return defineProperty(func, "toString", {
             "configurable": true,
             "enumerable": false,
-            "value": constant(string),
+            "value": constant(string2),
             "writable": true
           });
         };
@@ -15574,17 +15574,17 @@ var require_lodash = __commonJS({
           return wrapper;
         }
         function createCaseFirst(methodName) {
-          return function(string) {
-            string = toString(string);
-            var strSymbols = hasUnicode(string) ? stringToArray(string) : undefined2;
-            var chr = strSymbols ? strSymbols[0] : string.charAt(0);
-            var trailing = strSymbols ? castSlice(strSymbols, 1).join("") : string.slice(1);
+          return function(string2) {
+            string2 = toString(string2);
+            var strSymbols = hasUnicode(string2) ? stringToArray(string2) : undefined2;
+            var chr = strSymbols ? strSymbols[0] : string2.charAt(0);
+            var trailing = strSymbols ? castSlice(strSymbols, 1).join("") : string2.slice(1);
             return chr[methodName]() + trailing;
           };
         }
         function createCompounder(callback) {
-          return function(string) {
-            return arrayReduce(words(deburr(string).replace(reApos, "")), callback, "");
+          return function(string2) {
+            return arrayReduce(words(deburr(string2).replace(reApos, "")), callback, "");
           };
         }
         function createCtor(Ctor) {
@@ -16475,12 +16475,12 @@ var require_lodash = __commonJS({
           array.length = size2;
           return array;
         }
-        var stringToPath = memoizeCapped(function(string) {
+        var stringToPath = memoizeCapped(function(string2) {
           var result2 = [];
-          if (string.charCodeAt(0) === 46) {
+          if (string2.charCodeAt(0) === 46) {
             result2.push("");
           }
-          string.replace(rePropName, function(match, number, quote, subString) {
+          string2.replace(rePropName, function(match, number, quote, subString) {
             result2.push(quote ? subString.replace(reEscapeChar, "$1") : number || match);
           });
           return result2;
@@ -17931,29 +17931,29 @@ var require_lodash = __commonJS({
           word = word.toLowerCase();
           return result2 + (index ? capitalize(word) : word);
         });
-        function capitalize(string) {
-          return upperFirst(toString(string).toLowerCase());
+        function capitalize(string2) {
+          return upperFirst(toString(string2).toLowerCase());
         }
-        function deburr(string) {
-          string = toString(string);
-          return string && string.replace(reLatin, deburrLetter).replace(reComboMark, "");
+        function deburr(string2) {
+          string2 = toString(string2);
+          return string2 && string2.replace(reLatin, deburrLetter).replace(reComboMark, "");
         }
-        function endsWith(string, target, position) {
-          string = toString(string);
+        function endsWith(string2, target, position) {
+          string2 = toString(string2);
           target = baseToString(target);
-          var length = string.length;
+          var length = string2.length;
           position = position === undefined2 ? length : baseClamp(toInteger(position), 0, length);
           var end = position;
           position -= target.length;
-          return position >= 0 && string.slice(position, end) == target;
+          return position >= 0 && string2.slice(position, end) == target;
         }
-        function escape(string) {
-          string = toString(string);
-          return string && reHasUnescapedHtml.test(string) ? string.replace(reUnescapedHtml, escapeHtmlChar) : string;
+        function escape(string2) {
+          string2 = toString(string2);
+          return string2 && reHasUnescapedHtml.test(string2) ? string2.replace(reUnescapedHtml, escapeHtmlChar) : string2;
         }
-        function escapeRegExp(string) {
-          string = toString(string);
-          return string && reHasRegExpChar.test(string) ? string.replace(reRegExpChar, "\\$&") : string;
+        function escapeRegExp(string2) {
+          string2 = toString(string2);
+          return string2 && reHasRegExpChar.test(string2) ? string2.replace(reRegExpChar, "\\$&") : string2;
         }
         var kebabCase = createCompounder(function(result2, word, index) {
           return result2 + (index ? "-" : "") + word.toLowerCase();
@@ -17962,83 +17962,83 @@ var require_lodash = __commonJS({
           return result2 + (index ? " " : "") + word.toLowerCase();
         });
         var lowerFirst = createCaseFirst("toLowerCase");
-        function pad(string, length, chars) {
-          string = toString(string);
+        function pad(string2, length, chars) {
+          string2 = toString(string2);
           length = toInteger(length);
-          var strLength = length ? stringSize(string) : 0;
+          var strLength = length ? stringSize(string2) : 0;
           if (!length || strLength >= length) {
-            return string;
+            return string2;
           }
           var mid = (length - strLength) / 2;
-          return createPadding(nativeFloor(mid), chars) + string + createPadding(nativeCeil(mid), chars);
+          return createPadding(nativeFloor(mid), chars) + string2 + createPadding(nativeCeil(mid), chars);
         }
-        function padEnd(string, length, chars) {
-          string = toString(string);
+        function padEnd(string2, length, chars) {
+          string2 = toString(string2);
           length = toInteger(length);
-          var strLength = length ? stringSize(string) : 0;
-          return length && strLength < length ? string + createPadding(length - strLength, chars) : string;
+          var strLength = length ? stringSize(string2) : 0;
+          return length && strLength < length ? string2 + createPadding(length - strLength, chars) : string2;
         }
-        function padStart(string, length, chars) {
-          string = toString(string);
+        function padStart(string2, length, chars) {
+          string2 = toString(string2);
           length = toInteger(length);
-          var strLength = length ? stringSize(string) : 0;
-          return length && strLength < length ? createPadding(length - strLength, chars) + string : string;
+          var strLength = length ? stringSize(string2) : 0;
+          return length && strLength < length ? createPadding(length - strLength, chars) + string2 : string2;
         }
-        function parseInt2(string, radix, guard) {
+        function parseInt2(string2, radix, guard) {
           if (guard || radix == null) {
             radix = 0;
           } else if (radix) {
             radix = +radix;
           }
-          return nativeParseInt(toString(string).replace(reTrimStart, ""), radix || 0);
+          return nativeParseInt(toString(string2).replace(reTrimStart, ""), radix || 0);
         }
-        function repeat(string, n, guard) {
-          if (guard ? isIterateeCall(string, n, guard) : n === undefined2) {
+        function repeat(string2, n, guard) {
+          if (guard ? isIterateeCall(string2, n, guard) : n === undefined2) {
             n = 1;
           } else {
             n = toInteger(n);
           }
-          return baseRepeat(toString(string), n);
+          return baseRepeat(toString(string2), n);
         }
         function replace() {
-          var args = arguments, string = toString(args[0]);
-          return args.length < 3 ? string : string.replace(args[1], args[2]);
+          var args = arguments, string2 = toString(args[0]);
+          return args.length < 3 ? string2 : string2.replace(args[1], args[2]);
         }
         var snakeCase = createCompounder(function(result2, word, index) {
           return result2 + (index ? "_" : "") + word.toLowerCase();
         });
-        function split(string, separator, limit) {
-          if (limit && typeof limit != "number" && isIterateeCall(string, separator, limit)) {
+        function split(string2, separator, limit) {
+          if (limit && typeof limit != "number" && isIterateeCall(string2, separator, limit)) {
             separator = limit = undefined2;
           }
           limit = limit === undefined2 ? MAX_ARRAY_LENGTH : limit >>> 0;
           if (!limit) {
             return [];
           }
-          string = toString(string);
-          if (string && (typeof separator == "string" || separator != null && !isRegExp(separator))) {
+          string2 = toString(string2);
+          if (string2 && (typeof separator == "string" || separator != null && !isRegExp(separator))) {
             separator = baseToString(separator);
-            if (!separator && hasUnicode(string)) {
-              return castSlice(stringToArray(string), 0, limit);
+            if (!separator && hasUnicode(string2)) {
+              return castSlice(stringToArray(string2), 0, limit);
             }
           }
-          return string.split(separator, limit);
+          return string2.split(separator, limit);
         }
         var startCase = createCompounder(function(result2, word, index) {
           return result2 + (index ? " " : "") + upperFirst(word);
         });
-        function startsWith(string, target, position) {
-          string = toString(string);
-          position = position == null ? 0 : baseClamp(toInteger(position), 0, string.length);
+        function startsWith(string2, target, position) {
+          string2 = toString(string2);
+          position = position == null ? 0 : baseClamp(toInteger(position), 0, string2.length);
           target = baseToString(target);
-          return string.slice(position, position + target.length) == target;
+          return string2.slice(position, position + target.length) == target;
         }
-        function template(string, options, guard) {
+        function template(string2, options, guard) {
           var settings = lodash.templateSettings;
-          if (guard && isIterateeCall(string, options, guard)) {
+          if (guard && isIterateeCall(string2, options, guard)) {
             options = undefined2;
           }
-          string = toString(string);
+          string2 = toString(string2);
           options = assignInWith({}, options, settings, customDefaultsAssignIn);
           var imports = assignInWith({}, options.imports, settings.imports, customDefaultsAssignIn), importsKeys = keys(imports), importsValues = baseValues(imports, importsKeys);
           var isEscaping, isEvaluating, index = 0, interpolate = options.interpolate || reNoMatch, source = "__p += '";
@@ -18047,9 +18047,9 @@ var require_lodash = __commonJS({
             "g"
           );
           var sourceURL = "//# sourceURL=" + (hasOwnProperty.call(options, "sourceURL") ? (options.sourceURL + "").replace(/\s/g, " ") : "lodash.templateSources[" + ++templateCounter + "]") + "\n";
-          string.replace(reDelimiters, function(match, escapeValue, interpolateValue, esTemplateValue, evaluateValue, offset) {
+          string2.replace(reDelimiters, function(match, escapeValue, interpolateValue, esTemplateValue, evaluateValue, offset) {
             interpolateValue || (interpolateValue = esTemplateValue);
-            source += string.slice(index, offset).replace(reUnescapedString, escapeStringChar);
+            source += string2.slice(index, offset).replace(reUnescapedString, escapeStringChar);
             if (escapeValue) {
               isEscaping = true;
               source += "' +\n__e(" + escapeValue + ") +\n'";
@@ -18088,60 +18088,60 @@ var require_lodash = __commonJS({
         function toUpper(value) {
           return toString(value).toUpperCase();
         }
-        function trim(string, chars, guard) {
-          string = toString(string);
-          if (string && (guard || chars === undefined2)) {
-            return baseTrim(string);
+        function trim(string2, chars, guard) {
+          string2 = toString(string2);
+          if (string2 && (guard || chars === undefined2)) {
+            return baseTrim(string2);
           }
-          if (!string || !(chars = baseToString(chars))) {
-            return string;
+          if (!string2 || !(chars = baseToString(chars))) {
+            return string2;
           }
-          var strSymbols = stringToArray(string), chrSymbols = stringToArray(chars), start = charsStartIndex(strSymbols, chrSymbols), end = charsEndIndex(strSymbols, chrSymbols) + 1;
+          var strSymbols = stringToArray(string2), chrSymbols = stringToArray(chars), start = charsStartIndex(strSymbols, chrSymbols), end = charsEndIndex(strSymbols, chrSymbols) + 1;
           return castSlice(strSymbols, start, end).join("");
         }
-        function trimEnd(string, chars, guard) {
-          string = toString(string);
-          if (string && (guard || chars === undefined2)) {
-            return string.slice(0, trimmedEndIndex(string) + 1);
+        function trimEnd(string2, chars, guard) {
+          string2 = toString(string2);
+          if (string2 && (guard || chars === undefined2)) {
+            return string2.slice(0, trimmedEndIndex(string2) + 1);
           }
-          if (!string || !(chars = baseToString(chars))) {
-            return string;
+          if (!string2 || !(chars = baseToString(chars))) {
+            return string2;
           }
-          var strSymbols = stringToArray(string), end = charsEndIndex(strSymbols, stringToArray(chars)) + 1;
+          var strSymbols = stringToArray(string2), end = charsEndIndex(strSymbols, stringToArray(chars)) + 1;
           return castSlice(strSymbols, 0, end).join("");
         }
-        function trimStart(string, chars, guard) {
-          string = toString(string);
-          if (string && (guard || chars === undefined2)) {
-            return string.replace(reTrimStart, "");
+        function trimStart(string2, chars, guard) {
+          string2 = toString(string2);
+          if (string2 && (guard || chars === undefined2)) {
+            return string2.replace(reTrimStart, "");
           }
-          if (!string || !(chars = baseToString(chars))) {
-            return string;
+          if (!string2 || !(chars = baseToString(chars))) {
+            return string2;
           }
-          var strSymbols = stringToArray(string), start = charsStartIndex(strSymbols, stringToArray(chars));
+          var strSymbols = stringToArray(string2), start = charsStartIndex(strSymbols, stringToArray(chars));
           return castSlice(strSymbols, start).join("");
         }
-        function truncate(string, options) {
+        function truncate(string2, options) {
           var length = DEFAULT_TRUNC_LENGTH, omission = DEFAULT_TRUNC_OMISSION;
           if (isObject(options)) {
             var separator = "separator" in options ? options.separator : separator;
             length = "length" in options ? toInteger(options.length) : length;
             omission = "omission" in options ? baseToString(options.omission) : omission;
           }
-          string = toString(string);
-          var strLength = string.length;
-          if (hasUnicode(string)) {
-            var strSymbols = stringToArray(string);
+          string2 = toString(string2);
+          var strLength = string2.length;
+          if (hasUnicode(string2)) {
+            var strSymbols = stringToArray(string2);
             strLength = strSymbols.length;
           }
           if (length >= strLength) {
-            return string;
+            return string2;
           }
           var end = length - stringSize(omission);
           if (end < 1) {
             return omission;
           }
-          var result2 = strSymbols ? castSlice(strSymbols, 0, end).join("") : string.slice(0, end);
+          var result2 = strSymbols ? castSlice(strSymbols, 0, end).join("") : string2.slice(0, end);
           if (separator === undefined2) {
             return result2 + omission;
           }
@@ -18149,7 +18149,7 @@ var require_lodash = __commonJS({
             end += result2.length - end;
           }
           if (isRegExp(separator)) {
-            if (string.slice(end).search(separator)) {
+            if (string2.slice(end).search(separator)) {
               var match, substring = result2;
               if (!separator.global) {
                 separator = RegExp2(separator.source, toString(reFlags.exec(separator)) + "g");
@@ -18160,7 +18160,7 @@ var require_lodash = __commonJS({
               }
               result2 = result2.slice(0, newEnd === undefined2 ? end : newEnd);
             }
-          } else if (string.indexOf(baseToString(separator), end) != end) {
+          } else if (string2.indexOf(baseToString(separator), end) != end) {
             var index = result2.lastIndexOf(separator);
             if (index > -1) {
               result2 = result2.slice(0, index);
@@ -18168,21 +18168,21 @@ var require_lodash = __commonJS({
           }
           return result2 + omission;
         }
-        function unescape2(string) {
-          string = toString(string);
-          return string && reHasEscapedHtml.test(string) ? string.replace(reEscapedHtml, unescapeHtmlChar) : string;
+        function unescape2(string2) {
+          string2 = toString(string2);
+          return string2 && reHasEscapedHtml.test(string2) ? string2.replace(reEscapedHtml, unescapeHtmlChar) : string2;
         }
         var upperCase = createCompounder(function(result2, word, index) {
           return result2 + (index ? " " : "") + word.toUpperCase();
         });
         var upperFirst = createCaseFirst("toUpperCase");
-        function words(string, pattern, guard) {
-          string = toString(string);
+        function words(string2, pattern, guard) {
+          string2 = toString(string2);
           pattern = guard ? undefined2 : pattern;
           if (pattern === undefined2) {
-            return hasUnicodeWord(string) ? unicodeWords(string) : asciiWords(string);
+            return hasUnicodeWord(string2) ? unicodeWords(string2) : asciiWords(string2);
           }
-          return string.match(pattern) || [];
+          return string2.match(pattern) || [];
         }
         var attempt = baseRest(function(func, args) {
           try {
@@ -19208,11 +19208,11 @@ var require_dist_node19 = __commonJS({
         return;
       }
       const [token, createdAt, expiresAt, repositorySelection, permissionsString, singleFileName] = result.split("|");
-      const permissions = options.permissions || permissionsString.split(/,/).reduce((permissions2, string) => {
-        if (/!$/.test(string)) {
-          permissions2[string.slice(0, -1)] = "write";
+      const permissions = options.permissions || permissionsString.split(/,/).reduce((permissions2, string2) => {
+        if (/!$/.test(string2)) {
+          permissions2[string2.slice(0, -1)] = "write";
         } else {
-          permissions2[string] = "read";
+          permissions2[string2] = "read";
         }
         return permissions2;
       }, {});
@@ -20409,15 +20409,15 @@ var require_dist_node21 = __commonJS({
 var require_indent_string = __commonJS({
   "node_modules/indent-string/index.js"(exports, module2) {
     "use strict";
-    module2.exports = (string, count = 1, options) => {
+    module2.exports = (string2, count = 1, options) => {
       options = {
         indent: " ",
         includeEmptyLines: false,
         ...options
       };
-      if (typeof string !== "string") {
+      if (typeof string2 !== "string") {
         throw new TypeError(
-          `Expected \`input\` to be a \`string\`, got \`${typeof string}\``
+          `Expected \`input\` to be a \`string\`, got \`${typeof string2}\``
         );
       }
       if (typeof count !== "number") {
@@ -20431,10 +20431,10 @@ var require_indent_string = __commonJS({
         );
       }
       if (count === 0) {
-        return string;
+        return string2;
       }
       const regex = options.includeEmptyLines ? /^/gm : /^(?!\s*$)/gm;
-      return string.replace(regex, options.indent.repeat(count));
+      return string2.replace(regex, options.indent.repeat(count));
     };
   }
 });
@@ -23317,7 +23317,7 @@ var require_string = __commonJS({
   "node_modules/yaml/dist/schema/common/string.js"(exports) {
     "use strict";
     var stringifyString = require_stringifyString();
-    var string = {
+    var string2 = {
       identify: (value) => typeof value === "string",
       default: true,
       tag: "tag:yaml.org,2002:str",
@@ -23327,7 +23327,7 @@ var require_string = __commonJS({
         return stringifyString.stringifyString(item, ctx, onComment, onChompKeep);
       }
     };
-    exports.string = string;
+    exports.string = string2;
   }
 });
 
@@ -23498,14 +23498,14 @@ var require_schema = __commonJS({
     var map = require_map();
     var _null = require_null();
     var seq = require_seq();
-    var string = require_string();
+    var string2 = require_string();
     var bool = require_bool();
     var float = require_float();
     var int = require_int();
     var schema = [
       map.map,
       seq.seq,
-      string.string,
+      string2.string,
       _null.nullTag,
       bool.boolTag,
       int.intOct,
@@ -24146,7 +24146,7 @@ var require_schema3 = __commonJS({
     var map = require_map();
     var _null = require_null();
     var seq = require_seq();
-    var string = require_string();
+    var string2 = require_string();
     var binary = require_binary();
     var bool = require_bool2();
     var float = require_float2();
@@ -24158,7 +24158,7 @@ var require_schema3 = __commonJS({
     var schema = [
       map.map,
       seq.seq,
-      string.string,
+      string2.string,
       _null.nullTag,
       bool.trueTag,
       bool.falseTag,
@@ -24188,7 +24188,7 @@ var require_tags = __commonJS({
     var map = require_map();
     var _null = require_null();
     var seq = require_seq();
-    var string = require_string();
+    var string2 = require_string();
     var bool = require_bool();
     var float = require_float();
     var int = require_int();
@@ -24202,7 +24202,7 @@ var require_tags = __commonJS({
     var timestamp = require_timestamp();
     var schemas = /* @__PURE__ */ new Map([
       ["core", schema.schema],
-      ["failsafe", [map.map, seq.seq, string.string]],
+      ["failsafe", [map.map, seq.seq, string2.string]],
       ["json", schema$1.schema],
       ["yaml11", schema$2.schema],
       ["yaml-1.1", schema$2.schema]
@@ -24271,7 +24271,7 @@ var require_Schema = __commonJS({
     var Node = require_Node();
     var map = require_map();
     var seq = require_seq();
-    var string = require_string();
+    var string2 = require_string();
     var tags = require_tags();
     var sortMapEntriesByKey = (a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
     var Schema = class {
@@ -24283,7 +24283,7 @@ var require_Schema = __commonJS({
         this.tags = tags.getTags(customTags, this.name);
         this.toStringOptions = toStringDefaults ?? null;
         Object.defineProperty(this, Node.MAP, { value: map.map });
-        Object.defineProperty(this, Node.SCALAR, { value: string.string });
+        Object.defineProperty(this, Node.SCALAR, { value: string2.string });
         Object.defineProperty(this, Node.SEQ, { value: seq.seq });
         this.sortMapEntries = typeof sortMapEntries === "function" ? sortMapEntries : sortMapEntries === true ? sortMapEntriesByKey : null;
       }
@@ -28708,9 +28708,9 @@ var require_moment = __commonJS({
         y: "a year",
         yy: "%d years"
       };
-      function relativeTime(number, withoutSuffix, string, isFuture) {
-        var output = this._relativeTime[string];
-        return isFunction(output) ? output(number, withoutSuffix, string, isFuture) : output.replace(/%d/i, number);
+      function relativeTime(number, withoutSuffix, string2, isFuture) {
+        var output = this._relativeTime[string2];
+        return isFunction(output) ? output(number, withoutSuffix, string2, isFuture) : output.replace(/%d/i, number);
       }
       function pastFuture(diff2, output) {
         var format2 = this._relativeTime[diff2 > 0 ? "future" : "past"];
@@ -29894,7 +29894,7 @@ var require_moment = __commonJS({
         PST: -8 * 60
       };
       function configFromISO(config) {
-        var i, l, string = config._i, match = extendedIsoRegex.exec(string) || basicIsoRegex.exec(string), allowTime, dateFormat, timeFormat, tzFormat, isoDatesLen = isoDates.length, isoTimesLen = isoTimes.length;
+        var i, l, string2 = config._i, match = extendedIsoRegex.exec(string2) || basicIsoRegex.exec(string2), allowTime, dateFormat, timeFormat, tzFormat, isoDatesLen = isoDates.length, isoTimesLen = isoTimes.length;
         if (match) {
           getParsingFlags(config).iso = true;
           for (i = 0, l = isoDatesLen; i < l; i++) {
@@ -30165,19 +30165,19 @@ var require_moment = __commonJS({
         }
         config._a = [];
         getParsingFlags(config).empty = true;
-        var string = "" + config._i, i, parsedInput, tokens2, token2, skipped, stringLength = string.length, totalParsedInputLength = 0, era, tokenLen;
+        var string2 = "" + config._i, i, parsedInput, tokens2, token2, skipped, stringLength = string2.length, totalParsedInputLength = 0, era, tokenLen;
         tokens2 = expandFormat(config._f, config._locale).match(formattingTokens) || [];
         tokenLen = tokens2.length;
         for (i = 0; i < tokenLen; i++) {
           token2 = tokens2[i];
-          parsedInput = (string.match(getParseRegexForToken(token2, config)) || [])[0];
+          parsedInput = (string2.match(getParseRegexForToken(token2, config)) || [])[0];
           if (parsedInput) {
-            skipped = string.substr(0, string.indexOf(parsedInput));
+            skipped = string2.substr(0, string2.indexOf(parsedInput));
             if (skipped.length > 0) {
               getParsingFlags(config).unusedInput.push(skipped);
             }
-            string = string.slice(
-              string.indexOf(parsedInput) + parsedInput.length
+            string2 = string2.slice(
+              string2.indexOf(parsedInput) + parsedInput.length
             );
             totalParsedInputLength += parsedInput.length;
           }
@@ -30193,8 +30193,8 @@ var require_moment = __commonJS({
           }
         }
         getParsingFlags(config).charsLeftOver = stringLength - totalParsedInputLength;
-        if (string.length > 0) {
-          getParsingFlags(config).unusedInput.push(string);
+        if (string2.length > 0) {
+          getParsingFlags(config).unusedInput.push(string2);
         }
         if (config._a[HOUR] <= 12 && getParsingFlags(config).bigHour === true && config._a[HOUR] > 0) {
           getParsingFlags(config).bigHour = void 0;
@@ -30497,8 +30497,8 @@ var require_moment = __commonJS({
         config._tzm = offsetFromString(matchShortOffset, input);
       });
       var chunkOffset = /([\+\-]|\d\d)/gi;
-      function offsetFromString(matcher, string) {
-        var matches = (string || "").match(matcher), chunk, parts, minutes2;
+      function offsetFromString(matcher, string2) {
+        var matches = (string2 || "").match(matcher), chunk, parts, minutes2;
         if (matches === null) {
           return null;
         }
@@ -31736,8 +31736,8 @@ var require_moment = __commonJS({
       function createInZone() {
         return createLocal.apply(null, arguments).parseZone();
       }
-      function preParsePostFormat(string) {
-        return string;
+      function preParsePostFormat(string2) {
+        return string2;
       }
       var proto$1 = Locale.prototype;
       proto$1.calendar = calendar;
@@ -32011,8 +32011,8 @@ var require_moment = __commonJS({
         M: 11
         // months to year
       };
-      function substituteTimeAgo(string, number, withoutSuffix, isFuture, locale2) {
-        return locale2.relativeTime(number || 1, !!withoutSuffix, string, isFuture);
+      function substituteTimeAgo(string2, number, withoutSuffix, isFuture, locale2) {
+        return locale2.relativeTime(number || 1, !!withoutSuffix, string2, isFuture);
       }
       function relativeTime$1(posNegDuration, withoutSuffix, thresholds2, locale2) {
         var duration = createDuration(posNegDuration).abs(), seconds2 = round(duration.as("s")), minutes2 = round(duration.as("m")), hours2 = round(duration.as("h")), days2 = round(duration.as("d")), months2 = round(duration.as("M")), weeks2 = round(duration.as("w")), years2 = round(duration.as("y")), a = seconds2 <= thresholds2.ss && ["s", seconds2] || seconds2 < thresholds2.s && ["ss", seconds2] || minutes2 <= 1 && ["m"] || minutes2 < thresholds2.m && ["mm", minutes2] || hours2 <= 1 && ["h"] || hours2 < thresholds2.h && ["hh", hours2] || days2 <= 1 && ["d"] || days2 < thresholds2.d && ["dd", days2];
@@ -32349,6 +32349,113 @@ var require_main = __commonJS({
   }
 });
 
+// node_modules/string-sanitizer/index.js
+var require_string_sanitizer = __commonJS({
+  "node_modules/string-sanitizer/index.js"(exports) {
+    "use strict";
+    exports.sanitize = function(str) {
+      return str.replace(/[^a-zA-Z0-9]/g, "");
+    };
+    exports.sanitize.keepUnicode = function(str) {
+      return str.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, "");
+    };
+    exports.sanitize.keepSpace = function(str) {
+      var str2 = str.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, "");
+      return str2.replace(/ /g, " ");
+    };
+    exports.sanitize.addFullstop = function(str) {
+      var str2 = str.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, "");
+      return str2.replace(/ /g, ".");
+    };
+    exports.sanitize.addUnderscore = function(str) {
+      var str2 = str.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, "");
+      return str2.replace(/ /g, "_");
+    };
+    exports.sanitize.addDash = function(str) {
+      var str2 = str.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, "");
+      return str2.replace(/ /g, "-");
+    };
+    exports.sanitize.removeNumber = function(str) {
+      return str.replace(/[^a-zA-Z]/g, "");
+    };
+    exports.sanitize.removeText = function(str) {
+      return str.replace(/[^0-9]/g, "");
+    };
+    exports.sanitize.keepNumber = function(str) {
+      return str.replace(/[^a-zA-Z0-9]/g, "");
+    };
+    exports.addFullstop = function(str) {
+      return str.replace(/ /g, ".");
+    };
+    exports.addUnderscore = function(str) {
+      return str.replace(/ /g, "_");
+    };
+    exports.addDash = function(str) {
+      return str.replace(/ /g, "-");
+    };
+    exports.removeSpace = function(str) {
+      return str.replace(/\s+/g, "");
+    };
+    exports.removeUnderscore = function(str) {
+      return str.replace(/_+/g, "");
+    };
+    exports.validate = function(str) {
+      console.log(
+        `Use validate.isEmail or validate.isUsername for further validation`
+      );
+      return "Use validate.isEmail or validate.isUsername for further validation";
+    };
+    exports.validate.isEmail = function(str) {
+      const regex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+      if (regex.test(str)) {
+        return str;
+      } else {
+        return false;
+      }
+    };
+    exports.validate.isUsername = function(str) {
+      const regex = /^[a-z][a-z]+\d*$|^[a-z]\d{2,}$/i;
+      if (regex.test(str)) {
+        return str.toLowerCase();
+      } else {
+        return false;
+      }
+    };
+    exports.validate.isPassword6to15 = function(str) {
+      const regex = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{6,15}$/;
+      if (regex.test(str)) {
+        return str;
+      } else {
+        return false;
+      }
+    };
+    exports.validate.isPassword7to20 = function(str) {
+      const regex = /^[A-Za-z]\w{7,20}$/;
+      if (regex.test(str)) {
+        return str;
+      } else {
+        return false;
+      }
+    };
+    exports.validate.isPassword6to20 = function(str) {
+      const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{6,20}$/;
+      if (regex.test(str)) {
+        return str;
+      } else {
+        return false;
+      }
+    };
+    exports.validate.isPassword8to15 = function(str) {
+      const regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/;
+      if (regex.test(str)) {
+        return str;
+      } else {
+        return false;
+      }
+    };
+  }
+});
+
 // src/main.ts
 var main_exports = {};
 __export(main_exports, {
@@ -32369,6 +32476,7 @@ function GetDateFormatted(date) {
 var import_dotenv = __toESM(require_main());
 var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
+var import_string_sanitizer = __toESM(require_string_sanitizer());
 
 // src/optionalActions.ts
 var core = __toESM(require_core());
@@ -32460,9 +32568,9 @@ function enrichActionFiles(client, actionFiles) {
         try {
           const parsed = import_yaml.default.parse(content);
           const defaultValue = "Undefined";
-          action.name = parsed.name ? parsed.name.replace(/"/g, '\\"') : defaultValue;
-          action.author = parsed.author ? parsed.author.replace(/"/g, '\\"') : defaultValue;
-          action.description = parsed.description ? parsed.description.replace(/"/g, '\\"') : defaultValue;
+          action.name = parsed.name ? import_string_sanitizer.default.sanitize(parsed.name) : defaultValue;
+          action.author = parsed.author ? import_string_sanitizer.default.sanitize(parsed.author) : defaultValue;
+          action.description = parsed.description ? import_string_sanitizer.default.sanitize(parsed.description) : defaultValue;
         } catch (error) {
           console.log(
             `Error parsing action file in repo [${action.repo}] with error:`
