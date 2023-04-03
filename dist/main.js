@@ -32460,9 +32460,9 @@ function enrichActionFiles(client, actionFiles) {
         try {
           const parsed = import_yaml.default.parse(content);
           const defaultValue = "Undefined";
-          action.name = parsed.name ? parsed.name : defaultValue;
-          action.author = parsed.author ? parsed.author : defaultValue;
-          action.description = parsed.description ? parsed.description : defaultValue;
+          action.name = parsed.name ? parsed.name.replace(/"/g, '\\"') : defaultValue;
+          action.author = parsed.author ? parsed.author.replace(/"/g, '\\"') : defaultValue;
+          action.description = parsed.description ? parsed.description.replace(/"/g, '\\"') : defaultValue;
         } catch (error) {
           console.log(
             `Error parsing action file in repo [${action.repo}] with error:`

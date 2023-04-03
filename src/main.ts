@@ -115,11 +115,9 @@ async function enrichActionFiles(
       try {
         const parsed = YAML.parse(content)
         const defaultValue = 'Undefined' // Default value when json field is not defined
-        action.name = parsed.name ? parsed.name : defaultValue
-        action.author = parsed.author ? parsed.author : defaultValue
-        action.description = parsed.description
-          ? parsed.description
-          : defaultValue
+        action.name = parsed.name ? parsed.name.replace(/"/g, '\\"') : defaultValue
+        action.author = parsed.author ? parsed.author.replace(/"/g, '\\"') : defaultValue
+        action.description = parsed.description ? parsed.description.replace(/"/g, '\\"') : defaultValue
       } catch (error) {
         // this happens in https://github.com/gaurav-nelson/github-action-markdown-link-check/blob/9de9db77de3b29b650d2e2e99f0ee290f435214b/action.yml#L9
         // because of invalid yaml
@@ -224,6 +222,7 @@ async function getAllActions(
           path: element
         })
         if ('name' in yaml && 'download_url' in yaml) {
+          
           result.name = yaml.name
           result.repo = repoName
           result.forkedfrom = parentinfo
