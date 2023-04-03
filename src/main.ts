@@ -6,6 +6,7 @@ import fs from 'fs'
 import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
+import {execSync} from 'child_process'
 
 dotenv.config()
 
@@ -157,6 +158,89 @@ async function getAllActions (
   username: string,
   organization: string,
   isEnterpriseServer: boolean
+): Promise<Content[]> { 
+  let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer)
+  let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer)
+
+  actions = actions.concat(forkedActions)
+  return actions
+}
+
+async function getAllActionsFromForkedRepos(
+  client: Octokit,
+  username: string,
+  organization: string,
+  isEnterpriseServer: boolean
+): Promise<Content[]> {
+
+  const actions: Content[] = []
+  var searchQuery = '+repositories?q=fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
+  if (username) {
+    core.info(`Search for action files of the user [ ${username} ] in forked repos`)
+    searchQuery = searchQuery.concat('+user:', username)
+  }
+
+  if (organization !== '') {
+    core.info(`Search for action files under the organization [ ${organization} ] in forked repos`)
+    searchQuery = searchQuery.concat('+org:', organization)
+  }
+
+  core.debug(`searchQuery : ${searchQuery}`)
+  const searchResult = await client.paginate(client.rest.search.repos, {
+    q: searchQuery
+  })
+
+  if (!searchResult) {
+    var searchType = username ? 'user' : 'organization'
+    var searchValue = username ? username : organization
+    core.info(`No forked repos found in the ${searchType} [${searchValue}]`)
+    return actions
+  }
+
+  for (let index = 0; index < searchResult.length; index++) {
+    checkRateLimits(client, isEnterpriseServer)
+    // check if the repo contains action files in the root of the repo
+    const repo = searchResult[index]
+    var repoName = repo.name
+    var repoOwner = repo.owner ? repo.owner.login : ""
+
+    core.debug(`Checking repo [${repoName}] for action files`)
+    // clone the repo
+    const repoPath = cloneRepo(repoName, repoOwner)
+    // check with a shell command if the repo contains action files in the root of the repo
+    const actionFiles = execSync(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`)
+
+    // show the file we found
+    core.debug(`Found action files: ${actionFiles} in repo [${repoName}]`)
+  }
+
+  return actions
+}
+
+function cloneRepo (
+  repo: string, 
+  owner: string
+  ) : string {
+  
+  const repolink = `https://github.com/${owner}/${repo}.git` // todo: support GHES
+  // create a temp directory
+  const tempDir = fs.mkdtempSync('actions')
+  const repoPath = path.join(tempDir, repo)
+  core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
+  // clone the repo
+  execSync(`git clone ${repolink}`, {
+    stdio: [0, 1, 2], // we need this so node will print the command output
+    cwd: path.resolve(repoPath, ''), // path to where you want to save the file
+  })
+
+  return repoPath
+}
+
+async function getAllActionsUsingSearch (
+  client: Octokit,
+  username: string,
+  organization: string,
+  isEnterpriseServer: boolean
 ): Promise<Content[]> {
   const actions: Content[] = []
 
@@ -188,55 +272,76 @@ async function getAllActions (
   for (let index = 0; index < searchResult.length; index++) {
     checkRateLimits(client, isEnterpriseServer)
 
-    const result = new Content()
     var fileName = searchResult[index].name
-    var element = searchResult[index].path
+    var filePath = searchResult[index].path
     var repoName = searchResult[index].repository.name
     var repoOwner = searchResult[index].repository.owner.login
 
     // Push file to action list if filename matches action.yaml or action.yml
-    // Search result will contains list of files matching action files ex: reposyncer_action.yml
     if (fileName == 'action.yaml' || fileName == 'action.yml') {
-      core.info(`Found action in ${repoName}/${element}`)
-      // Get Forked from Info for the repo
-      const {data: repoinfo} = await client.rest.repos.get({
-        owner: repoOwner,
-        repo: repoName
-      })
-      let parentinfo = ''
-      if (repoinfo.parent?.full_name) {
-        parentinfo = repoinfo.parent.full_name
-      }
+      core.info(`Found action in ${repoName}/${filePath}`)
 
-      // Get File content
-      const {data: yaml} = await client.rest.repos.getContent({
-        owner: repoOwner,
-        repo: repoName,
-        path: element
-      })
-      if ('name' in yaml && 'download_url' in yaml) {
-        
-        result.name = yaml.name
-        result.repo = repoName
-        result.forkedfrom = parentinfo
-        if (yaml.download_url !== null) {
-          result.downloadUrl = removeTokenSetting
-            ? yaml.download_url.replace(/\?(.*)/, '')
-            : yaml.download_url
-        }
+      // Get "Forked from" info for the repo
+      let parentInfo = ''  
+      if (searchResult[index].repository.fork) {
+        parentInfo = await getForkParent(client, repoOwner, repoName)
       }
-
-      if (fetchReadmesSetting && yaml) {
-        const readmeLink = await getReadmeContent(client, repoName, repoOwner)
-        if (readmeLink) {
-          result.readme = readmeLink
-        }
-      }
-
+      
+      const result = await getActionInfo(client, repoOwner, repoName, filePath, parentInfo)
       actions.push(result)
     }
   }
   return actions
+}
+
+async function getForkParent(client: Octokit, owner: string, repo: string) : Promise<string> {
+  const {data: repoInfo} = await client.rest.repos.get({
+    owner: owner,
+    repo: repo
+  })
+
+  let parentInfo = ''
+  if (repoInfo.parent?.full_name) {
+    parentInfo = repoInfo.parent.full_name
+  }
+
+  return parentInfo
+}
+
+async function getActionInfo(
+  client: Octokit,
+  owner: string,
+  repo: string,
+  path: string,
+  forkedFrom: string
+) : Promise<Content> {
+  // Get File content
+  const {data: yaml} = await client.rest.repos.getContent({
+    owner,
+    repo,
+    path
+  })
+
+  const result = new Content()
+  if ('name' in yaml && 'download_url' in yaml) {  
+    result.name = yaml.name
+    result.repo = repo
+    result.forkedfrom = forkedFrom
+    if (yaml.download_url !== null) {
+      result.downloadUrl = removeTokenSetting
+        ? yaml.download_url.replace(/\?(.*)/, '')
+        : yaml.download_url
+    }
+  }
+
+  if (fetchReadmesSetting && yaml) {
+    const readmeLink = await getReadmeContent(client, repo, owner)
+    if (readmeLink) {
+      result.readme = readmeLink
+    }
+  }
+
+  return result
 }
 
 run()
