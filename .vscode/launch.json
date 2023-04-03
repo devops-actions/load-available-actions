@@ -12,11 +12,16 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}\\lib\\main.js",
+            "env": {
+                "NODE_ENV": "development",
+                "INPUT_ORGANIZATION": "rajbos-actions-demo",
+                "INPUT_GITHUB-TOKEN": "${evn:GH_TOKEN}}"
+            },
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],
             "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "tsc: build - tsconfig.json"
+            "preLaunchTask": "npm run esbuild"
         }
     ]
 }
