@@ -1,12 +1,11 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
-import YAML from 'yaml'
 import GetDateFormatted from './utils'
 import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
-
 import {getReadmeContent} from './optionalActions'
+import {parseYAML} from './utils'
 
 dotenv.config()
 
@@ -111,26 +110,11 @@ async function enrichActionFiles(
     if (action.downloadUrl) {
       const {data: content} = await client.request({url: action.downloadUrl})
 
-      // try to parse the yaml
-      try {
-        const parsed = YAML.parse(content)
-        const defaultValue = 'Undefined' // Default value when json field is not defined
-        action.name = parsed.name ? parsed.name : defaultValue
-        action.author = parsed.author ? parsed.author : defaultValue
-        action.description = parsed.description
-          ? parsed.description
-          : defaultValue
-      } catch (error) {
-        // this happens in https://github.com/gaurav-nelson/github-action-markdown-link-check/blob/9de9db77de3b29b650d2e2e99f0ee290f435214b/action.yml#L9
-        // because of invalid yaml
-        console.log(
-          `Error parsing action file in repo [${action.repo}] with error:`
-        )
-        console.log(error)
-        console.log(
-          `The parsing error is informational, seaching for actions has continued`
-        )
-      }
+      // try to parse the yaml      
+      const {name, author, description} = parseYAML(action.repo, content)
+      action.name = name
+      action.author = author
+      action.description = description
     }
   }
   return actionFiles
@@ -224,6 +208,7 @@ async function getAllActions(
           path: element
         })
         if ('name' in yaml && 'download_url' in yaml) {
+          
           result.name = yaml.name
           result.repo = repoName
           result.forkedfrom = parentinfo
