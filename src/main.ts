@@ -120,7 +120,39 @@ async function enrichActionFiles(
   return actionFiles
 }
 
-async function getAllActions(
+async function checkRateLimits (
+  client: Octokit,
+  isEnterpriseServer: boolean
+) {
+  // todo: ratelimiting can be enabled on GHES as well, but is off by default
+  // we can probably load it from an api call and see if it is enabled, or try .. catch
+  if (!isEnterpriseServer) {
+    // search API has a strict rate limit, prevent errors
+    var ratelimit = await client.rest.rateLimit.get()
+    if (ratelimit.data.resources.search.remaining <= 2) {
+      // show the reset time
+      var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+      core.debug(`Search API reset time: ${resetTime}`)
+      // wait until the reset time
+      var waitTime = resetTime.getTime() - new Date().getTime()
+      if (waitTime < 0) {
+        // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
+        waitTime = 2500
+      } else {
+        // back off a bit more to be more certain
+        waitTime = waitTime + 1000
+      }
+      core.info(
+        `Waiting ${
+          waitTime / 1000
+        } seconds to prevent the search API rate limit`
+      )
+      await new Promise(r => setTimeout(r, waitTime))
+    }
+  }
+}
+
+async function getAllActions (
   client: Octokit,
   username: string,
   organization: string,
@@ -128,7 +160,7 @@ async function getAllActions(
 ): Promise<Content[]> {
   const actions: Content[] = []
 
-  var searchQuery = '+filename:action+language:YAML'
+  var searchQuery = '+filename:action+language:YAML' //todo: search for 'Dockerfile' or 'dockerfile' as well
   if (username) {
     core.info(`Search for action files of the user [ ${username} ]`)
     searchQuery = searchQuery.concat('+user:', username)
@@ -142,7 +174,6 @@ async function getAllActions(
   }
 
   core.debug(`searchQuery : ${searchQuery}`)
-
   const searchResult = await client.paginate(client.rest.search.code, {
     q: searchQuery
   })
@@ -151,83 +182,58 @@ async function getAllActions(
     var searchType = username ? 'user' : 'organization'
     var searchValue = username ? username : organization
     core.info(`No actions found in the ${searchType} [${searchValue}]`)
+    return actions
   }
-  else{
-    for (let index = 0; index < searchResult.length; index++) {
-      // todo: ratelimiting can be enabled on GHES as well, but is off by default
-      // we can probably load it from an api call and see if it is enabled, or try .. catch
-      if (!isEnterpriseServer) {
-        // search API has a strict rate limit, prevent errors
-        var ratelimit = await client.rest.rateLimit.get()
-        if (ratelimit.data.resources.search.remaining <= 2) {
-          // show the reset time
-          var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-          core.debug(`Search API reset time: ${resetTime}`)
-          // wait until the reset time
-          var waitTime = resetTime.getTime() - new Date().getTime()
-          if (waitTime < 0) {
-            // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
-            waitTime = 2500
-          } else {
-            // back off a bit more to be more certain
-            waitTime = waitTime + 1000
-          }
-          core.info(
-            `Waiting ${
-              waitTime / 1000
-            } seconds to prevent the search API rate limit`
-          )
-          await new Promise(r => setTimeout(r, waitTime))
+
+  for (let index = 0; index < searchResult.length; index++) {
+    checkRateLimits(client, isEnterpriseServer)
+
+    const result = new Content()
+    var fileName = searchResult[index].name
+    var element = searchResult[index].path
+    var repoName = searchResult[index].repository.name
+    var repoOwner = searchResult[index].repository.owner.login
+
+    // Push file to action list if filename matches action.yaml or action.yml
+    // Search result will contains list of files matching action files ex: reposyncer_action.yml
+    if (fileName == 'action.yaml' || fileName == 'action.yml') {
+      core.info(`Found action in ${repoName}/${element}`)
+      // Get Forked from Info for the repo
+      const {data: repoinfo} = await client.rest.repos.get({
+        owner: repoOwner,
+        repo: repoName
+      })
+      let parentinfo = ''
+      if (repoinfo.parent?.full_name) {
+        parentinfo = repoinfo.parent.full_name
+      }
+
+      // Get File content
+      const {data: yaml} = await client.rest.repos.getContent({
+        owner: repoOwner,
+        repo: repoName,
+        path: element
+      })
+      if ('name' in yaml && 'download_url' in yaml) {
+        
+        result.name = yaml.name
+        result.repo = repoName
+        result.forkedfrom = parentinfo
+        if (yaml.download_url !== null) {
+          result.downloadUrl = removeTokenSetting
+            ? yaml.download_url.replace(/\?(.*)/, '')
+            : yaml.download_url
         }
       }
 
-      const result = new Content()
-      var fileName = searchResult[index].name
-      var element = searchResult[index].path
-      var repoName = searchResult[index].repository.name
-      var repoOwner = searchResult[index].repository.owner.login
-
-      // Push file to action list if filename matches action.yaml or action.yml
-      // Search result will contains list of files matching action files ex: reposyncer_action.yml
-      if (fileName == 'action.yaml' || fileName == 'action.yml') {
-        core.info(`Found action in ${repoName}/${element}`)
-        // Get Forked from Info for the repo
-        const {data: repoinfo} = await client.rest.repos.get({
-          owner: repoOwner,
-          repo: repoName
-        })
-        let parentinfo = ''
-        if (repoinfo.parent?.full_name) {
-          parentinfo = repoinfo.parent.full_name
+      if (fetchReadmesSetting && yaml) {
+        const readmeLink = await getReadmeContent(client, repoName, repoOwner)
+        if (readmeLink) {
+          result.readme = readmeLink
         }
-
-        // Get File content
-        const {data: yaml} = await client.rest.repos.getContent({
-          owner: repoOwner,
-          repo: repoName,
-          path: element
-        })
-        if ('name' in yaml && 'download_url' in yaml) {
-          
-          result.name = yaml.name
-          result.repo = repoName
-          result.forkedfrom = parentinfo
-          if (yaml.download_url !== null) {
-            result.downloadUrl = removeTokenSetting
-              ? yaml.download_url.replace(/\?(.*)/, '')
-              : yaml.download_url
-          }
-        }
-
-        if (fetchReadmesSetting && yaml) {
-          const readmeLink = await getReadmeContent(client, repoName, repoOwner)
-          if (readmeLink) {
-            result.readme = readmeLink
-          }
-        }
-
-        actions.push(result)
       }
+
+      actions.push(result)
     }
   }
   return actions

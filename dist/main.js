@@ -32595,6 +32595,27 @@ function enrichActionFiles(client, actionFiles) {
     return actionFiles;
   });
 }
+function checkRateLimits(client, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    if (!isEnterpriseServer) {
+      var ratelimit = yield client.rest.rateLimit.get();
+      if (ratelimit.data.resources.search.remaining <= 2) {
+        var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+        core2.debug(`Search API reset time: ${resetTime}`);
+        var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
+        if (waitTime < 0) {
+          waitTime = 2500;
+        } else {
+          waitTime = waitTime + 1e3;
+        }
+        core2.info(
+          `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
+        );
+        yield new Promise((r) => setTimeout(r, waitTime));
+      }
+    }
+  });
+}
 function getAllActions(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     var _a;
@@ -32618,61 +32639,45 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
       var searchType = username ? "user" : "organization";
       var searchValue = username ? username : organization;
       core2.info(`No actions found in the ${searchType} [${searchValue}]`);
-    } else {
-      for (let index = 0; index < searchResult.length; index++) {
-        if (!isEnterpriseServer) {
-          var ratelimit = yield client.rest.rateLimit.get();
-          if (ratelimit.data.resources.search.remaining <= 2) {
-            var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-            core2.debug(`Search API reset time: ${resetTime}`);
-            var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
-            if (waitTime < 0) {
-              waitTime = 2500;
-            } else {
-              waitTime = waitTime + 1e3;
-            }
-            core2.info(
-              `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
-            );
-            yield new Promise((r) => setTimeout(r, waitTime));
+      return actions;
+    }
+    for (let index = 0; index < searchResult.length; index++) {
+      checkRateLimits(client, isEnterpriseServer);
+      const result = new Content();
+      var fileName = searchResult[index].name;
+      var element = searchResult[index].path;
+      var repoName = searchResult[index].repository.name;
+      var repoOwner = searchResult[index].repository.owner.login;
+      if (fileName == "action.yaml" || fileName == "action.yml") {
+        core2.info(`Found action in ${repoName}/${element}`);
+        const { data: repoinfo } = yield client.rest.repos.get({
+          owner: repoOwner,
+          repo: repoName
+        });
+        let parentinfo = "";
+        if ((_a = repoinfo.parent) == null ? void 0 : _a.full_name) {
+          parentinfo = repoinfo.parent.full_name;
+        }
+        const { data: yaml } = yield client.rest.repos.getContent({
+          owner: repoOwner,
+          repo: repoName,
+          path: element
+        });
+        if ("name" in yaml && "download_url" in yaml) {
+          result.name = yaml.name;
+          result.repo = repoName;
+          result.forkedfrom = parentinfo;
+          if (yaml.download_url !== null) {
+            result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
           }
         }
-        const result = new Content();
-        var fileName = searchResult[index].name;
-        var element = searchResult[index].path;
-        var repoName = searchResult[index].repository.name;
-        var repoOwner = searchResult[index].repository.owner.login;
-        if (fileName == "action.yaml" || fileName == "action.yml") {
-          core2.info(`Found action in ${repoName}/${element}`);
-          const { data: repoinfo } = yield client.rest.repos.get({
-            owner: repoOwner,
-            repo: repoName
-          });
-          let parentinfo = "";
-          if ((_a = repoinfo.parent) == null ? void 0 : _a.full_name) {
-            parentinfo = repoinfo.parent.full_name;
+        if (fetchReadmesSetting && yaml) {
+          const readmeLink = yield getReadmeContent(client, repoName, repoOwner);
+          if (readmeLink) {
+            result.readme = readmeLink;
           }
-          const { data: yaml } = yield client.rest.repos.getContent({
-            owner: repoOwner,
-            repo: repoName,
-            path: element
-          });
-          if ("name" in yaml && "download_url" in yaml) {
-            result.name = yaml.name;
-            result.repo = repoName;
-            result.forkedfrom = parentinfo;
-            if (yaml.download_url !== null) {
-              result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
-            }
-          }
-          if (fetchReadmesSetting && yaml) {
-            const readmeLink = yield getReadmeContent(client, repoName, repoOwner);
-            if (readmeLink) {
-              result.readme = readmeLink;
-            }
-          }
-          actions.push(result);
         }
+        actions.push(result);
       }
     }
     return actions;
