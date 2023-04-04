@@ -197,6 +197,7 @@ async function getAllActionsFromForkedRepos(
     return actions
   }
 
+  core.info(`Found [${searchResult.length}] forked repos`)
   for (let index = 0; index < searchResult.length; index++) {
     checkRateLimits(client, isEnterpriseServer)
     // check if the repo contains action files in the root of the repo
@@ -225,13 +226,14 @@ function cloneRepo (
   try {
     const repolink = `https://github.com/${owner}/${repo}.git` // todo: support GHES
     // create a temp directory
-    const tempDir = fs.mkdtempSync('actions')
-    const repoPath = path.join(tempDir, repo)
+    const repoPath = 'actions'
+    fs.mkdirSync('actions')
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
     // clone the repo
     execSync(`git clone ${repolink}`, {
       stdio: [0, 1, 2], // we need this so node will print the command output
-      cwd: path.resolve(repoPath, ''), // path to where you want to save the file
+      //cwd: path.resolve(repoPath, ''), // path to where you want to save the file
+      cwd: repoPath, // path to where you want to save the file
     })
 
     return repoPath

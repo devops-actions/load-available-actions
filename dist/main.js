@@ -32647,6 +32647,7 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       core2.info(`No forked repos found in the ${searchType} [${searchValue}]`);
       return actions;
     }
+    core2.info(`Found [${searchResult.length}] forked repos`);
     for (let index = 0; index < searchResult.length; index++) {
       checkRateLimits(client, isEnterpriseServer);
       const repo = searchResult[index];
@@ -32663,13 +32664,14 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
 function cloneRepo(repo, owner) {
   try {
     const repolink = `https://github.com/${owner}/${repo}.git`;
-    const tempDir = import_fs.default.mkdtempSync("actions");
-    const repoPath = import_path.default.join(tempDir, repo);
+    const repoPath = "actions";
+    import_fs.default.mkdirSync("actions");
     core2.debug(`Cloning repo [${repo}] to [${repoPath}]`);
     (0, import_child_process.execSync)(`git clone ${repolink}`, {
       stdio: [0, 1, 2],
       // we need this so node will print the command output
-      cwd: import_path.default.resolve(repoPath, "")
+      //cwd: path.resolve(repoPath, ''), // path to where you want to save the file
+      cwd: repoPath
       // path to where you want to save the file
     });
     return repoPath;
