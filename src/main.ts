@@ -174,7 +174,7 @@ async function getAllActionsFromForkedRepos(
 ): Promise<Content[]> {
 
   const actions: Content[] = []
-  var searchQuery = '?q=fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
+  var searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
   if (username) {
     core.info(`Search for action files of the user [ ${username} ] in forked repos`)
     searchQuery = searchQuery.concat('+user:', username)
@@ -185,7 +185,7 @@ async function getAllActionsFromForkedRepos(
     searchQuery = searchQuery.concat('+org:', organization)
   }
 
-  core.debug(`searchQuery : ${searchQuery}`)
+  core.debug(`searchQuery: ${searchQuery}`)
   const searchResult = await client.paginate(client.rest.search.repos, {
     q: searchQuery
   })

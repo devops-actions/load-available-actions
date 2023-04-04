@@ -32628,7 +32628,7 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
 function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
-    var searchQuery = "?q=fork:true";
+    var searchQuery = "+fork:true";
     if (username) {
       core2.info(`Search for action files of the user [ ${username} ] in forked repos`);
       searchQuery = searchQuery.concat("+user:", username);
@@ -32637,7 +32637,7 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       core2.info(`Search for action files under the organization [ ${organization} ] in forked repos`);
       searchQuery = searchQuery.concat("+org:", organization);
     }
-    core2.debug(`searchQuery : ${searchQuery}`);
+    core2.debug(`searchQuery: ${searchQuery}`);
     const searchResult = yield client.paginate(client.rest.search.repos, {
       q: searchQuery
     });
