@@ -222,18 +222,24 @@ function cloneRepo (
   owner: string
   ) : string {
   
-  const repolink = `https://github.com/${owner}/${repo}.git` // todo: support GHES
-  // create a temp directory
-  const tempDir = fs.mkdtempSync('actions')
-  const repoPath = path.join(tempDir, repo)
-  core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
-  // clone the repo
-  execSync(`git clone ${repolink}`, {
-    stdio: [0, 1, 2], // we need this so node will print the command output
-    cwd: path.resolve(repoPath, ''), // path to where you want to save the file
-  })
+  try {
+    const repolink = `https://github.com/${owner}/${repo}.git` // todo: support GHES
+    // create a temp directory
+    const tempDir = fs.mkdtempSync('actions')
+    const repoPath = path.join(tempDir, repo)
+    core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
+    // clone the repo
+    execSync(`git clone ${repolink}`, {
+      stdio: [0, 1, 2], // we need this so node will print the command output
+      cwd: path.resolve(repoPath, ''), // path to where you want to save the file
+    })
 
-  return repoPath
+    return repoPath
+  } catch (error) {
+    core.debug(`Error cloning repo [${repo}]`)
+    core.debug((error as Error).message)
+    return ''
+  }
 }
 
 async function getAllActionsUsingSearch (
