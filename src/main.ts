@@ -221,7 +221,7 @@ async function getAllActionsFromForkedRepos(
       const action = new Content()
       action.repo = repoName
       action.owner = repoOwner      
-      action.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}/blob/${defaultBranch}/${actionFile}`
+      action.downloadUrl = actionFile
       actions.push(action)
     }
   }
