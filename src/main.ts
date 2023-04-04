@@ -215,7 +215,7 @@ async function getAllActionsFromForkedRepos(
     }
     // check with a shell command if the repo contains action files in the root of the repo
     const actionFiles = execSync(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: 'utf8' }).split('\n')
-    core.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}]`)
+    core.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`)
 
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(`Found action file [${actionFiles[index]}] in repo [${repoName}]`)
