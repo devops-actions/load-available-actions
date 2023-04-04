@@ -212,10 +212,10 @@ async function getAllActionsFromForkedRepos(
     const actionFiles = execSync(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: 'utf8' }).split('\n')
     core.debug(`Found [${actionFiles.length}] action files in repo [${repoName}]`)
 
-    for (let index = 0; index < actionFiles.length; index++) {
+    for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(`Found action file [${actionFiles[index]}] in repo [${repoName}]`)
       // remove the actions/$repopath
-      const actionFile = actionFiles[index].substring((`actions/`).length - 1)
+      const actionFile = actionFiles[index].substring((`actions/`).length)
       core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
       const action = new Content()
       action.repo = repoName
