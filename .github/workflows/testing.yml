@@ -89,7 +89,7 @@ jobs:
           fi
   
   test-load-from-organization-with-forks: # test the action for the organization space
-    needs: test-load-from-user
+    needs: [test-load-from-user, test-load-from-organization]
     runs-on: ubuntu-latest
     concurrency: single-run
     name: Org with forks
