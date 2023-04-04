@@ -10,8 +10,7 @@ import {execSync} from 'child_process'
 
 dotenv.config()
 
-const getInputOrEnv = (input: string) =>
-  core.getInput(input) || process.env.input || ''
+const getInputOrEnv = (input: string) => core.getInput(input) || process.env.input || ''
 //Optional values
 const removeTokenSetting = getInputOrEnv('removeToken')
 const fetchReadmesSetting = getInputOrEnv('fetchReadmes')

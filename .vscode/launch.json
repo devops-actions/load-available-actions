@@ -11,17 +11,16 @@
             "skipFiles": [
                 "<node_internals>/**"
             ],
-            "program": "${workspaceFolder}\\lib\\main.js",
+            "program": "${workspaceFolder}/src/main.ts",
             "env": {
                 "NODE_ENV": "development",
                 "INPUT_ORGANIZATION": "rajbos-actions-demo",
                 "INPUT_GITHUB-TOKEN": "${evn:GH_TOKEN}}"
             },
             "outFiles": [
-                "${workspaceFolder}/**/*.js"
+                "${workspaceFolder}/dist/*.js"
             ],
-            "internalConsoleOptions": "openOnSessionStart",
-            "preLaunchTask": "npm run esbuild"
+            "preLaunchTask": "npm: all"
         }
     ]
 }

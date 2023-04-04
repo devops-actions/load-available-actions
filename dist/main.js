@@ -32,26 +32,6 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var __async = (__this, __arguments, generator) => {
-  return new Promise((resolve, reject) => {
-    var fulfilled = (value) => {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var rejected = (value) => {
-      try {
-        step(generator.throw(value));
-      } catch (e) {
-        reject(e);
-      }
-    };
-    var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
-    step((generator = generator.apply(__this, __arguments)).next());
-  });
-};
 
 // node_modules/@actions/core/lib/utils.js
 var require_utils = __commonJS({
@@ -32501,187 +32481,240 @@ var import_path = __toESM(require("path"));
 
 // src/optionalActions.ts
 var core = __toESM(require_core());
-function getReadmeContent(client, repo, owner) {
-  return __async(this, null, function* () {
-    try {
-      const { data: readme } = yield client.rest.repos.getContent({
-        owner,
-        repo,
-        path: "README.md"
-      });
-      return readme.content;
-    } catch (error) {
-      core.debug(`No readme file found in repository: ${repo}`);
-    }
-  });
+async function getReadmeContent(client, repo, owner) {
+  try {
+    const { data: readme } = await client.rest.repos.getContent({
+      owner,
+      repo,
+      path: "README.md"
+    });
+    return readme.content;
+  } catch (error) {
+    core.debug(`No readme file found in repository: ${repo}`);
+  }
 }
 
 // src/main.ts
+var import_child_process = require("child_process");
 import_dotenv.default.config();
 var getInputOrEnv = (input) => core2.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
-function run() {
-  return __async(this, null, function* () {
-    core2.info("Starting");
-    try {
-      const PAT = getInputOrEnv("PAT");
-      const user = getInputOrEnv("user");
-      const organization = getInputOrEnv("organization");
-      const baseUrl = process.env.GITHUB_API_URL || "https://api.github.com";
-      const isEnterpriseServer = baseUrl !== "https://api.github.com";
-      const outputFilename = getInputOrEnv("outputFilename") || "actions.json";
-      if (!PAT) {
-        core2.setFailed(
-          "Parameter 'PAT' is required to load all actions from the organization or user account"
-        );
-        return;
-      }
-      if (!user && !organization) {
-        core2.setFailed(
-          "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
-        );
-        return;
-      }
-      const octokit = new import_octokit.Octokit({
-        auth: PAT,
-        baseUrl
-      });
-      try {
-      } catch (error) {
-        core2.setFailed(
-          `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
-        );
-        return;
-      }
-      let actionFiles = yield getAllActions(
-        octokit,
-        user,
-        organization,
-        isEnterpriseServer
+async function run() {
+  core2.info("Starting");
+  try {
+    const PAT = getInputOrEnv("PAT");
+    const user = getInputOrEnv("user");
+    const organization = getInputOrEnv("organization");
+    const baseUrl = process.env.GITHUB_API_URL || "https://api.github.com";
+    const isEnterpriseServer = baseUrl !== "https://api.github.com";
+    const outputFilename = getInputOrEnv("outputFilename") || "actions.json";
+    if (!PAT) {
+      core2.setFailed(
+        "Parameter 'PAT' is required to load all actions from the organization or user account"
       );
-      actionFiles = yield enrichActionFiles(octokit, actionFiles);
-      const output = {
-        lastUpdated: GetDateFormatted(/* @__PURE__ */ new Date()),
-        actions: actionFiles,
-        organization,
-        user
-      };
-      core2.info(`Found [${actionFiles.length}] actions`);
-      const json = JSON.stringify(output);
-      import_fs.default.writeFileSync(outputFilename, json);
-      const fullPath = import_path.default.resolve(outputFilename);
-      core2.info(`Writing results to [${fullPath}]`);
-      core2.setOutput("actions-file-path", fullPath);
-    } catch (error) {
-      core2.setFailed(`Error running action: : ${error.message}`);
+      return;
     }
-  });
+    if (!user && !organization) {
+      core2.setFailed(
+        "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
+      );
+      return;
+    }
+    const octokit = new import_octokit.Octokit({
+      auth: PAT,
+      baseUrl
+    });
+    try {
+    } catch (error) {
+      core2.setFailed(
+        `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
+      );
+      return;
+    }
+    let actionFiles = await getAllActions(
+      octokit,
+      user,
+      organization,
+      isEnterpriseServer
+    );
+    actionFiles = await enrichActionFiles(octokit, actionFiles);
+    const output = {
+      lastUpdated: GetDateFormatted(/* @__PURE__ */ new Date()),
+      actions: actionFiles,
+      organization,
+      user
+    };
+    core2.info(`Found [${actionFiles.length}] actions`);
+    const json = JSON.stringify(output);
+    import_fs.default.writeFileSync(outputFilename, json);
+    const fullPath = import_path.default.resolve(outputFilename);
+    core2.info(`Writing results to [${fullPath}]`);
+    core2.setOutput("actions-file-path", fullPath);
+  } catch (error) {
+    core2.setFailed(`Error running action: : ${error.message}`);
+  }
 }
 var Content = class {
 };
-function enrichActionFiles(client, actionFiles) {
-  return __async(this, null, function* () {
-    for (const action of actionFiles) {
-      core2.debug(`Enrich : ${action.downloadUrl}`);
-      if (action.downloadUrl) {
-        const { data: content } = yield client.request({ url: action.downloadUrl });
-        const { name, author, description } = parseYAML(action.repo, content);
-        action.name = name;
-        action.author = author;
-        action.description = description;
-      }
+async function enrichActionFiles(client, actionFiles) {
+  for (const action of actionFiles) {
+    core2.debug(`Enrich : ${action.downloadUrl}`);
+    if (action.downloadUrl) {
+      const { data: content } = await client.request({ url: action.downloadUrl });
+      const { name, author, description } = parseYAML(action.repo, content);
+      action.name = name;
+      action.author = author;
+      action.description = description;
     }
-    return actionFiles;
-  });
+  }
+  return actionFiles;
 }
-function checkRateLimits(client, isEnterpriseServer) {
-  return __async(this, null, function* () {
-    if (!isEnterpriseServer) {
-      var ratelimit = yield client.rest.rateLimit.get();
-      if (ratelimit.data.resources.search.remaining <= 2) {
-        var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-        core2.debug(`Search API reset time: ${resetTime}`);
-        var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
-        if (waitTime < 0) {
-          waitTime = 2500;
-        } else {
-          waitTime = waitTime + 1e3;
-        }
-        core2.info(
-          `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
-        );
-        yield new Promise((r) => setTimeout(r, waitTime));
+async function checkRateLimits(client, isEnterpriseServer) {
+  if (!isEnterpriseServer) {
+    var ratelimit = await client.rest.rateLimit.get();
+    if (ratelimit.data.resources.search.remaining <= 2) {
+      var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+      core2.debug(`Search API reset time: ${resetTime}`);
+      var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
+      if (waitTime < 0) {
+        waitTime = 2500;
+      } else {
+        waitTime = waitTime + 1e3;
       }
-    }
-  });
-}
-function getAllActions(client, username, organization, isEnterpriseServer) {
-  return __async(this, null, function* () {
-    var _a;
-    const actions = [];
-    var searchQuery = "+filename:action+language:YAML";
-    if (username) {
-      core2.info(`Search for action files of the user [ ${username} ]`);
-      searchQuery = searchQuery.concat("+user:", username);
-    }
-    if (organization !== "") {
       core2.info(
-        `Search for action files under the organization [ ${organization} ]`
+        `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
       );
-      searchQuery = searchQuery.concat("+org:", organization);
+      await new Promise((r) => setTimeout(r, waitTime));
     }
-    core2.debug(`searchQuery : ${searchQuery}`);
-    const searchResult = yield client.paginate(client.rest.search.code, {
-      q: searchQuery
-    });
-    if (!searchResult) {
-      var searchType = username ? "user" : "organization";
-      var searchValue = username ? username : organization;
-      core2.info(`No actions found in the ${searchType} [${searchValue}]`);
-      return actions;
-    }
-    for (let index = 0; index < searchResult.length; index++) {
-      checkRateLimits(client, isEnterpriseServer);
-      const result = new Content();
-      var fileName = searchResult[index].name;
-      var element = searchResult[index].path;
-      var repoName = searchResult[index].repository.name;
-      var repoOwner = searchResult[index].repository.owner.login;
-      if (fileName == "action.yaml" || fileName == "action.yml") {
-        core2.info(`Found action in ${repoName}/${element}`);
-        const { data: repoinfo } = yield client.rest.repos.get({
-          owner: repoOwner,
-          repo: repoName
-        });
-        let parentinfo = "";
-        if ((_a = repoinfo.parent) == null ? void 0 : _a.full_name) {
-          parentinfo = repoinfo.parent.full_name;
-        }
-        const { data: yaml } = yield client.rest.repos.getContent({
-          owner: repoOwner,
-          repo: repoName,
-          path: element
-        });
-        if ("name" in yaml && "download_url" in yaml) {
-          result.name = yaml.name;
-          result.repo = repoName;
-          result.forkedfrom = parentinfo;
-          if (yaml.download_url !== null) {
-            result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
-          }
-        }
-        if (fetchReadmesSetting && yaml) {
-          const readmeLink = yield getReadmeContent(client, repoName, repoOwner);
-          if (readmeLink) {
-            result.readme = readmeLink;
-          }
-        }
-        actions.push(result);
-      }
-    }
-    return actions;
+  }
+}
+async function getAllActions(client, username, organization, isEnterpriseServer) {
+  let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
+  let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
+  actions = actions.concat(forkedActions);
+  return actions;
+}
+async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
+  const actions = [];
+  var searchQuery = "+repositories?q=fork:true";
+  if (username) {
+    core2.info(`Search for action files of the user [ ${username} ] in forked repos`);
+    searchQuery = searchQuery.concat("+user:", username);
+  }
+  if (organization !== "") {
+    core2.info(`Search for action files under the organization [ ${organization} ] in forked repos`);
+    searchQuery = searchQuery.concat("+org:", organization);
+  }
+  core2.debug(`searchQuery : ${searchQuery}`);
+  const searchResult = await client.paginate(client.rest.search.repos, {
+    q: searchQuery
   });
+  if (!searchResult) {
+    var searchType = username ? "user" : "organization";
+    var searchValue = username ? username : organization;
+    core2.info(`No forked repos found in the ${searchType} [${searchValue}]`);
+    return actions;
+  }
+  for (let index = 0; index < searchResult.length; index++) {
+    checkRateLimits(client, isEnterpriseServer);
+    const repo = searchResult[index];
+    var repoName = repo.name;
+    var repoOwner = repo.owner ? repo.owner.login : "";
+    core2.debug(`Checking repo [${repoName}] for action files`);
+    const repoPath = cloneRepo(repoName, repoOwner);
+    const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`);
+    core2.debug(`Found action files: ${actionFiles} in repo [${repoName}]`);
+  }
+  return actions;
+}
+function cloneRepo(repo, owner) {
+  const repolink = `https://github.com/${owner}/${repo}.git`;
+  const tempDir = import_fs.default.mkdtempSync("actions");
+  const repoPath = import_path.default.join(tempDir, repo);
+  core2.debug(`Cloning repo [${repo}] to [${repoPath}]`);
+  (0, import_child_process.execSync)(`git clone ${repolink}`, {
+    stdio: [0, 1, 2],
+    // we need this so node will print the command output
+    cwd: import_path.default.resolve(repoPath, "")
+    // path to where you want to save the file
+  });
+  return repoPath;
+}
+async function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
+  const actions = [];
+  var searchQuery = "+filename:action+language:YAML";
+  if (username) {
+    core2.info(`Search for action files of the user [ ${username} ]`);
+    searchQuery = searchQuery.concat("+user:", username);
+  }
+  if (organization !== "") {
+    core2.info(
+      `Search for action files under the organization [ ${organization} ]`
+    );
+    searchQuery = searchQuery.concat("+org:", organization);
+  }
+  core2.debug(`searchQuery : ${searchQuery}`);
+  const searchResult = await client.paginate(client.rest.search.code, {
+    q: searchQuery
+  });
+  if (!searchResult) {
+    var searchType = username ? "user" : "organization";
+    var searchValue = username ? username : organization;
+    core2.info(`No actions found in the ${searchType} [${searchValue}]`);
+    return actions;
+  }
+  for (let index = 0; index < searchResult.length; index++) {
+    checkRateLimits(client, isEnterpriseServer);
+    var fileName = searchResult[index].name;
+    var filePath = searchResult[index].path;
+    var repoName = searchResult[index].repository.name;
+    var repoOwner = searchResult[index].repository.owner.login;
+    if (fileName == "action.yaml" || fileName == "action.yml") {
+      core2.info(`Found action in ${repoName}/${filePath}`);
+      let parentInfo = "";
+      if (searchResult[index].repository.fork) {
+        parentInfo = await getForkParent(client, repoOwner, repoName);
+      }
+      const result = await getActionInfo(client, repoOwner, repoName, filePath, parentInfo);
+      actions.push(result);
+    }
+  }
+  return actions;
+}
+async function getForkParent(client, owner, repo) {
+  const { data: repoInfo } = await client.rest.repos.get({
+    owner,
+    repo
+  });
+  let parentInfo = "";
+  if (repoInfo.parent?.full_name) {
+    parentInfo = repoInfo.parent.full_name;
+  }
+  return parentInfo;
+}
+async function getActionInfo(client, owner, repo, path2, forkedFrom) {
+  const { data: yaml } = await client.rest.repos.getContent({
+    owner,
+    repo,
+    path: path2
+  });
+  const result = new Content();
+  if ("name" in yaml && "download_url" in yaml) {
+    result.name = yaml.name;
+    result.repo = repo;
+    result.forkedfrom = forkedFrom;
+    if (yaml.download_url !== null) {
+      result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
+    }
+  }
+  if (fetchReadmesSetting && yaml) {
+    const readmeLink = await getReadmeContent(client, repo, owner);
+    if (readmeLink) {
+      result.readme = readmeLink;
+    }
+  }
+  return result;
 }
 run();
 // Annotate the CommonJS export names for ESM import in node:
