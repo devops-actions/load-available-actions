@@ -32473,13 +32473,15 @@ function GetDateFormatted(date) {
   return (0, import_moment.default)(date).format("YYYYMMDD_HHmm");
 }
 function parseYAML(repo, content) {
+  const defaultValue = "Undefined";
+  let name = defaultValue;
+  let author = defaultValue;
+  let description = defaultValue;
   try {
     const parsed = import_yaml.default.parse(content);
-    const defaultValue = "Undefined";
-    const name = parsed.name ? sanitize(parsed.name) : defaultValue;
-    const author = parsed.author ? sanitize(parsed.author) : defaultValue;
-    const description = parsed.description ? sanitize(parsed.description) : defaultValue;
-    return { name, author, description };
+    name = parsed.name ? sanitize(parsed.name) : defaultValue;
+    author = parsed.author ? sanitize(parsed.author) : defaultValue;
+    description = parsed.description ? sanitize(parsed.description) : defaultValue;
   } catch (error) {
     console.log(
       `Error parsing action file in repo [${repo}] with error:`
@@ -32489,6 +32491,7 @@ function parseYAML(repo, content) {
       `The parsing error is informational, seaching for actions has continued`
     );
   }
+  return { name, author, description };
 }
 function sanitize(value) {
   return import_string_sanitizer.default.sanitize.keepSpace(value);
@@ -32585,7 +32588,7 @@ var Content = class {
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
-      core2.debug(`Enrich : ${action.downloadUrl}`);
+      core2.debug(`Enrich action information from file: [${action.downloadUrl}]`);
       if (action.downloadUrl) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
         const { name, author, description } = parseYAML(action.repo, content);
@@ -32657,16 +32660,17 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       var defaultBranch = repo.default_branch;
       core2.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
+      if (repoPath === "") {
+        continue;
+      }
       const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: "utf8" }).split("\n");
       core2.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}]`);
       for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
         core2.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
-        const actionFile = actionFiles[index2].substring(`actions/${repoName}`.length);
+        const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
         core2.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
-        const action = new Content();
-        action.repo = repoName;
-        action.owner = repoOwner;
-        action.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}/blob/${defaultBranch}/${actionFile}`;
+        const parentInfo = yield getForkParent(client, repoOwner, repoName);
+        const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo);
         actions.push(action);
       }
     }
@@ -32684,7 +32688,6 @@ function cloneRepo(repo, owner) {
     (0, import_child_process.execSync)(`git clone ${repolink}`, {
       stdio: [0, 1, 2],
       // we need this so node will print the command output
-      //cwd: path.resolve(repoPath, ''), // path to where you want to save the file
       cwd: repoPath
       // path to where you want to save the file
     });
