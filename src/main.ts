@@ -209,6 +209,10 @@ async function getAllActionsFromForkedRepos(
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
     const repoPath = cloneRepo(repoName, repoOwner)
+    if (repoPath === '') {
+      // error cloning the repo, skip it
+      continue
+    }
     // check with a shell command if the repo contains action files in the root of the repo
     const actionFiles = execSync(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: 'utf8' }).split('\n')
     core.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}]`)
@@ -218,15 +222,29 @@ async function getAllActionsFromForkedRepos(
       // remove the actions/$repopath
       const actionFile = actionFiles[index].substring((`actions/${repoName}/`).length)
       core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
-      const action = new Content()
-      action.repo = repoName
-      action.owner = repoOwner      
-      action.downloadUrl = actionFile
+      // Get "Forked from" info for the repo
+      const parentInfo = await getForkParent(client, repoOwner, repoName)
+      // get the action info
+      const action = await getActionInfo(client, repoOwner, repoName, actionFile, parentInfo)
+
       actions.push(action)
     }
   }
 
   return actions
+}
+
+async function getRepoInfo (
+  client: Octokit, 
+  repoOwner: string, 
+  repoName: string){
+
+  const { data } = await client.rest.repos.get({
+    owner: repoOwner,
+    repo: repoName
+  })
+
+  return data
 }
 
 function cloneRepo (
