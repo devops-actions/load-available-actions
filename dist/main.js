@@ -32605,7 +32605,7 @@ function checkRateLimits(client, isEnterpriseServer) {
         core2.debug(`Search API reset time: ${resetTime}`);
         var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
         if (waitTime < 0) {
-          waitTime = 2500;
+          waitTime = 7e3;
         } else {
           waitTime = waitTime + 1e3;
         }

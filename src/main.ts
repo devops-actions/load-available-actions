@@ -137,8 +137,8 @@ async function checkRateLimits (
       // wait until the reset time
       var waitTime = resetTime.getTime() - new Date().getTime()
       if (waitTime < 0) {
-        // if the reset time is in the past, wait 2,5 seconds for good measure (Search API rate limit is 30 requests per minute)
-        waitTime = 2500
+        // if the reset time is in the past, wait 6 seconds for good measure (Search API rate limit is 10 requests per minute)
+        waitTime = 7000
       } else {
         // back off a bit more to be more certain
         waitTime = waitTime + 1000
