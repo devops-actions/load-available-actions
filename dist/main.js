@@ -32630,11 +32630,11 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
     const actions = [];
     var searchQuery = "+fork:true";
     if (username) {
-      core2.info(`Search for action files of the user [ ${username} ] in forked repos`);
+      core2.info(`Search for action files of the user [${username}] in forked repos`);
       searchQuery = searchQuery.concat("+user:", username);
     }
     if (organization !== "") {
-      core2.info(`Search for action files under the organization [ ${organization} ] in forked repos`);
+      core2.info(`Search for action files under the organization [${organization}] in forked repos`);
       searchQuery = searchQuery.concat("+org:", organization);
     }
     core2.debug(`searchQuery: ${searchQuery}`);
@@ -32661,29 +32661,35 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
   });
 }
 function cloneRepo(repo, owner) {
-  const repolink = `https://github.com/${owner}/${repo}.git`;
-  const tempDir = import_fs.default.mkdtempSync("actions");
-  const repoPath = import_path.default.join(tempDir, repo);
-  core2.debug(`Cloning repo [${repo}] to [${repoPath}]`);
-  (0, import_child_process.execSync)(`git clone ${repolink}`, {
-    stdio: [0, 1, 2],
-    // we need this so node will print the command output
-    cwd: import_path.default.resolve(repoPath, "")
-    // path to where you want to save the file
-  });
-  return repoPath;
+  try {
+    const repolink = `https://github.com/${owner}/${repo}.git`;
+    const tempDir = import_fs.default.mkdtempSync("actions");
+    const repoPath = import_path.default.join(tempDir, repo);
+    core2.debug(`Cloning repo [${repo}] to [${repoPath}]`);
+    (0, import_child_process.execSync)(`git clone ${repolink}`, {
+      stdio: [0, 1, 2],
+      // we need this so node will print the command output
+      cwd: import_path.default.resolve(repoPath, "")
+      // path to where you want to save the file
+    });
+    return repoPath;
+  } catch (error) {
+    core2.debug(`Error cloning repo [${repo}]`);
+    core2.debug(error.message);
+    return "";
+  }
 }
 function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
     var searchQuery = "+filename:action+language:YAML";
     if (username) {
-      core2.info(`Search for action files of the user [ ${username} ]`);
+      core2.info(`Search for action files of the user [${username}]`);
       searchQuery = searchQuery.concat("+user:", username);
     }
     if (organization !== "") {
       core2.info(
-        `Search for action files under the organization [ ${organization} ]`
+        `Search for action files under the organization [${organization}]`
       );
       searchQuery = searchQuery.concat("+org:", organization);
     }

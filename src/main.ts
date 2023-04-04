@@ -176,12 +176,12 @@ async function getAllActionsFromForkedRepos(
   const actions: Content[] = []
   var searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
   if (username) {
-    core.info(`Search for action files of the user [ ${username} ] in forked repos`)
+    core.info(`Search for action files of the user [${username}] in forked repos`)
     searchQuery = searchQuery.concat('+user:', username)
   }
 
   if (organization !== '') {
-    core.info(`Search for action files under the organization [ ${organization} ] in forked repos`)
+    core.info(`Search for action files under the organization [${organization}] in forked repos`)
     searchQuery = searchQuery.concat('+org:', organization)
   }
 
@@ -252,13 +252,13 @@ async function getAllActionsUsingSearch (
 
   var searchQuery = '+filename:action+language:YAML' //todo: search for 'Dockerfile' or 'dockerfile' as well
   if (username) {
-    core.info(`Search for action files of the user [ ${username} ]`)
+    core.info(`Search for action files of the user [${username}]`)
     searchQuery = searchQuery.concat('+user:', username)
   }
 
   if (organization !== '') {
     core.info(
-      `Search for action files under the organization [ ${organization} ]`
+      `Search for action files under the organization [${organization}]`
     )
     searchQuery = searchQuery.concat('+org:', organization)
   }
