@@ -216,7 +216,7 @@ async function getAllActionsFromForkedRepos(
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(`Found action file [${actionFiles[index]}] in repo [${repoName}]`)
       // remove the actions/$repopath
-      const actionFile = actionFiles[index].substring((`actions/${repoName}`).length)
+      const actionFile = actionFiles[index].substring((`actions/${repoName}/`).length)
       core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
       const action = new Content()
       action.repo = repoName
