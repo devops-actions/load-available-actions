@@ -106,7 +106,7 @@ async function enrichActionFiles(
   actionFiles: Content[]
 ): Promise<Content[]> {
   for (const action of actionFiles) {
-    core.debug(`Enrich : ${action.downloadUrl}`)
+    core.debug(`Enrich action information from file: [${action.downloadUrl}]`)
     // download the file in it and parse it
     if (action.downloadUrl) {
       const {data: content} = await client.request({url: action.downloadUrl})
@@ -245,7 +245,6 @@ function cloneRepo (
     // clone the repo
     execSync(`git clone ${repolink}`, {
       stdio: [0, 1, 2], // we need this so node will print the command output
-      //cwd: path.resolve(repoPath, ''), // path to where you want to save the file
       cwd: repoPath, // path to where you want to save the file
     })
 
