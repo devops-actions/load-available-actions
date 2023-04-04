@@ -12,7 +12,6 @@ jobs:
   test-load-from-user: # test the action for the user space
     name: User space
     runs-on: ubuntu-latest
-    #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
       # make sure we have a new build, in case the dist folder was not updated
@@ -89,11 +88,10 @@ jobs:
           fi
   
   test-load-from-organization-with-forks: # test the action for the organization space
-    needs: [test-load-from-user, test-load-from-organization]
+    needs: test-load-from-user
     runs-on: ubuntu-latest
     concurrency: single-run
     name: Org with forks
-    #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
       # make sure we have a new build, in case the dist folder was not updated
@@ -136,9 +134,8 @@ jobs:
   test-load-from-organization: # test the action for the organization space
     name: Org without forks
     runs-on: ubuntu-latest
-    needs: test-load-from-user
+    needs: test-load-from-organization-with-forks
     concurrency: single-run
-    #if: github.ref == 'refs/heads/main' # don't run on PRs
     steps: 
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
       # make sure we have a new build, in case the dist folder was not updated
