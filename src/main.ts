@@ -10,11 +10,11 @@ import {execSync} from 'child_process'
 
 dotenv.config()
 
-const getInputOrEnv = (input: string) =>
-  core.getInput(input) || process.env.input || ''
+const getInputOrEnv = (input: string) => core.getInput(input) || process.env.input || ''
 //Optional values
 const removeTokenSetting = getInputOrEnv('removeToken')
 const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
+const hostname = "github.com" // todo: support GHES
 
 async function run(): Promise<void> {
   core.info('Starting')
@@ -204,25 +204,25 @@ async function getAllActionsFromForkedRepos(
     const repo = searchResult[index]
     var repoName = repo.name
     var repoOwner = repo.owner ? repo.owner.login : ""
+    var defaultBranch = repo.default_branch
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
     const repoPath = cloneRepo(repoName, repoOwner)
     // check with a shell command if the repo contains action files in the root of the repo
     const actionFiles = execSync(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: 'utf8' }).split('\n')
-    core.debug(`Found [${actionFiles.length}] action files in repo [${repoName}]`)
+    core.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}]`)
 
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(`Found action file [${actionFiles[index]}] in repo [${repoName}]`)
       // remove the actions/$repopath
-      const actionFile = actionFiles[index].substring((`actions/`).length)
+      const actionFile = actionFiles[index].substring((`actions/${repoName}`).length)
       core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
       const action = new Content()
       action.repo = repoName
-      action.owner = repoOwner
-      // github.com/owner/repo/blob/branch/path/to/file?
-      action.downloadUrl = actionFile
-      //actions.push(action)
+      action.owner = repoOwner      
+      action.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}/blob/${defaultBranch}/${actionFile}`
+      actions.push(action)
     }
   }
 
@@ -235,7 +235,7 @@ function cloneRepo (
   ) : string {
   
   try {
-    const repolink = `https://github.com/${owner}/${repo}.git` // todo: support GHES
+    const repolink = `https://${hostname}/${owner}/${repo}.git` // todo: support GHES
     // create a temp directory
     const repoPath = 'actions'
     if (!fs.existsSync(repoPath)){

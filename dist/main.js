@@ -32522,6 +32522,7 @@ import_dotenv.default.config();
 var getInputOrEnv = (input) => core2.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
+var hostname = "github.com";
 function run() {
   return __async(this, null, function* () {
     core2.info("Starting");
@@ -32653,18 +32654,20 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       const repo = searchResult[index];
       var repoName = repo.name;
       var repoOwner = repo.owner ? repo.owner.login : "";
+      var defaultBranch = repo.default_branch;
       core2.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
       const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: "utf8" }).split("\n");
-      core2.debug(`Found [${actionFiles.length}] action files in repo [${repoName}]`);
+      core2.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}]`);
       for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
         core2.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
-        const actionFile = actionFiles[index2].substring(`actions/`.length);
+        const actionFile = actionFiles[index2].substring(`actions/${repoName}`.length);
         core2.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
         const action = new Content();
         action.repo = repoName;
         action.owner = repoOwner;
-        action.downloadUrl = actionFile;
+        action.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}/blob/${defaultBranch}/${actionFile}`;
+        actions.push(action);
       }
     }
     return actions;
@@ -32672,7 +32675,7 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
 }
 function cloneRepo(repo, owner) {
   try {
-    const repolink = `https://github.com/${owner}/${repo}.git`;
+    const repolink = `https://${hostname}/${owner}/${repo}.git`;
     const repoPath = "actions";
     if (!import_fs.default.existsSync(repoPath)) {
       import_fs.default.mkdirSync(repoPath);
