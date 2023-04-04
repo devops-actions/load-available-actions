@@ -32656,9 +32656,8 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       core2.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
       const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: "utf8" });
-      core2.debug(`Found [${actionFiles.length}] action files in repo [${repoName}]`);
+      core2.debug(`Found [${actionFiles}] action files in repo [${repoName}]`);
       for (let index2 = 0; index2 < actionFiles.length; index2++) {
-        core2.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
       }
     }
     return actions;
