@@ -227,7 +227,9 @@ function cloneRepo (
     const repolink = `https://github.com/${owner}/${repo}.git` // todo: support GHES
     // create a temp directory
     const repoPath = 'actions'
-    fs.mkdirSync('actions')
+    if (!fs.existsSync(repoPath)){
+      fs.mkdirSync(repoPath);
+    }
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
     // clone the repo
     execSync(`git clone ${repolink}`, {
@@ -238,8 +240,7 @@ function cloneRepo (
 
     return repoPath
   } catch (error) {
-    core.debug(`Error cloning repo [${repo}]`)
-    core.debug((error as Error).message)
+    core.warning(`Error cloning repo [${repo}]: ${error}`)
     return ''
   }
 }
