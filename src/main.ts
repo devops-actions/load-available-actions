@@ -249,7 +249,7 @@ function cloneRepo (
       cwd: repoPath, // path to where you want to save the file
     })
 
-    return repoPath
+    return path.join(repoPath, repo)
   } catch (error) {
     core.warning(`Error cloning repo [${repo}]: ${error}`)
     return ''

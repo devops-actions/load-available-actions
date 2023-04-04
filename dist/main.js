@@ -32655,9 +32655,16 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       var repoOwner = repo.owner ? repo.owner.login : "";
       core2.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
-      const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: "utf8" }).split("/\r?\n/");
-      core2.debug(`Found [${actionFiles}] action files in repo [${repoName}]`);
-      for (let index2 = 0; index2 < actionFiles.length; index2++) {
+      const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: "utf8" }).split("\n");
+      core2.debug(`Found [${actionFiles.length}] action files in repo [${repoName}]`);
+      for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
+        core2.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
+        const actionFile = actionFiles[index2].substring(`actions/`.length);
+        core2.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
+        const action = new Content();
+        action.repo = repoName;
+        action.owner = repoOwner;
+        action.downloadUrl = actionFile;
       }
     }
     return actions;
@@ -32678,7 +32685,7 @@ function cloneRepo(repo, owner) {
       cwd: repoPath
       // path to where you want to save the file
     });
-    return repoPath;
+    return import_path.default.join(repoPath, repo);
   } catch (error) {
     core2.warning(`Error cloning repo [${repo}]: ${error}`);
     return "";
