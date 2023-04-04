@@ -32517,6 +32517,7 @@ function getReadmeContent(client, repo, owner) {
 }
 
 // src/main.ts
+var import_child_process = require("child_process");
 import_dotenv.default.config();
 var getInputOrEnv = (input) => core2.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
@@ -32618,7 +32619,62 @@ function checkRateLimits(client, isEnterpriseServer) {
 }
 function getAllActions(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
-    var _a;
+    let actions = yield getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
+    let forkedActions = yield getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
+    actions = actions.concat(forkedActions);
+    return actions;
+  });
+}
+function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    const actions = [];
+    var searchQuery = "+repositories?q=fork:true";
+    if (username) {
+      core2.info(`Search for action files of the user [ ${username} ] in forked repos`);
+      searchQuery = searchQuery.concat("+user:", username);
+    }
+    if (organization !== "") {
+      core2.info(`Search for action files under the organization [ ${organization} ] in forked repos`);
+      searchQuery = searchQuery.concat("+org:", organization);
+    }
+    core2.debug(`searchQuery : ${searchQuery}`);
+    const searchResult = yield client.paginate(client.rest.search.repos, {
+      q: searchQuery
+    });
+    if (!searchResult) {
+      var searchType = username ? "user" : "organization";
+      var searchValue = username ? username : organization;
+      core2.info(`No forked repos found in the ${searchType} [${searchValue}]`);
+      return actions;
+    }
+    for (let index = 0; index < searchResult.length; index++) {
+      checkRateLimits(client, isEnterpriseServer);
+      const repo = searchResult[index];
+      var repoName = repo.name;
+      var repoOwner = repo.owner ? repo.owner.login : "";
+      core2.debug(`Checking repo [${repoName}] for action files`);
+      const repoPath = cloneRepo(repoName, repoOwner);
+      const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`);
+      core2.debug(`Found action files: ${actionFiles} in repo [${repoName}]`);
+    }
+    return actions;
+  });
+}
+function cloneRepo(repo, owner) {
+  const repolink = `https://github.com/${owner}/${repo}.git`;
+  const tempDir = import_fs.default.mkdtempSync("actions");
+  const repoPath = import_path.default.join(tempDir, repo);
+  core2.debug(`Cloning repo [${repo}] to [${repoPath}]`);
+  (0, import_child_process.execSync)(`git clone ${repolink}`, {
+    stdio: [0, 1, 2],
+    // we need this so node will print the command output
+    cwd: import_path.default.resolve(repoPath, "")
+    // path to where you want to save the file
+  });
+  return repoPath;
+}
+function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
+  return __async(this, null, function* () {
     const actions = [];
     var searchQuery = "+filename:action+language:YAML";
     if (username) {
@@ -32643,44 +32699,60 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
     }
     for (let index = 0; index < searchResult.length; index++) {
       checkRateLimits(client, isEnterpriseServer);
-      const result = new Content();
       var fileName = searchResult[index].name;
-      var element = searchResult[index].path;
+      var filePath = searchResult[index].path;
       var repoName = searchResult[index].repository.name;
       var repoOwner = searchResult[index].repository.owner.login;
       if (fileName == "action.yaml" || fileName == "action.yml") {
-        core2.info(`Found action in ${repoName}/${element}`);
-        const { data: repoinfo } = yield client.rest.repos.get({
-          owner: repoOwner,
-          repo: repoName
-        });
-        let parentinfo = "";
-        if ((_a = repoinfo.parent) == null ? void 0 : _a.full_name) {
-          parentinfo = repoinfo.parent.full_name;
+        core2.info(`Found action in ${repoName}/${filePath}`);
+        let parentInfo = "";
+        if (searchResult[index].repository.fork) {
+          parentInfo = yield getForkParent(client, repoOwner, repoName);
         }
-        const { data: yaml } = yield client.rest.repos.getContent({
-          owner: repoOwner,
-          repo: repoName,
-          path: element
-        });
-        if ("name" in yaml && "download_url" in yaml) {
-          result.name = yaml.name;
-          result.repo = repoName;
-          result.forkedfrom = parentinfo;
-          if (yaml.download_url !== null) {
-            result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
-          }
-        }
-        if (fetchReadmesSetting && yaml) {
-          const readmeLink = yield getReadmeContent(client, repoName, repoOwner);
-          if (readmeLink) {
-            result.readme = readmeLink;
-          }
-        }
+        const result = yield getActionInfo(client, repoOwner, repoName, filePath, parentInfo);
         actions.push(result);
       }
     }
     return actions;
+  });
+}
+function getForkParent(client, owner, repo) {
+  return __async(this, null, function* () {
+    var _a;
+    const { data: repoInfo } = yield client.rest.repos.get({
+      owner,
+      repo
+    });
+    let parentInfo = "";
+    if ((_a = repoInfo.parent) == null ? void 0 : _a.full_name) {
+      parentInfo = repoInfo.parent.full_name;
+    }
+    return parentInfo;
+  });
+}
+function getActionInfo(client, owner, repo, path2, forkedFrom) {
+  return __async(this, null, function* () {
+    const { data: yaml } = yield client.rest.repos.getContent({
+      owner,
+      repo,
+      path: path2
+    });
+    const result = new Content();
+    if ("name" in yaml && "download_url" in yaml) {
+      result.name = yaml.name;
+      result.repo = repo;
+      result.forkedfrom = forkedFrom;
+      if (yaml.download_url !== null) {
+        result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
+      }
+    }
+    if (fetchReadmesSetting && yaml) {
+      const readmeLink = yield getReadmeContent(client, repo, owner);
+      if (readmeLink) {
+        result.readme = readmeLink;
+      }
+    }
+    return result;
   });
 }
 run();

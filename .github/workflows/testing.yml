@@ -5,7 +5,7 @@ on:
 
   workflow_dispatch:
 
-# Declare default GITHUB_TOKEN permissions as read only.
+# declare default GITHUB_TOKEN permissions as read only.
 permissions: read-all
     
 jobs:
@@ -118,8 +118,7 @@ jobs:
             exit 1
           fi
 
-      - name: Check if the result file has actions in it
-        continue-on-error: true #temporarily ignore this error, until we have a better way to handle forks
+      - name: Check if the result file has actions in it        
         run: | 
           # check if the file has actions in it 
           if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
@@ -129,6 +128,7 @@ jobs:
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        if: always()
         with: 
           name: actions-organization-with-forks
           path: ${{ steps.load-actions.outputs.actions-file-path }}
