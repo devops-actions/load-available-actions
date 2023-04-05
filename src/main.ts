@@ -262,16 +262,20 @@ function cloneRepo (
       fs.mkdirSync(repoPath);
     }
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
+    execSync(`ls -la`, {
+      stdio: [0, 1, 2], // we need this so node will print the command output
+      cwd: repoPath, // path to where you want to run the command
+    })
     // clone the repo
     execSync(`git clone ${repolink}`, {
       stdio: [0, 1, 2], // we need this so node will print the command output
-      cwd: repoPath, // path to where you want to save the file
+      cwd: repoPath, // path to where you want to run the command
     })
 
     return path.join(repoPath, repo)
   } catch (error: any) {
     core.info(`Error cloning repo [${repo}]: ${error}`)
-    core.info(`Message: ${error?.stdout.toString()}`)
+    // core.info(`Message: ${error?.stdout.toString()}`) // stdout is null
     return ''
   }
 }
@@ -296,7 +300,7 @@ async function executeCodeSearch (
       q: searchQuery
     })
     
-    core.debug(`Found [${searchResult.total_count}] code search results: [${searchResult}]`)
+    core.debug(`Found [${searchResult.total_count}] code search results`)
     return searchResult
 
   } catch (error) {
