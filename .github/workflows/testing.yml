@@ -12,6 +12,8 @@ jobs:
   test-load-from-user: # test the action for the user space
     name: User space
     runs-on: ubuntu-latest
+    env:
+      user: rajbos
     steps: 
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
       # make sure we have a new build, in case the dist folder was not updated
@@ -25,7 +27,7 @@ jobs:
         name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }} 
-          user: rajbos
+          user: ${{ env.user }}
         id: load-actions 
 
       # check if the result file is not empty
@@ -36,7 +38,7 @@ jobs:
             exit 1
           fi
 
-          ls -la
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.user }}]"
 
       - name: Check if the result file has actions in it
         run: |
@@ -107,6 +109,8 @@ jobs:
     runs-on: ubuntu-latest
     concurrency: single-run
     name: Org with forks
+    env:
+      organization: rajbos-actions
     steps: 
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
       # make sure we have a new build, in case the dist folder was not updated
@@ -120,7 +124,7 @@ jobs:
         name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }}
-          organization: rajbos-actions
+          organization: ${{ env.organization }}
         id: load-actions
 
       # check if the result file is not empty
@@ -130,6 +134,8 @@ jobs:
             echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
+
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.organization }}]"
 
       - name: Check if the result file has actions in it        
         run: | 
@@ -151,6 +157,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: test-load-from-organization-with-forks
     concurrency: single-run
+    env:
+      organization: actions
     if: always()
     steps: 
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
@@ -164,7 +172,7 @@ jobs:
         name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }}
-          organization: actions
+          organization: ${{ env.organization }}
         id: load-actions
 
       # check if the result file is not empty
@@ -174,6 +182,8 @@ jobs:
             echo "The result file is empty"
             exit 1
           fi
+
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.organization }}]"
 
       - name: Check if the result file has actions in it
         run: |
