@@ -225,7 +225,7 @@ jobs:
           fi
           
           # load the actions from the user
-          userActionsLength=$(jq -s '.[]' "./actions-user/actions.json")
+          userActionsLength=$(jq -s ".[]" "./actions-user/actions.json")
           organizationActionsLength=$(jq -s '.[]' "./actions-organization/actions.json")
           organizationWithForksActionsLength=$(jq -s '.[]' "./actions-organization-with-forks/actions.json")
 
