@@ -7,7 +7,7 @@ import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
-import { SearchResult } from '@jest/core/build/SearchSource'
+//import { SearchResult } from '@jest/core/build/SearchSource'
 
 dotenv.config()
 
@@ -187,7 +187,7 @@ async function getAllActionsFromForkedRepos(
   }
 
   core.debug(`searchQuery: ${searchQuery}`)
-  const searchResult = executeRepoSearch(client, searchQuery, isEnterpriseServer, 0)
+  const searchResult = await executeRepoSearch(client, searchQuery, isEnterpriseServer, 0)
 
   if (!searchResult) {
     var searchType = username ? 'user' : 'organization'
@@ -282,7 +282,7 @@ async function executeCodeSearch (
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<SearchResult[]> {
+): Promise<SearchResult> {
   if (retryCount > 0) {
     const backoffTime = Math.pow(2, retryCount) * 1000
     core.info(`Retrying code search [${retryCount}] more times`)
@@ -293,7 +293,7 @@ async function executeCodeSearch (
     checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for code: [${searchQuery}]`)
     
-    const searchResult = await client.paginate(client.rest.search.repos, {
+    const searchResult = await client.paginate(client.rest.search.code, {
       q: searchQuery
     })
     
@@ -301,6 +301,7 @@ async function executeCodeSearch (
     return searchResult
 
   } catch (error) {
+    core.info(`executeCodeSearch: catch!`)
     if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
       return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
     } else {
@@ -315,7 +316,8 @@ async function executeRepoSearch (
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<SearchResult[]> {
+): Promise<SearchResult> {
+  
   if (retryCount > 0) {
     const backoffTime = Math.pow(2, retryCount) * 1000
     core.info(`Retrying code search [${retryCount}] more times`)
@@ -325,18 +327,18 @@ async function executeRepoSearch (
   try {
     checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for repos: [${searchQuery}]`)
-    const {items: searchResult} = await client.paginate(client.rest.search.repos, {
+    const searchResult = await client.paginate(client.rest.search.repos, {
       q: searchQuery
     })
     //core.info(`executeRepoSearch: ${JSON.stringify(searchResult)}`)
-    core.debug(`Found [${searchResult.length}] repo search results`)
+    core.debug(`Found [${searchResult}] repo search results`)
     return searchResult
   } catch (error) {
-    core.info(`executeCodeSearch: catch!`)
+    core.info(`executeRepoSearch: catch!`)
     if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
-      return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
+      return executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
     } else {
-      core.info(`Error executing code search: ${error}`)
+      core.info(`Error executing repo search: ${error}`)
       throw error
     }
   }
@@ -363,7 +365,6 @@ async function getAllActionsUsingSearch (
     searchQuery = searchQuery.concat('+org:', organization)
   }
 
-  //const searchResult = await client.paginate(client.rest.search.code, {q: searchQuery})
   const searchResult = await executeCodeSearch(client, searchQuery, isEnterpriseServer, 0)
 
   if (!searchResult) {

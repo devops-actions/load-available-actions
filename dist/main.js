@@ -32639,7 +32639,7 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       searchQuery = searchQuery.concat("+org:", organization);
     }
     core3.debug(`searchQuery: ${searchQuery}`);
-    const searchResult = executeRepoSearch(client, searchQuery, isEnterpriseServer, 0);
+    const searchResult = yield executeRepoSearch(client, searchQuery, isEnterpriseServer, 0);
     if (!searchResult) {
       var searchType = username ? "user" : "organization";
       var searchValue = username ? username : organization;
@@ -32707,12 +32707,13 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     try {
       checkRateLimits(client, isEnterpriseServer);
       core3.debug(`searchQuery for code: [${searchQuery}]`);
-      const searchResult = yield client.paginate(client.rest.search.repos, {
+      const searchResult = yield client.paginate(client.rest.search.code, {
         q: searchQuery
       });
       core3.debug(`Found [${searchResult.total_count}] code search results: [${searchResult}]`);
       return searchResult;
     } catch (error) {
+      core3.info(`executeCodeSearch: catch!`);
       if (error.message.includes("SecondaryRateLimit detected for request")) {
         return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
@@ -32733,17 +32734,17 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     try {
       checkRateLimits(client, isEnterpriseServer);
       core3.debug(`searchQuery for repos: [${searchQuery}]`);
-      const { items: searchResult } = yield client.paginate(client.rest.search.repos, {
+      const searchResult = yield client.paginate(client.rest.search.repos, {
         q: searchQuery
       });
-      core3.debug(`Found [${searchResult.length}] repo search results`);
+      core3.debug(`Found [${searchResult}] repo search results`);
       return searchResult;
     } catch (error) {
-      core3.info(`executeCodeSearch: catch!`);
+      core3.info(`executeRepoSearch: catch!`);
       if (error.message.includes("SecondaryRateLimit detected for request")) {
-        return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
+        return executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
-        core3.info(`Error executing code search: ${error}`);
+        core3.info(`Error executing repo search: ${error}`);
         throw error;
       }
     }
