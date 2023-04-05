@@ -32700,13 +32700,28 @@ function cloneRepo(repo, owner) {
     return "";
   }
 }
-function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
+function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) {
   return __async(this, null, function* () {
-    checkRateLimits(client, isEnterpriseServer);
-    const searchResult = yield client.paginate(client.rest.search.code, {
-      q: searchQuery
-    });
-    return searchResult;
+    if (retryCount > 0) {
+      const backoffTime = Math.pow(2, retryCount) * 1e3;
+      core2.info(`Retrying code search [${retryCount}] more times`);
+      core2.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
+      yield new Promise((r) => setTimeout(r, backoffTime));
+    }
+    try {
+      checkRateLimits(client, isEnterpriseServer);
+      const searchResult = yield client.paginate(client.rest.search.code, {
+        q: searchQuery
+      });
+      return searchResult;
+    } catch (error) {
+      if (error.message.includes("SecondaryRateLimit detected for request")) {
+        return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
+      } else {
+        core2.info(`Error executing code search: ${error}`);
+        throw error;
+      }
+    }
   });
 }
 function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {

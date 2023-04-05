@@ -281,14 +281,32 @@ function cloneRepo (
 async function executeCodeSearch (
   client: Octokit,
   searchQuery: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  retryCount: number
 ): Promise<SearchResult> {
-  checkRateLimits(client, isEnterpriseServer)
-  // todo: add retry option when the response is "Secondary rate limit detected to back off"
-  const searchResult = await client.paginate(client.rest.search.code, {
-    q: searchQuery
-  })
-  return searchResult
+  if (retryCount > 0) {
+    const backoffTime = Math.pow(2, retryCount) * 1000
+    core.info(`Retrying code search [${retryCount}] more times`)
+    core.info(`Waiting [${backoffTime / 1000}] seconds before retrying code search`)
+    await new Promise(r => setTimeout(r, backoffTime))
+  }
+  try {
+    checkRateLimits(client, isEnterpriseServer)
+    // todo: add retry option when the response is "SecondaryRateLimit detected for request"
+    // "You have exceeded a secondary rate limit. Please wait a few minutes before you try again"
+    const searchResult = await client.paginate(client.rest.search.code, {
+      q: searchQuery
+    })
+    return searchResult
+    
+  } catch (error) {
+    if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
+      return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
+    } else {
+      core.info(`Error executing code search: ${error}`)
+      throw error
+    }
+  }
 }
 
 async function getAllActionsUsingSearch (
