@@ -21,9 +21,8 @@ export function parseYAML(filePath: string, repo: string | undefined, content: s
   } catch (error) {
     // this happens in https://github.com/gaurav-nelson/github-action-markdown-link-check/blob/9de9db77de3b29b650d2e2e99f0ee290f435214b/action.yml#L9
     // because of invalid yaml
-    core.warning(`Error parsing action file [${filePath}] in repo [${repo}] with error:`)
-    core.warning((error as Error))
-    core.warning(`The parsing error is informational, seaching for actions has continued`)    
+    core.warning(`Error parsing action file [${filePath}] in repo [${repo}] with error: ${(error as Error)}`)
+    core.info(`The parsing error is informational, seaching for actions has continued`)    
   }
   return { name, author, description }
 }

@@ -262,10 +262,7 @@ function cloneRepo (
       fs.mkdirSync(repoPath);
     }
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
-    execSync(`ls -la`, {
-      stdio: [0, 1, 2], // we need this so node will print the command output
-      cwd: repoPath, // path to where you want to run the command
-    })
+    
     // clone the repo
     execSync(`git clone ${repolink}`, {
       stdio: [0, 1, 2], // we need this so node will print the command output
