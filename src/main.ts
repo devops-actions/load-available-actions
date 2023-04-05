@@ -263,7 +263,7 @@ function cloneRepo (
     }
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
     // clone the repo
-    const result = execSync(`git clone ${repolink}`, {
+    execSync(`git clone ${repolink}`, {
       stdio: [0, 1, 2], // we need this so node will print the command output
       cwd: repoPath, // path to where you want to save the file
     })
@@ -271,7 +271,7 @@ function cloneRepo (
     return path.join(repoPath, repo)
   } catch (error: any) {
     core.info(`Error cloning repo [${repo}]: ${error}`)
-    core.info(`Message: ${error.stdout.toString()}`)
+    core.info(`Message: ${error?.stdout.toString()}`)
     return ''
   }
 }
