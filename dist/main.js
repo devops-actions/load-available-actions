@@ -32642,16 +32642,14 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       searchQuery = searchQuery.concat("+org:", organization);
     }
     core2.debug(`searchQuery: ${searchQuery}`);
-    const searchResult = yield client.paginate(client.rest.search.repos, {
-      q: searchQuery
-    });
+    const searchResult = executeRepoSearch(client, searchQuery, isEnterpriseServer, 0);
     if (!searchResult) {
       var searchType = username ? "user" : "organization";
       var searchValue = username ? username : organization;
       core2.info(`No forked repos found in the ${searchType} [${searchValue}]`);
       return actions;
     }
-    core2.info(`Found [${searchResult.length}] repos`);
+    core2.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
       if (!repo.fork) {
@@ -32724,6 +32722,30 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     }
   });
 }
+function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
+  return __async(this, null, function* () {
+    if (retryCount > 0) {
+      const backoffTime = Math.pow(2, retryCount) * 1e3;
+      core2.info(`Retrying code search [${retryCount}] more times`);
+      core2.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
+      yield new Promise((r) => setTimeout(r, backoffTime));
+    }
+    try {
+      checkRateLimits(client, isEnterpriseServer);
+      const searchResult = yield client.paginate(client.rest.search.repos, {
+        q: searchQuery
+      });
+      return searchResult;
+    } catch (error) {
+      if (error.message.includes("SecondaryRateLimit detected for request")) {
+        return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
+      } else {
+        core2.info(`Error executing code search: ${error}`);
+        throw error;
+      }
+    }
+  });
+}
 function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
@@ -32739,7 +32761,7 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
       searchQuery = searchQuery.concat("+org:", organization);
     }
     core2.debug(`searchQuery : ${searchQuery}`);
-    const searchResult = yield executeCodeSearch(client, searchQuery, isEnterpriseServer);
+    const searchResult = yield executeCodeSearch(client, searchQuery, isEnterpriseServer, 0);
     if (!searchResult) {
       var searchType = username ? "user" : "organization";
       var searchValue = username ? username : organization;

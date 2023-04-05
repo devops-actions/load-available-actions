@@ -46,7 +46,7 @@ jobs:
             exit 1
           fi
 
-      - name: Check if the results file has dubplicate actions
+      - name: Check if the results file has duplicate actions
         run: |
           # check if the file has actions in it 
           # this is WIP, it seems like there where duplicates of the actions results since we picked up the normal repos in the forks search as well (was fixed)
