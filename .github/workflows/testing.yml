@@ -53,6 +53,9 @@ jobs:
           echo "Unique actions by name = $(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
           if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
             echo "The result file contains duplicate actions" | tee "$GITHUB_STEP_SUMMARY"
+            # group the actions to find the duplicates
+            jq '.actions | group_by({name, repo}) | map(select(length > 1))' "${{ steps.load-actions.outputs.actions-file-path }}"
+            
             exit 1
           fi
 
