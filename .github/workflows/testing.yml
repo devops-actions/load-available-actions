@@ -49,6 +49,8 @@ jobs:
       - name: Check if the results file has dubplicate actions
         run: |
           # check if the file has actions in it 
+          echo "Actions array length = $(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
+          echo "Unique actions by name = $(jq '.actions | unique_by(.name) | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
           if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by(.name) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
             echo "The result file contains duplicate actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
