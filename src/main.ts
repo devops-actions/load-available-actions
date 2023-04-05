@@ -187,9 +187,7 @@ async function getAllActionsFromForkedRepos(
   }
 
   core.debug(`searchQuery: ${searchQuery}`)
-  const searchResult = await client.paginate(client.rest.search.repos, {
-    q: searchQuery
-  })
+  const searchResult = executeRepoSearch(client, searchQuery, isEnterpriseServer, 0)
 
   if (!searchResult) {
     var searchType = username ? 'user' : 'organization'
@@ -198,7 +196,7 @@ async function getAllActionsFromForkedRepos(
     return actions
   }
 
-  core.info(`Found [${searchResult.length}] repos`)
+  core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
     if (!repo.fork) {
@@ -309,6 +307,36 @@ async function executeCodeSearch (
   }
 }
 
+async function executeRepoSearch (
+  client: Octokit,
+  searchQuery: string,
+  isEnterpriseServer: boolean,
+  retryCount: number
+): Promise<SearchResult> {
+  if (retryCount > 0) {
+    const backoffTime = Math.pow(2, retryCount) * 1000
+    core.info(`Retrying code search [${retryCount}] more times`)
+    core.info(`Waiting [${backoffTime / 1000}] seconds before retrying code search`)
+    await new Promise(r => setTimeout(r, backoffTime))
+  }
+  try {
+    checkRateLimits(client, isEnterpriseServer)
+    // todo: add retry option when the response is "SecondaryRateLimit detected for request"
+    // "You have exceeded a secondary rate limit. Please wait a few minutes before you try again"
+    const searchResult = await client.paginate(client.rest.search.repos, {
+      q: searchQuery
+    })
+    return searchResult
+  } catch (error) {
+    if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
+      return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
+    } else {
+      core.info(`Error executing code search: ${error}`)
+      throw error
+    }
+  }
+}
+
 async function getAllActionsUsingSearch (
   client: Octokit,
   username: string,
@@ -332,7 +360,7 @@ async function getAllActionsUsingSearch (
 
   core.debug(`searchQuery : ${searchQuery}`)
   //const searchResult = await client.paginate(client.rest.search.code, {q: searchQuery})
-  const searchResult = await executeCodeSearch(client, searchQuery, isEnterpriseServer)
+  const searchResult = await executeCodeSearch(client, searchQuery, isEnterpriseServer, 0)
 
   if (!searchResult) {
     var searchType = username ? 'user' : 'organization'
