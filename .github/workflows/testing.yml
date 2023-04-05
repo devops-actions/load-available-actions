@@ -235,7 +235,7 @@ jobs:
             exit 1
           fi
 
-          if [ $organizationWithForksActionsLength == $organizationActionsLength ]; then
+          if (( $organizationWithForksActionsLength == $organizationActionsLength)); then
             echo "The organization with forks actions and the organization actions are the same length, which should not be the case"
             exit 1
           fi
