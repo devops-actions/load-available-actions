@@ -1148,12 +1148,12 @@ var require_lib = __commonJS({
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info2 = this._prepareRequest(verb, parsedUrl, headers);
+          let info3 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info2, data);
+            response = yield this.requestRaw(info3, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler of this.handlers) {
@@ -1163,7 +1163,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info2, data);
+                return authenticationHandler.handleAuthentication(this, info3, data);
               } else {
                 return response;
               }
@@ -1186,8 +1186,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info2 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info2, data);
+              info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info3, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -1216,7 +1216,7 @@ var require_lib = __commonJS({
        * @param info
        * @param data
        */
-      requestRaw(info2, data) {
+      requestRaw(info3, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -1228,7 +1228,7 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info2, data, callbackForResult);
+            this.requestRawWithCallback(info3, data, callbackForResult);
           });
         });
       }
@@ -1238,12 +1238,12 @@ var require_lib = __commonJS({
        * @param data
        * @param onResult
        */
-      requestRawWithCallback(info2, data, onResult) {
+      requestRawWithCallback(info3, data, onResult) {
         if (typeof data === "string") {
-          if (!info2.options.headers) {
-            info2.options.headers = {};
+          if (!info3.options.headers) {
+            info3.options.headers = {};
           }
-          info2.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -1252,7 +1252,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info2.httpModule.request(info2.options, (msg) => {
+        const req = info3.httpModule.request(info3.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -1264,7 +1264,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info2.options.path}`));
+          handleResult(new Error(`Request timeout: ${info3.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -1291,27 +1291,27 @@ var require_lib = __commonJS({
         return this._getAgent(parsedUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info2 = {};
-        info2.parsedUrl = requestUrl;
-        const usingSsl = info2.parsedUrl.protocol === "https:";
-        info2.httpModule = usingSsl ? https : http;
+        const info3 = {};
+        info3.parsedUrl = requestUrl;
+        const usingSsl = info3.parsedUrl.protocol === "https:";
+        info3.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info2.options = {};
-        info2.options.host = info2.parsedUrl.hostname;
-        info2.options.port = info2.parsedUrl.port ? parseInt(info2.parsedUrl.port) : defaultPort;
-        info2.options.path = (info2.parsedUrl.pathname || "") + (info2.parsedUrl.search || "");
-        info2.options.method = method;
-        info2.options.headers = this._mergeHeaders(headers);
+        info3.options = {};
+        info3.options.host = info3.parsedUrl.hostname;
+        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
+        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
+        info3.options.method = method;
+        info3.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info2.options.headers["user-agent"] = this.userAgent;
+          info3.options.headers["user-agent"] = this.userAgent;
         }
-        info2.options.agent = this._getAgent(info2.parsedUrl);
+        info3.options.agent = this._getAgent(info3.parsedUrl);
         if (this.handlers) {
           for (const handler of this.handlers) {
-            handler.prepareRequest(info2.options);
+            handler.prepareRequest(info3.options);
           }
         }
-        return info2;
+        return info3;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -2147,18 +2147,18 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error;
-    function warning(message, properties = {}) {
+    function warning2(message, properties = {}) {
       command_1.issueCommand("warning", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning;
+    exports.warning = warning2;
     function notice(message, properties = {}) {
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info2(message) {
+    function info3(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info2;
+    exports.info = info3;
     function startGroup(name) {
       command_1.issue("group", name);
     }
@@ -8784,11 +8784,11 @@ var require_dist_node11 = __commonJS({
     }
     async function wrapRequest(state, request, options) {
       const limiter = new Bottleneck();
-      limiter.on("failed", function(error, info2) {
+      limiter.on("failed", function(error, info3) {
         const maxRetries = ~~error.request.request.retries;
         const after = ~~error.request.request.retryAfter;
-        options.request.retryCount = info2.retryCount + 1;
-        if (maxRetries > info2.retryCount) {
+        options.request.retryCount = info3.retryCount + 1;
+        if (maxRetries > info3.retryCount) {
           return after * state.retryAfterBaseValue;
         }
       });
@@ -8960,8 +8960,8 @@ var require_dist_node12 = __commonJS({
       } : state.onSecondaryRateLimit);
       events.on("rate-limit", state.onRateLimit);
       events.on("error", (e) => octokit.log.warn("Error in throttling-plugin limit handler", e));
-      state.retryLimiter.on("failed", async function(error, info2) {
-        const [state2, request, options] = info2.args;
+      state.retryLimiter.on("failed", async function(error, info3) {
+        const [state2, request, options] = info3.args;
         const {
           pathname
         } = new URL(options.url, "http://github.test");
@@ -19616,7 +19616,7 @@ var require_dist_node21 = __commonJS({
       return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
     }
     var OAuthAppAuth = require_dist_node17();
-    var core3 = require_dist_node8();
+    var core4 = require_dist_node8();
     var universalUserAgent = require_dist_node();
     var authOauthUser = require_dist_node16();
     var OAuthMethods = require_dist_node14();
@@ -19635,7 +19635,7 @@ var require_dist_node21 = __commonJS({
       }
       state.eventHandlers[eventName].push(eventHandler);
     }
-    var OAuthAppOctokit = core3.Octokit.defaults({
+    var OAuthAppOctokit = core4.Octokit.defaults({
       userAgent: `octokit-oauth-app.js/${VERSION} ${universalUserAgent.getUserAgent()}`
     });
     async function emitEvent(state, context) {
@@ -20908,7 +20908,7 @@ var require_dist_node24 = __commonJS({
   "node_modules/@octokit/app/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core3 = require_dist_node8();
+    var core4 = require_dist_node8();
     var authApp = require_dist_node19();
     var oauthApp = require_dist_node21();
     var authUnauthenticated = require_dist_node20();
@@ -21125,7 +21125,7 @@ var require_dist_node24 = __commonJS({
         return AppWithDefaults;
       }
       constructor(options) {
-        const Octokit2 = options.Octokit || core3.Octokit;
+        const Octokit2 = options.Octokit || core4.Octokit;
         const authOptions = Object.assign({
           appId: options.appId,
           privateKey: options.privateKey
@@ -21184,7 +21184,7 @@ var require_dist_node25 = __commonJS({
   "node_modules/octokit/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core3 = require_dist_node8();
+    var core4 = require_dist_node8();
     var pluginPaginateRest = require_dist_node9();
     var pluginRestEndpointMethods = require_dist_node10();
     var pluginRetry = require_dist_node11();
@@ -21192,7 +21192,7 @@ var require_dist_node25 = __commonJS({
     var app = require_dist_node24();
     var oauthApp = require_dist_node21();
     var VERSION = "2.0.14";
-    var Octokit2 = core3.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
+    var Octokit2 = core4.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
       userAgent: `octokit.js/${VERSION}`,
       throttle: {
         onRateLimit,
@@ -26748,12 +26748,12 @@ var require_log = __commonJS({
       if (logLevel === "debug")
         console.log(...messages);
     }
-    function warn(logLevel, warning) {
+    function warn(logLevel, warning2) {
       if (logLevel === "debug" || logLevel === "warn") {
         if (typeof process !== "undefined" && process.emitWarning)
-          process.emitWarning(warning);
+          process.emitWarning(warning2);
         else
-          console.warn(warning);
+          console.warn(warning2);
       }
     }
     exports.debug = debug3;
@@ -30152,9 +30152,9 @@ var require_composer = __commonJS({
         this.prelude = [];
         this.errors = [];
         this.warnings = [];
-        this.onError = (source, code, message, warning) => {
+        this.onError = (source, code, message, warning2) => {
           const pos = getErrorPos(source);
-          if (warning)
+          if (warning2)
             this.warnings.push(new errors.YAMLWarning(pos, code, message));
           else
             this.errors.push(new errors.YAMLParseError(pos, code, message));
@@ -30225,10 +30225,10 @@ ${cb}` : comment;
           console.dir(token, { depth: null });
         switch (token.type) {
           case "directive":
-            this.directives.add(token.source, (offset, message, warning) => {
+            this.directives.add(token.source, (offset, message, warning2) => {
               const pos = getErrorPos(token);
               pos[0] += offset;
-              this.onError(pos, "BAD_DIRECTIVE", message, warning);
+              this.onError(pos, "BAD_DIRECTIVE", message, warning2);
             });
             this.prelude.push(token.source);
             this.atDirectives = true;
@@ -32219,7 +32219,7 @@ var require_public_api2 = __commonJS({
       const doc = parseDocument(src, options);
       if (!doc)
         return null;
-      doc.warnings.forEach((warning) => log.warn(doc.options.logLevel, warning));
+      doc.warnings.forEach((warning2) => log.warn(doc.options.logLevel, warning2));
       if (doc.errors.length > 0) {
         if (doc.options.logLevel !== "silent")
           throw doc.errors[0];
@@ -32462,33 +32462,32 @@ __export(main_exports, {
   Content: () => Content
 });
 module.exports = __toCommonJS(main_exports);
-var core2 = __toESM(require_core());
+var core3 = __toESM(require_core());
 var import_octokit = __toESM(require_dist_node25());
 
 // src/utils.ts
+var core = __toESM(require_core());
 var import_moment = __toESM(require_moment());
 var import_string_sanitizer = __toESM(require_string_sanitizer());
 var import_yaml = __toESM(require_dist());
 function GetDateFormatted(date) {
   return (0, import_moment.default)(date).format("YYYYMMDD_HHmm");
 }
-function parseYAML(repo, content) {
+function parseYAML(filePath, repo, content) {
+  const defaultValue = "Undefined";
+  let name = defaultValue;
+  let author = defaultValue;
+  let description = defaultValue;
   try {
     const parsed = import_yaml.default.parse(content);
-    const defaultValue = "Undefined";
-    const name = parsed.name ? sanitize(parsed.name) : defaultValue;
-    const author = parsed.author ? sanitize(parsed.author) : defaultValue;
-    const description = parsed.description ? sanitize(parsed.description) : defaultValue;
-    return { name, author, description };
+    name = parsed.name ? sanitize(parsed.name) : defaultValue;
+    author = parsed.author ? sanitize(parsed.author) : defaultValue;
+    description = parsed.description ? sanitize(parsed.description) : defaultValue;
   } catch (error) {
-    console.log(
-      `Error parsing action file in repo [${repo}] with error:`
-    );
-    console.log(error);
-    console.log(
-      `The parsing error is informational, seaching for actions has continued`
-    );
+    core.warning(`Error parsing action file [${filePath}] in repo [${repo}] with error: ${error}`);
+    core.info(`The parsing error is informational, seaching for actions has continued`);
   }
+  return { name, author, description };
 }
 function sanitize(value) {
   return import_string_sanitizer.default.sanitize.keepSpace(value);
@@ -32500,7 +32499,7 @@ var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 
 // src/optionalActions.ts
-var core = __toESM(require_core());
+var core2 = __toESM(require_core());
 function getReadmeContent(client, repo, owner) {
   return __async(this, null, function* () {
     try {
@@ -32511,19 +32510,21 @@ function getReadmeContent(client, repo, owner) {
       });
       return readme.content;
     } catch (error) {
-      core.debug(`No readme file found in repository: ${repo}`);
+      core2.debug(`No readme file found in repository: ${repo}`);
     }
   });
 }
 
 // src/main.ts
+var import_child_process = require("child_process");
 import_dotenv.default.config();
-var getInputOrEnv = (input) => core2.getInput(input) || process.env.input || "";
+var getInputOrEnv = (input) => core3.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
+var hostname = "github.com";
 function run() {
   return __async(this, null, function* () {
-    core2.info("Starting");
+    core3.info("Starting");
     try {
       const PAT = getInputOrEnv("PAT");
       const user = getInputOrEnv("user");
@@ -32532,13 +32533,13 @@ function run() {
       const isEnterpriseServer = baseUrl !== "https://api.github.com";
       const outputFilename = getInputOrEnv("outputFilename") || "actions.json";
       if (!PAT) {
-        core2.setFailed(
+        core3.setFailed(
           "Parameter 'PAT' is required to load all actions from the organization or user account"
         );
         return;
       }
       if (!user && !organization) {
-        core2.setFailed(
+        core3.setFailed(
           "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
         );
         return;
@@ -32549,7 +32550,7 @@ function run() {
       });
       try {
       } catch (error) {
-        core2.setFailed(
+        core3.setFailed(
           `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
         );
         return;
@@ -32567,14 +32568,14 @@ function run() {
         organization,
         user
       };
-      core2.info(`Found [${actionFiles.length}] actions`);
+      core3.info(`Found [${actionFiles.length}] actions`);
       const json = JSON.stringify(output);
       import_fs.default.writeFileSync(outputFilename, json);
       const fullPath = import_path.default.resolve(outputFilename);
-      core2.info(`Writing results to [${fullPath}]`);
-      core2.setOutput("actions-file-path", fullPath);
+      core3.info(`Writing results to [${fullPath}]`);
+      core3.setOutput("actions-file-path", fullPath);
     } catch (error) {
-      core2.setFailed(`Error running action: : ${error.message}`);
+      core3.setFailed(`Error running action: : ${error.message}`);
     }
   });
 }
@@ -32583,10 +32584,10 @@ var Content = class {
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
-      core2.debug(`Enrich : ${action.downloadUrl}`);
+      core3.debug(`Enrich action information from file: [${action.downloadUrl}]`);
       if (action.downloadUrl) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
-        const { name, author, description } = parseYAML(action.repo, content);
+        const { name, author, description } = parseYAML(action.downloadUrl, action.repo, content);
         action.name = name;
         action.author = author;
         action.description = description;
@@ -32595,87 +32596,233 @@ function enrichActionFiles(client, actionFiles) {
     return actionFiles;
   });
 }
+function checkRateLimits(client, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    if (!isEnterpriseServer) {
+      var ratelimit = yield client.rest.rateLimit.get();
+      if (ratelimit.data.resources.search.remaining <= 2) {
+        var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+        core3.debug(`Search API reset time: ${resetTime}`);
+        var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
+        if (waitTime < 0) {
+          waitTime = 7e3;
+        } else {
+          waitTime = waitTime + 1e3;
+        }
+        core3.info(
+          `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
+        );
+        yield new Promise((r) => setTimeout(r, waitTime));
+      }
+    }
+  });
+}
 function getAllActions(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
-    var _a;
+    let actions = yield getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
+    let forkedActions = yield getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
+    actions = actions.concat(forkedActions);
+    return actions;
+  });
+}
+function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
+  return __async(this, null, function* () {
     const actions = [];
-    var searchQuery = "+filename:action+language:YAML";
+    var searchQuery = "+fork:true";
     if (username) {
-      core2.info(`Search for action files of the user [ ${username} ]`);
+      core3.info(`Search for action files of the user [${username}] in forked repos`);
       searchQuery = searchQuery.concat("+user:", username);
     }
     if (organization !== "") {
-      core2.info(
-        `Search for action files under the organization [ ${organization} ]`
-      );
+      core3.info(`Search for action files under the organization [${organization}] in forked repos`);
       searchQuery = searchQuery.concat("+org:", organization);
     }
-    core2.debug(`searchQuery : ${searchQuery}`);
-    const searchResult = yield client.paginate(client.rest.search.code, {
-      q: searchQuery
-    });
+    const searchResult = yield executeRepoSearch(client, searchQuery, isEnterpriseServer, 0);
     if (!searchResult) {
       var searchType = username ? "user" : "organization";
       var searchValue = username ? username : organization;
-      core2.info(`No actions found in the ${searchType} [${searchValue}]`);
-    } else {
-      for (let index = 0; index < searchResult.length; index++) {
-        if (!isEnterpriseServer) {
-          var ratelimit = yield client.rest.rateLimit.get();
-          if (ratelimit.data.resources.search.remaining <= 2) {
-            var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-            core2.debug(`Search API reset time: ${resetTime}`);
-            var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
-            if (waitTime < 0) {
-              waitTime = 2500;
-            } else {
-              waitTime = waitTime + 1e3;
-            }
-            core2.info(
-              `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
-            );
-            yield new Promise((r) => setTimeout(r, waitTime));
-          }
-        }
-        const result = new Content();
-        var fileName = searchResult[index].name;
-        var element = searchResult[index].path;
-        var repoName = searchResult[index].repository.name;
-        var repoOwner = searchResult[index].repository.owner.login;
-        if (fileName == "action.yaml" || fileName == "action.yml") {
-          core2.info(`Found action in ${repoName}/${element}`);
-          const { data: repoinfo } = yield client.rest.repos.get({
-            owner: repoOwner,
-            repo: repoName
-          });
-          let parentinfo = "";
-          if ((_a = repoinfo.parent) == null ? void 0 : _a.full_name) {
-            parentinfo = repoinfo.parent.full_name;
-          }
-          const { data: yaml } = yield client.rest.repos.getContent({
-            owner: repoOwner,
-            repo: repoName,
-            path: element
-          });
-          if ("name" in yaml && "download_url" in yaml) {
-            result.name = yaml.name;
-            result.repo = repoName;
-            result.forkedfrom = parentinfo;
-            if (yaml.download_url !== null) {
-              result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
-            }
-          }
-          if (fetchReadmesSetting && yaml) {
-            const readmeLink = yield getReadmeContent(client, repoName, repoOwner);
-            if (readmeLink) {
-              result.readme = readmeLink;
-            }
-          }
-          actions.push(result);
-        }
+      core3.info(`No forked repos found in the ${searchType} [${searchValue}]`);
+      return actions;
+    }
+    core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
+    for (let index = 0; index < searchResult.length; index++) {
+      const repo = searchResult[index];
+      if (!repo.fork) {
+        continue;
+      }
+      checkRateLimits(client, isEnterpriseServer);
+      var repoName = repo.name;
+      var repoOwner = repo.owner ? repo.owner.login : "";
+      core3.debug(`Checking repo [${repoName}] for action files`);
+      const repoPath = cloneRepo(repoName, repoOwner);
+      if (repoPath === "") {
+        continue;
+      }
+      const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: "utf8" }).split("\n");
+      core3.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`);
+      for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
+        core3.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
+        const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
+        core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
+        const parentInfo = yield getForkParent(client, repoOwner, repoName);
+        const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo);
+        actions.push(action);
       }
     }
     return actions;
+  });
+}
+function cloneRepo(repo, owner) {
+  try {
+    const repolink = `https://${hostname}/${owner}/${repo}.git`;
+    const repoPath = "actions";
+    if (!import_fs.default.existsSync(repoPath)) {
+      import_fs.default.mkdirSync(repoPath);
+    }
+    core3.debug(`Cloning repo [${repo}] to [${repoPath}]`);
+    (0, import_child_process.execSync)(`git clone ${repolink}`, {
+      stdio: [0, 1, 2],
+      // we need this so node will print the command output
+      cwd: repoPath
+      // path to where you want to run the command
+    });
+    return import_path.default.join(repoPath, repo);
+  } catch (error) {
+    core3.info(`Error cloning repo [${repo}]: ${error}`);
+    return "";
+  }
+}
+function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) {
+  return __async(this, null, function* () {
+    if (retryCount > 0) {
+      const backoffTime = Math.pow(2, retryCount) * 1e3;
+      core3.info(`Retrying code search [${retryCount}] more times`);
+      core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
+      yield new Promise((r) => setTimeout(r, backoffTime));
+    }
+    try {
+      checkRateLimits(client, isEnterpriseServer);
+      core3.debug(`searchQuery for code: [${searchQuery}]`);
+      const searchResult = yield client.paginate(client.rest.search.code, {
+        q: searchQuery
+      });
+      core3.debug(`Found [${searchResult.total_count}] code search results`);
+      return searchResult;
+    } catch (error) {
+      core3.info(`executeCodeSearch: catch!`);
+      if (error.message.includes("SecondaryRateLimit detected for request")) {
+        return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
+      } else {
+        core3.info(`Error executing code search: ${error}`);
+        throw error;
+      }
+    }
+  });
+}
+function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
+  return __async(this, null, function* () {
+    if (retryCount > 0) {
+      const backoffTime = Math.pow(2, retryCount) * 1e3;
+      core3.info(`Retrying code search [${retryCount}] more times`);
+      core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
+      yield new Promise((r) => setTimeout(r, backoffTime));
+    }
+    try {
+      checkRateLimits(client, isEnterpriseServer);
+      core3.debug(`searchQuery for repos: [${searchQuery}]`);
+      const searchResult = yield client.paginate(client.rest.search.repos, {
+        q: searchQuery
+      });
+      core3.debug(`Found [${searchResult.length}] repo search results`);
+      return searchResult;
+    } catch (error) {
+      core3.info(`executeRepoSearch: catch!`);
+      if (error.message.includes("SecondaryRateLimit detected for request")) {
+        return executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
+      } else {
+        core3.info(`Error executing repo search: ${error}`);
+        throw error;
+      }
+    }
+  });
+}
+function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    const actions = [];
+    var searchQuery = "+filename:action+language:YAML";
+    if (username) {
+      core3.info(`Search for action files of the user [${username}]`);
+      searchQuery = searchQuery.concat("+user:", username);
+    }
+    if (organization !== "") {
+      core3.info(
+        `Search for action files under the organization [${organization}]`
+      );
+      searchQuery = searchQuery.concat("+org:", organization);
+    }
+    const searchResult = yield executeCodeSearch(client, searchQuery, isEnterpriseServer, 0);
+    if (!searchResult) {
+      var searchType = username ? "user" : "organization";
+      var searchValue = username ? username : organization;
+      core3.info(`No actions found in the ${searchType} [${searchValue}]`);
+      return actions;
+    }
+    for (let index = 0; index < searchResult.length; index++) {
+      checkRateLimits(client, isEnterpriseServer);
+      var fileName = searchResult[index].name;
+      var filePath = searchResult[index].path;
+      var repoName = searchResult[index].repository.name;
+      var repoOwner = searchResult[index].repository.owner.login;
+      if (fileName == "action.yaml" || fileName == "action.yml") {
+        core3.info(`Found action in ${repoName}/${filePath}`);
+        let parentInfo = "";
+        if (searchResult[index].repository.fork) {
+          parentInfo = yield getForkParent(client, repoOwner, repoName);
+        }
+        const result = yield getActionInfo(client, repoOwner, repoName, filePath, parentInfo);
+        actions.push(result);
+      }
+    }
+    return actions;
+  });
+}
+function getForkParent(client, owner, repo) {
+  return __async(this, null, function* () {
+    var _a;
+    const { data: repoInfo } = yield client.rest.repos.get({
+      owner,
+      repo
+    });
+    let parentInfo = "";
+    if ((_a = repoInfo.parent) == null ? void 0 : _a.full_name) {
+      parentInfo = repoInfo.parent.full_name;
+    }
+    return parentInfo;
+  });
+}
+function getActionInfo(client, owner, repo, path2, forkedFrom) {
+  return __async(this, null, function* () {
+    const { data: yaml } = yield client.rest.repos.getContent({
+      owner,
+      repo,
+      path: path2
+    });
+    const result = new Content();
+    if ("name" in yaml && "download_url" in yaml) {
+      result.name = yaml.name;
+      result.repo = repo;
+      result.forkedfrom = forkedFrom;
+      if (yaml.download_url !== null) {
+        result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
+      }
+    }
+    if (fetchReadmesSetting && yaml) {
+      const readmeLink = yield getReadmeContent(client, repo, owner);
+      if (readmeLink) {
+        result.readme = readmeLink;
+      }
+    }
+    return result;
   });
 }
 run();

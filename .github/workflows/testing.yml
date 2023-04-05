@@ -5,14 +5,15 @@ on:
 
   workflow_dispatch:
 
-# Declare default GITHUB_TOKEN permissions as read only.
+# declare default GITHUB_TOKEN permissions as read only.
 permissions: read-all
     
 jobs:
   test-load-from-user: # test the action for the user space
     name: User space
     runs-on: ubuntu-latest
-    #if: github.ref == 'refs/heads/main' # don't run on PRs
+    env:
+      user: rajbos
     steps: 
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
       # make sure we have a new build, in case the dist folder was not updated
@@ -26,7 +27,7 @@ jobs:
         name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }} 
-          user: rajbos
+          user: ${{ env.user }}
         id: load-actions 
 
       # check if the result file is not empty
@@ -37,18 +38,33 @@ jobs:
             exit 1
           fi
 
-          ls -la
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.user }}]" | tee "$GITHUB_STEP_SUMMARY"
 
       - name: Check if the result file has actions in it
         run: |
           # check if the file has actions in it 
           if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
-            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Check if the results file has duplicate actions
+        run: |
+          # check if the file has actions in it 
+          # this is WIP, it seems like there where duplicates of the actions results since we picked up the normal repos in the forks search as well (was fixed)
+          echo "Actions array length = $(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
+          echo "Unique actions by name = $(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
+          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
+            echo "The result file contains duplicate actions" | tee "$GITHUB_STEP_SUMMARY"
+            # group the actions to find the duplicates
+            jq '.actions | group_by({name, repo}) | map(select(length > 1))' "${{ steps.load-actions.outputs.actions-file-path }}"
+            
             exit 1
           fi
 
       # upload the second result file as an artefact 
       - name: Upload result file as artefact
+        if: always()
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with: 
           name: actions-user
@@ -82,18 +98,19 @@ jobs:
       - name: Validate that the two files have different names
         run: | 
           if [ ${{ steps.load-actions.outputs.actions-file-path }} == ${{ steps.load-actions-second-run.outputs.actions-file-path }} ]; then
-            echo "The two files have the same name, this is not good" | tee "$GITHUB_STEP_SUMMARY"
+            echo ":warning: The two files have the same name, this is not good" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           else
             echo "The two files have different names, this is good" | tee "$GITHUB_STEP_SUMMARY"
           fi
   
   test-load-from-organization-with-forks: # test the action for the organization space
-    needs: test-load-from-user
+    #needs: test-load-from-user
     runs-on: ubuntu-latest
     concurrency: single-run
     name: Org with forks
-    #if: github.ref == 'refs/heads/main' # don't run on PRs
+    env:
+      organization: rajbos-actions
     steps: 
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
       # make sure we have a new build, in case the dist folder was not updated
@@ -107,7 +124,7 @@ jobs:
         name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }}
-          organization: rajbos-actions
+          organization: ${{ env.organization }}
         id: load-actions
 
       # check if the result file is not empty
@@ -118,17 +135,19 @@ jobs:
             exit 1
           fi
 
-      - name: Check if the result file has actions in it
-        continue-on-error: true #temporarily ignore this error, until we have a better way to handle forks
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
+
+      - name: Check if the result file has actions in it        
         run: | 
           # check if the file has actions in it 
           if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
-            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
             
       - name: Upload result file as artefact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        if: always()
         with: 
           name: actions-organization-with-forks
           path: ${{ steps.load-actions.outputs.actions-file-path }}
@@ -136,9 +155,11 @@ jobs:
   test-load-from-organization: # test the action for the organization space
     name: Org without forks
     runs-on: ubuntu-latest
-    needs: test-load-from-user
+    needs: test-load-from-organization-with-forks
     concurrency: single-run
-    #if: github.ref == 'refs/heads/main' # don't run on PRs
+    env:
+      organization: actions
+    if: always()
     steps: 
       - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
       # make sure we have a new build, in case the dist folder was not updated
@@ -151,7 +172,7 @@ jobs:
         name: Load available actions
         with: 
           PAT: ${{ secrets.PAT }}
-          organization: actions
+          organization: ${{ env.organization }}
         id: load-actions
 
       # check if the result file is not empty
@@ -162,11 +183,13 @@ jobs:
             exit 1
           fi
 
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
+
       - name: Check if the result file has actions in it
         run: |
           # check if the file has actions in it 
           if [ "$(jq ".actions | length" "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
-            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
             
@@ -176,3 +199,48 @@ jobs:
           name: actions-organization
           path: ${{ steps.load-actions.outputs.actions-file-path }}
 
+  Consolidate:
+    runs-on: ubuntu-latest
+    needs: 
+      - test-load-from-user
+      - test-load-from-organization
+      - test-load-from-organization-with-forks
+    steps:
+      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        
+      - run: |
+          ls -la
+
+          # make sure the three expected directories exists
+          if [ ! -d "actions-user" ]; then
+            echo "actions-user directory does not exist"
+          fi
+
+          if [ ! -d "actions-organization" ]; then
+            echo "actions-organization directory does not exist"
+          fi
+
+          if [ ! -d "actions-organization-with-forks" ]; then
+            echo "actions-organization-with-forks directory does not exist"
+          fi
+          
+          # load the actions from the user
+          userActionsLength=$(jq -s '.[]' "./actions-user/actions.json")
+          organizationActionsLength=$(jq -s '.[]' "./actions-organization/actions.json")
+          organizationWithForksActionsLength=$(jq -s '.[]' "./actions-organization-with-forks/actions.json")
+
+          # test if the lenghts are all different
+          if ((userActionsLength == organizationActionsLength)); then
+            echo "The user actions and the organization actions are the same length, which should not be the case"
+            exit 1
+          fi
+
+          if ((organizationWithForksActionsLength == organizationActionsLength)); then
+            echo "The organization with forks actions and the organization actions are the same length, which should not be the case"
+            exit 1
+          fi
+
+          if ((userActionsLength == organizationWithForksActionsLength)); then
+            echo "The user actions and the organization with forks actions are the same length, which should not be the case"
+            exit 1
+          fi
