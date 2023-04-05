@@ -32638,7 +32638,6 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       core3.info(`Search for action files under the organization [${organization}] in forked repos`);
       searchQuery = searchQuery.concat("+org:", organization);
     }
-    core3.debug(`searchQuery: ${searchQuery}`);
     const searchResult = yield executeRepoSearch(client, searchQuery, isEnterpriseServer, 0);
     if (!searchResult) {
       var searchType = username ? "user" : "organization";
@@ -32737,7 +32736,7 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
       const searchResult = yield client.paginate(client.rest.search.repos, {
         q: searchQuery
       });
-      core3.debug(`Found [${searchResult}] repo search results`);
+      core3.debug(`Found [${searchResult.length}] repo search results`);
       return searchResult;
     } catch (error) {
       core3.info(`executeRepoSearch: catch!`);

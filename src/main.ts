@@ -186,7 +186,6 @@ async function getAllActionsFromForkedRepos(
     searchQuery = searchQuery.concat('+org:', organization)
   }
 
-  core.debug(`searchQuery: ${searchQuery}`)
   const searchResult = await executeRepoSearch(client, searchQuery, isEnterpriseServer, 0)
 
   if (!searchResult) {
@@ -331,7 +330,7 @@ async function executeRepoSearch (
       q: searchQuery
     })
     //core.info(`executeRepoSearch: ${JSON.stringify(searchResult)}`)
-    core.debug(`Found [${searchResult}] repo search results`)
+    core.debug(`Found [${searchResult.length}] repo search results`)
     return searchResult
   } catch (error) {
     core.info(`executeRepoSearch: catch!`)
