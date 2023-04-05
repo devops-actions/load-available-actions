@@ -291,11 +291,11 @@ async function executeCodeSearch (
   }
   try {
     checkRateLimits(client, isEnterpriseServer)
-    // todo: add retry option when the response is "SecondaryRateLimit detected for request"
-    // "You have exceeded a secondary rate limit. Please wait a few minutes before you try again"
+    core.debug(`searchQuery for code: ${searchQuery}`)
     const searchResult = await client.paginate(client.rest.search.code, {
       q: searchQuery
     })
+    core.debug(`Found [${searchResult.total_count}] code search results`)
     return searchResult
     
   } catch (error) {
@@ -322,11 +322,11 @@ async function executeRepoSearch (
   }
   try {
     checkRateLimits(client, isEnterpriseServer)
-    // todo: add retry option when the response is "SecondaryRateLimit detected for request"
-    // "You have exceeded a secondary rate limit. Please wait a few minutes before you try again"
+    core.debug(`searchQuery for repos: ${searchQuery}`)
     const searchResult = await client.paginate(client.rest.search.repos, {
       q: searchQuery
     })
+    core.debug(`Found [${searchResult.total_count}] repo search results`)
     return searchResult
   } catch (error) {
     if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
@@ -359,7 +359,6 @@ async function getAllActionsUsingSearch (
     searchQuery = searchQuery.concat('+org:', organization)
   }
 
-  core.debug(`searchQuery : ${searchQuery}`)
   //const searchResult = await client.paginate(client.rest.search.code, {q: searchQuery})
   const searchResult = await executeCodeSearch(client, searchQuery, isEnterpriseServer, 0)
 
