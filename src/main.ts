@@ -297,7 +297,7 @@ async function executeCodeSearch (
     })
     core.debug(`Found [${searchResult.total_count}] code search results: [${searchResult}]`)
     return searchResult
-    
+
   } catch (error) {
     if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
       return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
@@ -326,8 +326,8 @@ async function executeRepoSearch (
     const searchResult = await client.paginate(client.rest.search.repos, {
       q: searchQuery
     })
-    core.info(`executeCodeSearch: ${searchResult}`)
-    core.debug(`Found [${searchResult.total_count}] repo search results`)
+    core.info(`executeRepoSearch: ${JSON.stringify(searchResult)}`)
+    core.debug(`Found [${searchResult.length}] repo search results`)
     return searchResult
   } catch (error) {
     core.info(`executeCodeSearch: catch!`)
