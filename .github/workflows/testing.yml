@@ -46,6 +46,14 @@ jobs:
             exit 1
           fi
 
+      - name: Check if the results file has dubplicate actions
+        run: |
+          # check if the file has actions in it 
+          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by(.name) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
+            echo "The result file contains duplicate actions" | tee "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
       # upload the second result file as an artefact 
       - name: Upload result file as artefact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
