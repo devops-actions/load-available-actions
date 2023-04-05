@@ -32653,7 +32653,6 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       checkRateLimits(client, isEnterpriseServer);
       var repoName = repo.name;
       var repoOwner = repo.owner ? repo.owner.login : "";
-      var defaultBranch = repo.default_branch;
       core3.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
       if (repoPath === "") {

@@ -206,7 +206,6 @@ async function getAllActionsFromForkedRepos(
     // check if the repo contains action files in the root of the repo
     var repoName = repo.name
     var repoOwner = repo.owner ? repo.owner.login : ""
-    var defaultBranch = repo.default_branch
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
@@ -234,19 +233,6 @@ async function getAllActionsFromForkedRepos(
   }
 
   return actions
-}
-
-async function getRepoInfo (
-  client: Octokit, 
-  repoOwner: string, 
-  repoName: string){
-
-  const { data } = await client.rest.repos.get({
-    owner: repoOwner,
-    repo: repoName
-  })
-
-  return data
 }
 
 function cloneRepo (
