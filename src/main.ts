@@ -197,11 +197,15 @@ async function getAllActionsFromForkedRepos(
     return actions
   }
 
-  core.info(`Found [${searchResult.length}] forked repos`)
+  core.info(`Found [${searchResult.length}] repos`)
   for (let index = 0; index < searchResult.length; index++) {
+    const repo = searchResult[index]
+    if (!repo.fork) {
+      // we only want forked repos
+      continue
+    }
     checkRateLimits(client, isEnterpriseServer)
     // check if the repo contains action files in the root of the repo
-    const repo = searchResult[index]
     var repoName = repo.name
     var repoOwner = repo.owner ? repo.owner.login : ""
     var defaultBranch = repo.default_branch
