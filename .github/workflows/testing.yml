@@ -205,4 +205,20 @@ jobs:
     steps:
       - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         
-      - run: ls -la
+      - run: |
+          ls -la
+          cd actions-user
+          ls -la
+
+          # make sure the three directories exists
+          if [ ! -d "actions-user" ]; then
+            echo "actions-user directory does not exist"
+          fi
+
+          if [ ! -d "actions-organization" ]; then
+            echo "actions-organization directory does not exist"
+          fi
+
+          if [ ! -d "actions-organization-with-forks" ]; then
+            echo "actions-organization-with-forks directory does not exist"
+          fi
