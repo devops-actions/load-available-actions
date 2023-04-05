@@ -38,7 +38,7 @@ jobs:
             exit 1
           fi
 
-          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.user }}]"
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.user }}]" | tee "$GITHUB_STEP_SUMMARY"
 
       - name: Check if the result file has actions in it
         run: |
@@ -135,7 +135,7 @@ jobs:
             exit 1
           fi
 
-          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.organization }}]"
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
 
       - name: Check if the result file has actions in it        
         run: | 
@@ -183,7 +183,7 @@ jobs:
             exit 1
           fi
 
-          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.organization }}]"
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
 
       - name: Check if the result file has actions in it
         run: |
