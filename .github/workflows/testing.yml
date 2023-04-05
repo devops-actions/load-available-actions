@@ -44,7 +44,7 @@ jobs:
         run: |
           # check if the file has actions in it 
           if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
-            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
 
@@ -98,7 +98,7 @@ jobs:
       - name: Validate that the two files have different names
         run: | 
           if [ ${{ steps.load-actions.outputs.actions-file-path }} == ${{ steps.load-actions-second-run.outputs.actions-file-path }} ]; then
-            echo "The two files have the same name, this is not good" | tee "$GITHUB_STEP_SUMMARY"
+            echo ":warning: The two files have the same name, this is not good" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           else
             echo "The two files have different names, this is good" | tee "$GITHUB_STEP_SUMMARY"
@@ -141,7 +141,7 @@ jobs:
         run: | 
           # check if the file has actions in it 
           if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
-            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
             
@@ -189,7 +189,7 @@ jobs:
         run: |
           # check if the file has actions in it 
           if [ "$(jq ".actions | length" "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
-            echo "The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
             
