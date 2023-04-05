@@ -230,7 +230,7 @@ jobs:
           organizationWithForksActionsLength=$(jq -s '.[]' "./actions-organization-with-forks/actions.json")
 
           # test if the lenghts are all different
-          if [ $userActionsLength == $organizationActionsLength ]; then
+          if [ $userActionsLength -eq $organizationActionsLength ]; then
             echo "The user actions and the organization actions are the same length, which should not be the case"
             exit 1
           fi
