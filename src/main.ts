@@ -7,6 +7,7 @@ import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
+import { SearchResult } from '@jest/core/build/SearchSource'
 
 dotenv.config()
 
@@ -277,6 +278,19 @@ function cloneRepo (
   }
 }
 
+async function executeCodeSearch (
+  client: Octokit,
+  searchQuery: string,
+  isEnterpriseServer: boolean
+): Promise<SearchResult> {
+  checkRateLimits(client, isEnterpriseServer)
+  // todo: add retry option when the response is "Secondary rate limit detected to back off"
+  const searchResult = await client.paginate(client.rest.search.code, {
+    q: searchQuery
+  })
+  return searchResult
+}
+
 async function getAllActionsUsingSearch (
   client: Octokit,
   username: string,
@@ -299,9 +313,8 @@ async function getAllActionsUsingSearch (
   }
 
   core.debug(`searchQuery : ${searchQuery}`)
-  const searchResult = await client.paginate(client.rest.search.code, {
-    q: searchQuery
-  })
+  //const searchResult = await client.paginate(client.rest.search.code, {q: searchQuery})
+  const searchResult = await executeCodeSearch(client, searchQuery, isEnterpriseServer)
 
   if (!searchResult) {
     var searchType = username ? 'user' : 'organization'

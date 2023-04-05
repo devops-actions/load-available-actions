@@ -32651,10 +32651,13 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       core2.info(`No forked repos found in the ${searchType} [${searchValue}]`);
       return actions;
     }
-    core2.info(`Found [${searchResult.length}] forked repos`);
+    core2.info(`Found [${searchResult.length}] repos`);
     for (let index = 0; index < searchResult.length; index++) {
-      checkRateLimits(client, isEnterpriseServer);
       const repo = searchResult[index];
+      if (!repo.fork) {
+        continue;
+      }
+      checkRateLimits(client, isEnterpriseServer);
       var repoName = repo.name;
       var repoOwner = repo.owner ? repo.owner.login : "";
       var defaultBranch = repo.default_branch;
@@ -32664,7 +32667,7 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
         continue;
       }
       const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: "utf8" }).split("\n");
-      core2.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}]`);
+      core2.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`);
       for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
         core2.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
         const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
@@ -32697,6 +32700,15 @@ function cloneRepo(repo, owner) {
     return "";
   }
 }
+function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    checkRateLimits(client, isEnterpriseServer);
+    const searchResult = yield client.paginate(client.rest.search.code, {
+      q: searchQuery
+    });
+    return searchResult;
+  });
+}
 function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
@@ -32712,9 +32724,7 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
       searchQuery = searchQuery.concat("+org:", organization);
     }
     core2.debug(`searchQuery : ${searchQuery}`);
-    const searchResult = yield client.paginate(client.rest.search.code, {
-      q: searchQuery
-    });
+    const searchResult = yield executeCodeSearch(client, searchQuery, isEnterpriseServer);
     if (!searchResult) {
       var searchType = username ? "user" : "organization";
       var searchValue = username ? username : organization;
