@@ -113,7 +113,7 @@ async function enrichActionFiles(
       const {data: content} = await client.request({url: action.downloadUrl})
 
       // try to parse the yaml      
-      const {name, author, description} = parseYAML(action.repo, content)
+      const {name, author, description} = parseYAML(action.downloadUrl, action.repo, content)
       action.name = name
       action.author = author
       action.description = description
@@ -264,14 +264,15 @@ function cloneRepo (
     }
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
     // clone the repo
-    execSync(`git clone ${repolink}`, {
+    const result = execSync(`git clone ${repolink}`, {
       stdio: [0, 1, 2], // we need this so node will print the command output
       cwd: repoPath, // path to where you want to save the file
     })
 
     return path.join(repoPath, repo)
-  } catch (error) {
-    core.warning(`Error cloning repo [${repo}]: ${error}`)
+  } catch (error: any) {
+    core.info(`Error cloning repo [${repo}]: ${error}`)
+    core.info(`Message: ${error.stdout.toString()}`)
     return ''
   }
 }
