@@ -29,7 +29,8 @@ test(`check parseYAML with normal strings`, () => {
 name: 'test-name'
 author: 'test-author'
 description: 'testing'`
-  const result = parseYAML('test', content)
+  const filePath = 'test'
+  const result = parseYAML(filePath, 'test', content)
 
   expect(result.name).toBe('testname')
   expect(result.author).toBe('testauthor')
@@ -41,7 +42,8 @@ test(`check parseYAML with quoted strings`, () => {
 name: 'test "name"'
 author: 'test "author"'
 description: 'testing "with quotes"'`
-  const result = parseYAML('test', content)
+  const filePath = 'test'
+  const result = parseYAML(filePath, 'test', content)
 
   expect(result.name).toBe('test name')
   expect(result.author).toBe('test author')
