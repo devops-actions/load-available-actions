@@ -199,7 +199,7 @@ jobs:
           name: actions-organization
           path: ${{ steps.load-actions.outputs.actions-file-path }}
 
-  consolidate:
+  Consolidate:
     runs-on: ubuntu-latest
     needs: 
       - test-load-from-user
