@@ -295,7 +295,7 @@ async function executeCodeSearch (
     const searchResult = await client.paginate(client.rest.search.code, {
       q: searchQuery
     })
-    core.debug(`Found [${searchResult.total_count}] code search results [${searchResult.items.length}], [${searchResult.length}]`)
+    core.debug(`Found [${searchResult.total_count}] code search results: [${searchResult}]`)
     return searchResult
     
   } catch (error) {
