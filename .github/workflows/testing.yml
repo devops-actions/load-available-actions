@@ -225,9 +225,9 @@ jobs:
           fi
           
           # load the actions from the user
-          userActionsLength=$(jq -s '.[]' ./actions-user/actions.json)
-          organizationActionsLength=$(jq -s '.[]' ./actions-organization/actions.json)
-          organizationWithForksActionsLength=$(jq -s '.[]' ./actions-organization-with-forks/actions.json)
+          userActionsLength=$(jq -s '.[]' "./actions-user/actions.json")
+          organizationActionsLength=$(jq -s '.[]' "./actions-organization/actions.json")
+          organizationWithForksActionsLength=$(jq -s '.[]' "./actions-organization-with-forks/actions.json")
 
           # test if the lenghts are all different
           if [ $userActionsLength == $organizationActionsLength ]; then
