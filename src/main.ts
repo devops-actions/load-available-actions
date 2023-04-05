@@ -282,7 +282,7 @@ async function executeCodeSearch (
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<SearchResult> {
+): Promise<SearchResult[]> {
   if (retryCount > 0) {
     const backoffTime = Math.pow(2, retryCount) * 1000
     core.info(`Retrying code search [${retryCount}] more times`)
@@ -292,9 +292,11 @@ async function executeCodeSearch (
   try {
     checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for code: [${searchQuery}]`)
-    const searchResult = await client.paginate(client.rest.search.code, {
+    
+    const searchResult = await client.paginate(client.rest.search.repos, {
       q: searchQuery
     })
+    
     core.debug(`Found [${searchResult.total_count}] code search results: [${searchResult}]`)
     return searchResult
 
@@ -313,7 +315,7 @@ async function executeRepoSearch (
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<SearchResult> {
+): Promise<SearchResult[]> {
   if (retryCount > 0) {
     const backoffTime = Math.pow(2, retryCount) * 1000
     core.info(`Retrying code search [${retryCount}] more times`)
@@ -323,10 +325,10 @@ async function executeRepoSearch (
   try {
     checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for repos: [${searchQuery}]`)
-    const searchResult = await client.paginate(client.rest.search.repos, {
+    const {items: searchResult} = await client.paginate(client.rest.search.repos, {
       q: searchQuery
     })
-    core.info(`executeRepoSearch: ${JSON.stringify(searchResult)}`)
+    //core.info(`executeRepoSearch: ${JSON.stringify(searchResult)}`)
     core.debug(`Found [${searchResult.length}] repo search results`)
     return searchResult
   } catch (error) {

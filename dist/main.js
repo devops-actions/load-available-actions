@@ -19616,7 +19616,7 @@ var require_dist_node21 = __commonJS({
       return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
     }
     var OAuthAppAuth = require_dist_node17();
-    var core3 = require_dist_node8();
+    var core4 = require_dist_node8();
     var universalUserAgent = require_dist_node();
     var authOauthUser = require_dist_node16();
     var OAuthMethods = require_dist_node14();
@@ -19635,7 +19635,7 @@ var require_dist_node21 = __commonJS({
       }
       state.eventHandlers[eventName].push(eventHandler);
     }
-    var OAuthAppOctokit = core3.Octokit.defaults({
+    var OAuthAppOctokit = core4.Octokit.defaults({
       userAgent: `octokit-oauth-app.js/${VERSION} ${universalUserAgent.getUserAgent()}`
     });
     async function emitEvent(state, context) {
@@ -20908,7 +20908,7 @@ var require_dist_node24 = __commonJS({
   "node_modules/@octokit/app/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core3 = require_dist_node8();
+    var core4 = require_dist_node8();
     var authApp = require_dist_node19();
     var oauthApp = require_dist_node21();
     var authUnauthenticated = require_dist_node20();
@@ -21125,7 +21125,7 @@ var require_dist_node24 = __commonJS({
         return AppWithDefaults;
       }
       constructor(options) {
-        const Octokit2 = options.Octokit || core3.Octokit;
+        const Octokit2 = options.Octokit || core4.Octokit;
         const authOptions = Object.assign({
           appId: options.appId,
           privateKey: options.privateKey
@@ -21184,7 +21184,7 @@ var require_dist_node25 = __commonJS({
   "node_modules/octokit/dist-node/index.js"(exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var core3 = require_dist_node8();
+    var core4 = require_dist_node8();
     var pluginPaginateRest = require_dist_node9();
     var pluginRestEndpointMethods = require_dist_node10();
     var pluginRetry = require_dist_node11();
@@ -21192,7 +21192,7 @@ var require_dist_node25 = __commonJS({
     var app = require_dist_node24();
     var oauthApp = require_dist_node21();
     var VERSION = "2.0.14";
-    var Octokit2 = core3.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
+    var Octokit2 = core4.Octokit.plugin(pluginRestEndpointMethods.restEndpointMethods, pluginPaginateRest.paginateRest, pluginRetry.retry, pluginThrottling.throttling).defaults({
       userAgent: `octokit.js/${VERSION}`,
       throttle: {
         onRateLimit,
@@ -32462,17 +32462,18 @@ __export(main_exports, {
   Content: () => Content
 });
 module.exports = __toCommonJS(main_exports);
-var core2 = __toESM(require_core());
+var core3 = __toESM(require_core());
 var import_octokit = __toESM(require_dist_node25());
 
 // src/utils.ts
+var core = __toESM(require_core());
 var import_moment = __toESM(require_moment());
 var import_string_sanitizer = __toESM(require_string_sanitizer());
 var import_yaml = __toESM(require_dist());
 function GetDateFormatted(date) {
   return (0, import_moment.default)(date).format("YYYYMMDD_HHmm");
 }
-function parseYAML(repo, content) {
+function parseYAML(filePath, repo, content) {
   const defaultValue = "Undefined";
   let name = defaultValue;
   let author = defaultValue;
@@ -32483,13 +32484,9 @@ function parseYAML(repo, content) {
     author = parsed.author ? sanitize(parsed.author) : defaultValue;
     description = parsed.description ? sanitize(parsed.description) : defaultValue;
   } catch (error) {
-    console.log(
-      `Error parsing action file in repo [${repo}] with error:`
-    );
-    console.log(error);
-    console.log(
-      `The parsing error is informational, seaching for actions has continued`
-    );
+    core.warning(`Error parsing action file [${filePath}] in repo [${repo}] with error:`);
+    core.warning(error);
+    core.warning(`The parsing error is informational, seaching for actions has continued`);
   }
   return { name, author, description };
 }
@@ -32503,7 +32500,7 @@ var import_fs = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 
 // src/optionalActions.ts
-var core = __toESM(require_core());
+var core2 = __toESM(require_core());
 function getReadmeContent(client, repo, owner) {
   return __async(this, null, function* () {
     try {
@@ -32514,7 +32511,7 @@ function getReadmeContent(client, repo, owner) {
       });
       return readme.content;
     } catch (error) {
-      core.debug(`No readme file found in repository: ${repo}`);
+      core2.debug(`No readme file found in repository: ${repo}`);
     }
   });
 }
@@ -32522,13 +32519,13 @@ function getReadmeContent(client, repo, owner) {
 // src/main.ts
 var import_child_process = require("child_process");
 import_dotenv.default.config();
-var getInputOrEnv = (input) => core2.getInput(input) || process.env.input || "";
+var getInputOrEnv = (input) => core3.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 var hostname = "github.com";
 function run() {
   return __async(this, null, function* () {
-    core2.info("Starting");
+    core3.info("Starting");
     try {
       const PAT = getInputOrEnv("PAT");
       const user = getInputOrEnv("user");
@@ -32537,13 +32534,13 @@ function run() {
       const isEnterpriseServer = baseUrl !== "https://api.github.com";
       const outputFilename = getInputOrEnv("outputFilename") || "actions.json";
       if (!PAT) {
-        core2.setFailed(
+        core3.setFailed(
           "Parameter 'PAT' is required to load all actions from the organization or user account"
         );
         return;
       }
       if (!user && !organization) {
-        core2.setFailed(
+        core3.setFailed(
           "Either parameter 'user' or 'organization' is required to load all actions from it. Please provide one of them."
         );
         return;
@@ -32554,7 +32551,7 @@ function run() {
       });
       try {
       } catch (error) {
-        core2.setFailed(
+        core3.setFailed(
           `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
         );
         return;
@@ -32572,14 +32569,14 @@ function run() {
         organization,
         user
       };
-      core2.info(`Found [${actionFiles.length}] actions`);
+      core3.info(`Found [${actionFiles.length}] actions`);
       const json = JSON.stringify(output);
       import_fs.default.writeFileSync(outputFilename, json);
       const fullPath = import_path.default.resolve(outputFilename);
-      core2.info(`Writing results to [${fullPath}]`);
-      core2.setOutput("actions-file-path", fullPath);
+      core3.info(`Writing results to [${fullPath}]`);
+      core3.setOutput("actions-file-path", fullPath);
     } catch (error) {
-      core2.setFailed(`Error running action: : ${error.message}`);
+      core3.setFailed(`Error running action: : ${error.message}`);
     }
   });
 }
@@ -32588,10 +32585,10 @@ var Content = class {
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
-      core2.debug(`Enrich action information from file: [${action.downloadUrl}]`);
+      core3.debug(`Enrich action information from file: [${action.downloadUrl}]`);
       if (action.downloadUrl) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
-        const { name, author, description } = parseYAML(action.repo, content);
+        const { name, author, description } = parseYAML(action.downloadUrl, action.repo, content);
         action.name = name;
         action.author = author;
         action.description = description;
@@ -32606,14 +32603,14 @@ function checkRateLimits(client, isEnterpriseServer) {
       var ratelimit = yield client.rest.rateLimit.get();
       if (ratelimit.data.resources.search.remaining <= 2) {
         var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-        core2.debug(`Search API reset time: ${resetTime}`);
+        core3.debug(`Search API reset time: ${resetTime}`);
         var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
         if (waitTime < 0) {
           waitTime = 7e3;
         } else {
           waitTime = waitTime + 1e3;
         }
-        core2.info(
+        core3.info(
           `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
         );
         yield new Promise((r) => setTimeout(r, waitTime));
@@ -32634,22 +32631,22 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
     const actions = [];
     var searchQuery = "+fork:true";
     if (username) {
-      core2.info(`Search for action files of the user [${username}] in forked repos`);
+      core3.info(`Search for action files of the user [${username}] in forked repos`);
       searchQuery = searchQuery.concat("+user:", username);
     }
     if (organization !== "") {
-      core2.info(`Search for action files under the organization [${organization}] in forked repos`);
+      core3.info(`Search for action files under the organization [${organization}] in forked repos`);
       searchQuery = searchQuery.concat("+org:", organization);
     }
-    core2.debug(`searchQuery: ${searchQuery}`);
+    core3.debug(`searchQuery: ${searchQuery}`);
     const searchResult = executeRepoSearch(client, searchQuery, isEnterpriseServer, 0);
     if (!searchResult) {
       var searchType = username ? "user" : "organization";
       var searchValue = username ? username : organization;
-      core2.info(`No forked repos found in the ${searchType} [${searchValue}]`);
+      core3.info(`No forked repos found in the ${searchType} [${searchValue}]`);
       return actions;
     }
-    core2.info(`Found [${searchResult.length}] repos, checking only the forks`);
+    core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
       if (!repo.fork) {
@@ -32659,17 +32656,17 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       var repoName = repo.name;
       var repoOwner = repo.owner ? repo.owner.login : "";
       var defaultBranch = repo.default_branch;
-      core2.debug(`Checking repo [${repoName}] for action files`);
+      core3.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
       if (repoPath === "") {
         continue;
       }
       const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: "utf8" }).split("\n");
-      core2.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`);
+      core3.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`);
       for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
-        core2.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
+        core3.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
         const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
-        core2.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
+        core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
         const parentInfo = yield getForkParent(client, repoOwner, repoName);
         const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo);
         actions.push(action);
@@ -32685,8 +32682,8 @@ function cloneRepo(repo, owner) {
     if (!import_fs.default.existsSync(repoPath)) {
       import_fs.default.mkdirSync(repoPath);
     }
-    core2.debug(`Cloning repo [${repo}] to [${repoPath}]`);
-    (0, import_child_process.execSync)(`git clone ${repolink}`, {
+    core3.debug(`Cloning repo [${repo}] to [${repoPath}]`);
+    const result = (0, import_child_process.execSync)(`git clone ${repolink}`, {
       stdio: [0, 1, 2],
       // we need this so node will print the command output
       cwd: repoPath
@@ -32694,7 +32691,8 @@ function cloneRepo(repo, owner) {
     });
     return import_path.default.join(repoPath, repo);
   } catch (error) {
-    core2.warning(`Error cloning repo [${repo}]: ${error}`);
+    core3.info(`Error cloning repo [${repo}]: ${error}`);
+    core3.info(`Message: ${error.stdout.toString()}`);
     return "";
   }
 }
@@ -32702,21 +32700,23 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
   return __async(this, null, function* () {
     if (retryCount > 0) {
       const backoffTime = Math.pow(2, retryCount) * 1e3;
-      core2.info(`Retrying code search [${retryCount}] more times`);
-      core2.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
+      core3.info(`Retrying code search [${retryCount}] more times`);
+      core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
       yield new Promise((r) => setTimeout(r, backoffTime));
     }
     try {
       checkRateLimits(client, isEnterpriseServer);
-      const searchResult = yield client.paginate(client.rest.search.code, {
+      core3.debug(`searchQuery for code: [${searchQuery}]`);
+      const searchResult = yield client.paginate(client.rest.search.repos, {
         q: searchQuery
       });
+      core3.debug(`Found [${searchResult.total_count}] code search results: [${searchResult}]`);
       return searchResult;
     } catch (error) {
       if (error.message.includes("SecondaryRateLimit detected for request")) {
         return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
-        core2.info(`Error executing code search: ${error}`);
+        core3.info(`Error executing code search: ${error}`);
         throw error;
       }
     }
@@ -32726,21 +32726,24 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
   return __async(this, null, function* () {
     if (retryCount > 0) {
       const backoffTime = Math.pow(2, retryCount) * 1e3;
-      core2.info(`Retrying code search [${retryCount}] more times`);
-      core2.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
+      core3.info(`Retrying code search [${retryCount}] more times`);
+      core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
       yield new Promise((r) => setTimeout(r, backoffTime));
     }
     try {
       checkRateLimits(client, isEnterpriseServer);
-      const searchResult = yield client.paginate(client.rest.search.repos, {
+      core3.debug(`searchQuery for repos: [${searchQuery}]`);
+      const { items: searchResult } = yield client.paginate(client.rest.search.repos, {
         q: searchQuery
       });
+      core3.debug(`Found [${searchResult.length}] repo search results`);
       return searchResult;
     } catch (error) {
+      core3.info(`executeCodeSearch: catch!`);
       if (error.message.includes("SecondaryRateLimit detected for request")) {
         return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
-        core2.info(`Error executing code search: ${error}`);
+        core3.info(`Error executing code search: ${error}`);
         throw error;
       }
     }
@@ -32751,21 +32754,20 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
     const actions = [];
     var searchQuery = "+filename:action+language:YAML";
     if (username) {
-      core2.info(`Search for action files of the user [${username}]`);
+      core3.info(`Search for action files of the user [${username}]`);
       searchQuery = searchQuery.concat("+user:", username);
     }
     if (organization !== "") {
-      core2.info(
+      core3.info(
         `Search for action files under the organization [${organization}]`
       );
       searchQuery = searchQuery.concat("+org:", organization);
     }
-    core2.debug(`searchQuery : ${searchQuery}`);
     const searchResult = yield executeCodeSearch(client, searchQuery, isEnterpriseServer, 0);
     if (!searchResult) {
       var searchType = username ? "user" : "organization";
       var searchValue = username ? username : organization;
-      core2.info(`No actions found in the ${searchType} [${searchValue}]`);
+      core3.info(`No actions found in the ${searchType} [${searchValue}]`);
       return actions;
     }
     for (let index = 0; index < searchResult.length; index++) {
@@ -32775,7 +32777,7 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
       var repoName = searchResult[index].repository.name;
       var repoOwner = searchResult[index].repository.owner.login;
       if (fileName == "action.yaml" || fileName == "action.yml") {
-        core2.info(`Found action in ${repoName}/${filePath}`);
+        core3.info(`Found action in ${repoName}/${filePath}`);
         let parentInfo = "";
         if (searchResult[index].repository.fork) {
           parentInfo = yield getForkParent(client, repoOwner, repoName);
