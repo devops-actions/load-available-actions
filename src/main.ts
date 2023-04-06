@@ -219,7 +219,12 @@ async function getAllActionsFromForkedRepos(
       `find ${repoPath} -name "action.yml" -o -name "action.yaml" -o -name "Dockerfile" -o -name "dockerfile"`,
       {encoding: 'utf8'}
     ).split('\n')
-    core.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`)
+    core.debug(
+      `Found [${
+        actionFiles.length - 1
+      }] action and Dockerfiles in repo [${repoName}] that was cloned to [${repoPath}]`
+    )
+
 
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(`Found action file [${actionFiles[index]}] in repo [${repoName}]`)
