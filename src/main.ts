@@ -17,6 +17,17 @@ const removeTokenSetting = getInputOrEnv('removeToken')
 const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
 const hostname = "github.com" // todo: support GHES
 
+// TODO change this function to module
+const returnActionableDockerFiles=(path:string)=>{
+  const dockerFiles = execSync(
+    `find ${path} -o -name "Dockerfile" -o -name "dockerfile"`,
+    {encoding: 'utf8'}
+  ).split('\n')
+  core.info('docker files:')
+  dockerFiles.forEach((item)=>core.info(item))
+  return 
+}
+
 async function run(): Promise<void> {
   core.info('Starting')
   try {
@@ -216,16 +227,16 @@ async function getAllActionsFromForkedRepos(
     }
     // check with a shell command if the repo contains action files in the root of the repo
     const actionFiles = execSync(
-      `find ${repoPath} -name "action.yml" -o -name "action.yaml" -o -name "Dockerfile" -o -name "dockerfile"`,
+      `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
       {encoding: 'utf8'}
     ).split('\n')
     core.debug(
       `Found [${
         actionFiles.length - 1
-      }] action and Dockerfiles in repo [${repoName}] that was cloned to [${repoPath}]`
+      }] action in repo [${repoName}] that was cloned to [${repoPath}]`
     )
-    core.info('all action files:')
-    actionFiles.forEach(item => core.info(item))
+    const dockerFiles = returnActionableDockerFiles(repoPath)
+
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
         `Found action file [${actionFiles[index]}] in repo [${repoName}]`
