@@ -283,7 +283,7 @@ async function getAllActionsFromForkedRepos(
     )
     const actionableDockerFiles = returnActionableDockerFiles(repoPath)
     core.info('actionableDockerFiles:')
-    actionableDockerFiles.forEach(item => core.info(JSON.stringify(item)))
+    core.info(JSON.stringify(actionableDockerFiles))
 
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
