@@ -46,11 +46,7 @@ const returnActionableDockerFiles = (path: string) => {
               dockerActionFile = {...dockerActionFile, [type]: data}
             }
           })
-          core.info(
-            `Pushing this object into dockerFilesWithAction: ${JSON.stringify(
-              dockerActionFile
-            )}`
-          )
+          core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
           dockerFilesWithAction.push(dockerActionFile)
         }
       })
@@ -58,7 +54,6 @@ const returnActionableDockerFiles = (path: string) => {
   })
   return dockerFilesWithAction
 }
-
 
 async function run(): Promise<void> {
   core.info('Starting')
@@ -287,7 +282,9 @@ async function getAllActionsFromForkedRepos(
       }] action in repo [${repoName}] that was cloned to [${repoPath}]`
     )
     const actionableDockerFiles = returnActionableDockerFiles(repoPath)
-    actionableDockerFiles.forEach(item => core.info(String(item.name)))
+    core.info('actionableDockerFiles:')
+    actionableDockerFiles.forEach(item => core.info(JSON.stringify(item)))
+
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
         `Found action file [${actionFiles[index]}] in repo [${repoName}]`
