@@ -224,17 +224,25 @@ async function getAllActionsFromForkedRepos(
         actionFiles.length - 1
       }] action and Dockerfiles in repo [${repoName}] that was cloned to [${repoPath}]`
     )
-    core.debug('all action files:')
-    actionFiles.forEach(item => core.debug(item))
     for (let index = 0; index < actionFiles.length - 1; index++) {
-      core.debug(`Found action file [${actionFiles[index]}] in repo [${repoName}]`)
+      core.info(
+        `Found action file [${actionFiles[index]}] in repo [${repoName}]`
+      )
       // remove the actions/$repopath
-      const actionFile = actionFiles[index].substring((`actions/${repoName}/`).length)
+      const actionFile = actionFiles[index].substring(
+        `actions/${repoName}/`.length
+      )
       core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
       // Get "Forked from" info for the repo
       const parentInfo = await getForkParent(client, repoOwner, repoName)
       // get the action info
-      const action = await getActionInfo(client, repoOwner, repoName, actionFile, parentInfo)
+      const action = await getActionInfo(
+        client,
+        repoOwner,
+        repoName,
+        actionFile,
+        parentInfo
+      )
 
       actions.push(action)
     }
