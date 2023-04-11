@@ -26,12 +26,14 @@ const returnActionableDockerFiles = (path: string) => {
   core.info('docker files:')
   core.info(String(dockerFiles))
   dockerFiles.forEach(item => {
-    item = item.substring(`actions/${path}/`.length)
-    core.info(`reading from path ${item}`)
-    fs.readFile(item, 'utf8', (err, data) => {
-      err ? core.info(String(err)) : 0
-      core.info(data)
-    })
+    if (item) {
+      item = item.substring(`actions/${path}/`.length)
+      core.info(`reading from path ${item}`)
+      fs.readFile(item, 'utf8', (err, data) => {
+        err ? core.info(String(err)) : 0
+        core.info(data)
+      })
+    }
   })
   return
 }
