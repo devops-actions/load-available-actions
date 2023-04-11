@@ -20,10 +20,10 @@ const hostname = "github.com" // todo: support GHES
 // TODO change this function to module
 const returnActionableDockerFiles = (path: string) => {
   type dockerActionFiles = {
-    name?: String
-    description?: String
-    icon?: String
-    color?: String
+    name?: string
+    description?: string
+    icon?: string
+    color?: string
   }
   let dockerFilesWithAction: dockerActionFiles[] = []
   const dockerFiles = execSync(
