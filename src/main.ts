@@ -27,7 +27,7 @@ const returnActionableDockerFiles = (path: string) => {
     if (item) {
       core.info(`current path: ${item}`)
       core.info(`removing actions/${path}/`)
-      item = item.substring(`actions/${path}/`.length)
+      item = item.replace(`actions/${path}/`, '')
       core.info(`reading from path ${item}`)
       fs.readFile(item, 'utf8', (err, data) => {
         err ? core.info(String(err)) : 0
