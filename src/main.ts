@@ -221,7 +221,7 @@ async function getAllActionsFromForkedRepos(
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
     const repoPath = cloneRepo(repoName, repoOwner)
-    if (repoPath === '') {
+    if (!repoPath) {
       // error cloning the repo, skip it
       continue
     }
@@ -235,7 +235,7 @@ async function getAllActionsFromForkedRepos(
         actionFiles.length - 1
       }] action in repo [${repoName}] that was cloned to [${repoPath}]`
     )
-    const dockerFiles = returnActionableDockerFiles(repoPath)
+    returnActionableDockerFiles(repoPath)
 
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
