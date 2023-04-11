@@ -19,12 +19,13 @@ const hostname = "github.com" // todo: support GHES
 
 // TODO change this function to module
 const returnActionableDockerFiles = (path: string) => {
-  let dockerFilesWithAction: {
+  type dockerActionFiles = {
     name?: String
     description?: String
     icon?: String
     color?: String
-  } = {}
+  }
+  let dockerFilesWithAction: dockerActionFiles[] = []
   const dockerFiles = execSync(
     `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
     {encoding: 'utf8'}
@@ -37,8 +38,14 @@ const returnActionableDockerFiles = (path: string) => {
         if (data.includes('LABEL com.github.actions.name=')) {
           core.info(`${item} has dockerfile as an action!`)
           const splitText = data.split('\n')
-          splitText.forEach(thing => core.info(thing))
-          // dockerFilesWithAction.color = 'red'
+          splitText.forEach(line => {
+            let dockerActionFile: dockerActionFiles
+            if (line.startsWith('LABEL com.github.actions.')) {
+              const type = line.split('.')[3].split('=')[0] // like name, description etc
+              const data = line.split('"')[1]
+              dockerActionFile = {[type]: data}
+            }
+          })
         }
       })
     }
@@ -273,7 +280,7 @@ async function getAllActionsFromForkedRepos(
       }] action in repo [${repoName}] that was cloned to [${repoPath}]`
     )
     const actionableDockerFiles = returnActionableDockerFiles(repoPath)
-    core.info(String(actionableDockerFiles))
+    actionableDockerFiles.forEach(item => core.info(String(item)))
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
         `Found action file [${actionFiles[index]}] in repo [${repoName}]`
