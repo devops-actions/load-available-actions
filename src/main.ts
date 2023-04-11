@@ -224,7 +224,7 @@ async function getAllActionsFromForkedRepos(
         actionFiles.length - 1
       }] action and Dockerfiles in repo [${repoName}] that was cloned to [${repoPath}]`
     )
-    core.debug('all action files:')
+    core.info('all action files:')
     actionFiles.forEach(item => core.info(item))
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
