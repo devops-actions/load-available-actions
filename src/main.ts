@@ -20,7 +20,7 @@ const hostname = "github.com" // todo: support GHES
 // TODO change this function to module
 const returnActionableDockerFiles=(path:string)=>{
   const dockerFiles = execSync(
-    `find ${path} -o -name "Dockerfile" -o -name "dockerfile"`,
+    `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
     {encoding: 'utf8'}
   ).split('\n')
   core.info('docker files:')
