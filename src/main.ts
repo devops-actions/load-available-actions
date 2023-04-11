@@ -23,10 +23,9 @@ const returnActionableDockerFiles = (path: string) => {
     `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
     {encoding: 'utf8'}
   ).split('\n')
-  core.info('docker files:')
-  core.info(String(dockerFiles))
   dockerFiles.forEach(item => {
     if (item) {
+      core.info(`current path: ${item}`)
       item = item.substring(`actions/${path}/`.length)
       core.info(`reading from path ${item}`)
       fs.readFile(item, 'utf8', (err, data) => {
