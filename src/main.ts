@@ -48,7 +48,7 @@ const returnActionableDockerFiles = (path: string) => {
           })
           core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
           dockerFilesWithAction.push(dockerActionFile)
-          core.info(String(dockerFilesWithAction))
+          core.info(JSON.stringify(dockerFilesWithAction))
         }
       })
     }
