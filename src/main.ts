@@ -26,10 +26,8 @@ const returnActionableDockerFiles = (path: string) => {
   core.info('docker files:')
   dockerFiles.forEach(item => {
     item = item.substring(`actions/${path}/`.length)
-    fs.readFile(item, 'utf8', (err, data) => {
-      core.info(data)
-    })
-  })
+    const data = fs.readFileSync(item,'utf-8')
+    core.info(data)
   return
 }
 
