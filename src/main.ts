@@ -38,14 +38,15 @@ const returnActionableDockerFiles = (path: string) => {
         if (data.includes('LABEL com.github.actions.name=')) {
           core.info(`${item} has dockerfile as an action!`)
           const splitText = data.split('\n')
+          let dockerActionFile: dockerActionFiles = {}
           splitText.forEach(line => {
-            let dockerActionFile: dockerActionFiles
             if (line.startsWith('LABEL com.github.actions.')) {
               const type = line.split('.')[3].split('=')[0] // like name, description etc
               const data = line.split('"')[1]
               dockerActionFile = {[type]: data}
             }
           })
+          dockerFilesWithAction.push(dockerActionFile)
         }
       })
     }
