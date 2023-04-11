@@ -24,7 +24,7 @@ const returnActionableDockerFiles = (path: string) => {
     {encoding: 'utf8'}
   ).split('\n')
   core.info('docker files:')
-  core.info(dockerFiles)
+  core.info(String(dockerFiles))
   dockerFiles.forEach(item => {
     item = item.substring(`actions/${path}/`.length)
     core.info(`reading from path ${item}`)
