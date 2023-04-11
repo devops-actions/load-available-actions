@@ -18,14 +18,19 @@ const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
 const hostname = "github.com" // todo: support GHES
 
 // TODO change this function to module
-const returnActionableDockerFiles=(path:string)=>{
+const returnActionableDockerFiles = (path: string) => {
   const dockerFiles = execSync(
     `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
     {encoding: 'utf8'}
   ).split('\n')
   core.info('docker files:')
-  dockerFiles.forEach((item)=>core.info(item))
-  return 
+  dockerFiles.forEach(item => {
+    item = item.substring(`actions/${path}/`.length)
+    fs.readFile(item, 'utf8', (err, data) => {
+      core.info(data)
+    })
+  })
+  return
 }
 
 async function run(): Promise<void> {
