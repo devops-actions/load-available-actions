@@ -25,13 +25,12 @@ const returnActionableDockerFiles = (path: string) => {
   ).split('\n')
   dockerFiles.forEach(item => {
     if (item) {
-      core.info(`current path: ${item}`)
-      core.info(`removing actions/${path}/`)
       item = item.replace(`actions/${path}/`, '')
-      core.info(`reading from path ${item}`)
       fs.readFile(item, 'utf8', (err, data) => {
         err ? core.info(String(err)) : 0
-        core.info(data)
+        if (data.includes('LABEL com.github.actions.name=')) {
+          core.info(`${item} has dockerfile as an action!`)
+        }
       })
     }
   })
