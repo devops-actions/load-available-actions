@@ -43,9 +43,14 @@ const returnActionableDockerFiles = (path: string) => {
             if (line.startsWith('LABEL com.github.actions.')) {
               const type = line.split('.')[3].split('=')[0] // like name, description etc
               const data = line.split('"')[1]
-              dockerActionFile = {[type]: data}
+              dockerActionFile = {...dockerActionFile, [type]: data}
             }
           })
+          core.info(
+            `Pushing this object into dockerFilesWithAction: ${JSON.stringify(
+              dockerActionFile
+            )}`
+          )
           dockerFilesWithAction.push(dockerActionFile)
         }
       })
@@ -53,6 +58,7 @@ const returnActionableDockerFiles = (path: string) => {
   })
   return dockerFilesWithAction
 }
+
 
 async function run(): Promise<void> {
   core.info('Starting')
