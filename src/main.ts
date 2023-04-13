@@ -31,7 +31,9 @@ const returnActionableDockerFiles = async (path: string) => {
   const dockerFiles = await exec(
     `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
     {encoding: 'utf8'}
-  ).split('\n')
+  )
+    .toString()
+    .split('\n')
   const filesPromises = dockerFiles.map(item => {
     return new Promise<void>((resolve, reject) => {
       if (item) {
@@ -59,7 +61,7 @@ const returnActionableDockerFiles = async (path: string) => {
     })
   })
   const results = await Promise.all(filesPromises)
-  return results.filter(result => result !== undefined)
+  return results.filter((result: any) => result !== undefined)
 }
 
 async function run(): Promise<void> {
