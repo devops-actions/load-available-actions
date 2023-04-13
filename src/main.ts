@@ -18,7 +18,7 @@ const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
 const hostname = "github.com" // todo: support GHES
 
 // TODO change this function to module
-const returnActionableDockerFiles = (path: string) => {
+const returnActionableDockerFiles = async (path: string) => {
   type dockerActionFiles = {
     name?: string
     description?: string
@@ -30,29 +30,35 @@ const returnActionableDockerFiles = (path: string) => {
     `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
     {encoding: 'utf8'}
   ).split('\n')
-  dockerFiles.forEach(item => {
-    if (item) {
-      item = item.replace(`actions/${path}/`, '')
-      fs.readFile(item, 'utf8', (err, data) => {
-        err ? core.info(String(err)) : 0
-        if (data.includes('LABEL com.github.actions.name=')) {
-          core.info(`${item} has dockerfile as an action!`)
-          const splitText = data.split('\n')
-          let dockerActionFile: dockerActionFiles = {}
-          splitText.forEach(line => {
-            if (line.startsWith('LABEL com.github.actions.')) {
-              const type = line.split('.')[3].split('=')[0] // like name, description etc
-              const data = line.split('"')[1]
-              dockerActionFile = {...dockerActionFile, [type]: data}
-            }
-          })
-          core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
-          dockerFilesWithAction.push(dockerActionFile)
-        }
-      })
-    }
+  const promises = dockerFiles.map(item => {
+    return new Promise<void>((resolve, reject) => {
+      if (item) {
+        item = item.replace(actions/${path}/, '')
+        fs.readFile(item, 'utf8', (err, data) => {
+          if (err) {
+            core.info(String(err))
+            reject(err)
+          } else if (data.includes('LABEL com.github.actions.name=')) {
+            core.info(${item} has dockerfile as an action!)
+            const splitText = data.split('\n')
+            let dockerActionFile: dockerActionFiles = {}
+            splitText.forEach(line => {
+              if (line.startsWith('LABEL com.github.actions.')) {
+                const type = line.split('.')[3].split('=')[0] // like name, description etc
+                const data = line.split('"')[1]
+                dockerActionFile = {...dockerActionFile, [type]: data}
+              }
+            })
+            core.info(Pushing: ${JSON.stringify(dockerActionFile)})
+            dockerFilesWithAction.push(dockerActionFile)
+          }
+          resolve()
+        })
+      }
+    })
   })
-  core.info(`dockerifles: ${JSON.stringify(dockerFilesWithAction)}`)
+  await Promise.all(promises)
+  core.info(dockerfiles: ${JSON.stringify(dockerFilesWithAction)})
   return dockerFilesWithAction
 }
 
