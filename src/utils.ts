@@ -27,6 +27,6 @@ export function parseYAML(filePath: string, repo: string | undefined, content: s
   return { name, author, description }
 }
 
-function sanitize(value: string) {
+export function sanitize(value: string) {
   return string.sanitize.keepSpace(value)
 }
