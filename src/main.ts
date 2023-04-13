@@ -52,6 +52,7 @@ const returnActionableDockerFiles = (path: string) => {
       })
     }
   })
+  core.info(`dockerifles: ${JSON.stringify(dockerFilesWithAction)}`)
   return dockerFilesWithAction
 }
 
