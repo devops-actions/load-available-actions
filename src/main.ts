@@ -33,13 +33,13 @@ const returnActionableDockerFiles = async (path: string) => {
   const promises = dockerFiles.map(item => {
     return new Promise<void>((resolve, reject) => {
       if (item) {
-        item = item.replace(actions/${path}/, '')
+        item = item.replace(`actions/${path}/`, '')
         fs.readFile(item, 'utf8', (err, data) => {
           if (err) {
             core.info(String(err))
             reject(err)
           } else if (data.includes('LABEL com.github.actions.name=')) {
-            core.info(${item} has dockerfile as an action!)
+            core.info(`${item} has dockerfile as an action!`)
             const splitText = data.split('\n')
             let dockerActionFile: dockerActionFiles = {}
             splitText.forEach(line => {
@@ -49,7 +49,7 @@ const returnActionableDockerFiles = async (path: string) => {
                 dockerActionFile = {...dockerActionFile, [type]: data}
               }
             })
-            core.info(Pushing: ${JSON.stringify(dockerActionFile)})
+            core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
             dockerFilesWithAction.push(dockerActionFile)
           }
           resolve()
@@ -58,7 +58,7 @@ const returnActionableDockerFiles = async (path: string) => {
     })
   })
   await Promise.all(promises)
-  core.info(dockerfiles: ${JSON.stringify(dockerFilesWithAction)})
+  core.info(`dockerfiles: ${JSON.stringify(dockerFilesWithAction)}`)
   return dockerFilesWithAction
 }
 
