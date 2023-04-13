@@ -40,7 +40,7 @@ const returnActionableDockerFiles = async (path: string) => {
         item = item.replace(`actions/${path}/`, '')
         fs.readFile(item, 'utf8', (err, data) => {
           err ? core.info(String(err)) : 0
-          if (data.includes('LABEL com.github.actions.name=')) {
+          if (data && data.includes('LABEL com.github.actions.name=')) {
             core.info(`${item} has dockerfile as an action!`)
             const splitText = data.split('\n')
             let dockerActionFile: dockerActionFiles = {}
