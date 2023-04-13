@@ -51,7 +51,7 @@ const returnActionableDockerFiles = async (path: string) => {
                 dockerActionFile = {...dockerActionFile, [type]: data}
               }
             })
-            resolve(dockerActionFile)
+            dockerFilesWithAction.push(dockerActionFile)
           } else {
             resolve(undefined)
           }
