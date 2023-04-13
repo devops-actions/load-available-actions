@@ -6,7 +6,7 @@ import fs from 'fs'
 import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
-import {execSync} from 'child_process'
+import {exec, execSync} from 'child_process'
 import {promises} from 'dns'
 //import { SearchResult } from '@jest/core/build/SearchSource'
 
@@ -28,7 +28,7 @@ const returnActionableDockerFiles = async (path: string) => {
     color?: string
   }
   let dockerFilesWithAction: dockerActionFiles[] = []
-  const dockerFiles = execSync(
+  const dockerFiles = await exec(
     `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
     {encoding: 'utf8'}
   ).split('\n')
@@ -49,17 +49,17 @@ const returnActionableDockerFiles = async (path: string) => {
                 dockerActionFile = {...dockerActionFile, [type]: data}
               }
             })
-            core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
-            dockerFilesWithAction.push(dockerActionFile)
+            resolve(dockerActionFile)
+          } else {
+            resolve(undefined)
           }
           resolve()
         })
       }
     })
   })
-  await Promise.all(filesPromises)
-  core.info(`dockerifles: ${JSON.stringify(dockerFilesWithAction)}`)
-  return dockerFilesWithAction
+  const results = await Promise.all(filesPromises)
+  return results.filter(result => result !== undefined)
 }
 
 async function run(): Promise<void> {
