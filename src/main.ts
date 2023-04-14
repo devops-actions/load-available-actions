@@ -128,29 +128,47 @@ async function checkRateLimits (
 ) {
   // todo: ratelimiting can be enabled on GHES as well, but is off by default
   // we can probably load it from an api call and see if it is enabled, or try .. catch
-  if (!isEnterpriseServer) {
-    // search API has a strict rate limit, prevent errors
-    var ratelimit = await client.rest.rateLimit.get()
-    if (ratelimit.data.resources.search.remaining <= 2) {
-      // show the reset time
-      var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-      core.debug(`Search API reset time: ${resetTime}`)
-      // wait until the reset time
-      var waitTime = resetTime.getTime() - new Date().getTime()
-      if (waitTime < 0) {
-        // if the reset time is in the past, wait 6 seconds for good measure (Search API rate limit is 10 requests per minute)
-        waitTime = 7000
-      } else {
-        // back off a bit more to be more certain
-        waitTime = waitTime + 1000
-      }
-      core.info(
-        `Waiting ${
-          waitTime / 1000
-        } seconds to prevent the search API rate limit`
-      )
-      await new Promise(r => setTimeout(r, waitTime))
+
+  var ratelimit
+  if (isEnterpriseServer) {
+    // this call will give a 404 on GHES when ratelimit is not enabled
+    try {
+      ratelimit = await client.rest.rateLimit.get()
     }
+    // handle the 404
+    catch (error) {
+      if ((error as Error).message === 'Not Found') {
+        core.info(
+          'Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.'
+        )
+        return
+      }
+    }
+  }
+  else {
+    // search API has a strict rate limit, prevent errors
+    ratelimit = await client.rest.rateLimit.get()
+  }
+
+  if (ratelimit && ratelimit.data.resources.search.remaining <= 2) {
+    // show the reset time
+    var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+    core.debug(`Search API reset time: ${resetTime}, backing off untill then`)
+    // wait until the reset time
+    var waitTime = resetTime.getTime() - new Date().getTime()
+    if (waitTime < 0) {
+      // if the reset time is in the past, wait 6 seconds for good measure (Search API rate limit is 10 requests per minute)
+      waitTime = 7000
+    } else {
+      // back off a bit more to be more certain
+      waitTime = waitTime + 1000
+    }
+    core.info(
+      `Waiting ${
+        waitTime / 1000
+      } seconds to prevent the search API rate limit`
+    )
+    await new Promise(r => setTimeout(r, waitTime))
   }
 }
 
