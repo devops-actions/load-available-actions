@@ -32737,7 +32737,8 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
       return searchResult;
     } catch (error) {
       core3.info(`executeRepoSearch: catch!`);
-      if (error.message.includes("SecondaryRateLimit detected for request")) {
+      if (error.message.includes("SecondaryRateLimit detected for request") || error.message.includes("API rate limit exceeded for installation ID")) {
+        core3.info(`API ratelimit hit: ${error}`);
         return executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
         core3.info(`Error executing repo search: ${error}`);
