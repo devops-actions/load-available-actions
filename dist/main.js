@@ -32612,20 +32612,20 @@ function checkRateLimits(client, isEnterpriseServer) {
       }
     } else {
       ratelimit = yield client.rest.rateLimit.get();
-      if (ratelimit.data.resources.search.remaining <= 2) {
-        var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-        core3.debug(`Search API reset time: ${resetTime}`);
-        var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
-        if (waitTime < 0) {
-          waitTime = 7e3;
-        } else {
-          waitTime = waitTime + 1e3;
-        }
-        core3.info(
-          `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
-        );
-        yield new Promise((r) => setTimeout(r, waitTime));
+    }
+    if (ratelimit && ratelimit.data.resources.search.remaining <= 2) {
+      var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+      core3.debug(`Search API reset time: ${resetTime}, backing off untill then`);
+      var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
+      if (waitTime < 0) {
+        waitTime = 7e3;
+      } else {
+        waitTime = waitTime + 1e3;
       }
+      core3.info(
+        `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
+      );
+      yield new Promise((r) => setTimeout(r, waitTime));
     }
   });
 }

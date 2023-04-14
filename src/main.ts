@@ -148,26 +148,27 @@ async function checkRateLimits (
   else {
     // search API has a strict rate limit, prevent errors
     ratelimit = await client.rest.rateLimit.get()
-    if (ratelimit.data.resources.search.remaining <= 2) {
-      // show the reset time
-      var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-      core.debug(`Search API reset time: ${resetTime}, backing off untill then`)
-      // wait until the reset time
-      var waitTime = resetTime.getTime() - new Date().getTime()
-      if (waitTime < 0) {
-        // if the reset time is in the past, wait 6 seconds for good measure (Search API rate limit is 10 requests per minute)
-        waitTime = 7000
-      } else {
-        // back off a bit more to be more certain
-        waitTime = waitTime + 1000
-      }
-      core.info(
-        `Waiting ${
-          waitTime / 1000
-        } seconds to prevent the search API rate limit`
-      )
-      await new Promise(r => setTimeout(r, waitTime))
+  }
+
+  if (ratelimit && ratelimit.data.resources.search.remaining <= 2) {
+    // show the reset time
+    var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+    core.debug(`Search API reset time: ${resetTime}, backing off untill then`)
+    // wait until the reset time
+    var waitTime = resetTime.getTime() - new Date().getTime()
+    if (waitTime < 0) {
+      // if the reset time is in the past, wait 6 seconds for good measure (Search API rate limit is 10 requests per minute)
+      waitTime = 7000
+    } else {
+      // back off a bit more to be more certain
+      waitTime = waitTime + 1000
     }
+    core.info(
+      `Waiting ${
+        waitTime / 1000
+      } seconds to prevent the search API rate limit`
+    )
+    await new Promise(r => setTimeout(r, waitTime))
   }
 }
 
