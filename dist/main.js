@@ -32598,8 +32598,20 @@ function enrichActionFiles(client, actionFiles) {
 }
 function checkRateLimits(client, isEnterpriseServer) {
   return __async(this, null, function* () {
-    if (!isEnterpriseServer) {
-      var ratelimit = yield client.rest.rateLimit.get();
+    var ratelimit;
+    if (isEnterpriseServer) {
+      try {
+        ratelimit = yield client.rest.rateLimit.get();
+      } catch (error) {
+        if (error.message === "Not Found") {
+          core3.info(
+            "Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks."
+          );
+          return;
+        }
+      }
+    } else {
+      ratelimit = yield client.rest.rateLimit.get();
       if (ratelimit.data.resources.search.remaining <= 2) {
         var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
         core3.debug(`Search API reset time: ${resetTime}`);
