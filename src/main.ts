@@ -339,7 +339,13 @@ async function executeRepoSearch (
     return searchResult
   } catch (error) {
     core.info(`executeRepoSearch: catch!`)
-    if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
+    if (
+      (error as Error).message.includes('SecondaryRateLimit detected for request')
+      ||
+      (error as Error).message.includes('API rate limit exceeded for installation ID')
+    )
+    {
+      core.info(`API ratelimit hit: ${error}`)
       return executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
     } else {
       core.info(`Error executing repo search: ${error}`)
