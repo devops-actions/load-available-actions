@@ -45,45 +45,53 @@ function sanitize(value: string) {
   return string.sanitize.keepSpace(value)
 }
 
+// Interface for a Dockerfile with actionable properties
+interface DockerActionFiles {
+  [key: string]: string | undefined
+  name?: string
+  description?: string
+  icon?: string
+  color?: string
+}
+
 export const returnActionableDockerFiles = async (path: string) => {
-  interface dockerActionFiles {
-    [key: string]: string | undefined
-    name?: string
-    description?: string
-    icon?: string
-    color?: string
-  }
-  let dockerFilesWithAction: dockerActionFiles[] = []
-  const dockerFiles = execSync(
-    `
-    find ${path} -name "Dockerfile" -o -name "dockerfile"`,
-    {encoding: 'utf8'}
-  ).split('\n')
+  const dockerFilesWithActionArray: DockerActionFiles[] = [];
+  const dockerFiles = execSync(`find ${path} -name "Dockerfile" -o -name "dockerfile"`, { encoding: 'utf8' }).split('\n');
+  // Asynchronously process each Dockerfile
   await Promise.all(
-    dockerFiles.map(async item => {
+    dockerFiles.map(async (item: string) => {
+      // If the Dockerfile path is valid
       if (item) {
-        item = item.replace(`actions/${path}/`, '')
+        // Remove the "actions/${path}/" prefix from the path
+        item = item.replace(`actions/${path}/`, '');
+
         try {
-          const data = await promisify(fs.readFile)(item, 'utf8')
+          // Read the contents of the Dockerfile
+          const data = await promisify(fs.readFile)(item, 'utf8');
+
+          // Check if the Dockerfile has actionable properties
           if (data.includes('LABEL com.github.actions.name=')) {
-            core.info(`${item} has dockerfile as an action!`)
-            const splitText = data.split('\n')
-            const dockerActionFile: dockerActionFiles = {}
+            core.info(`${item} has dockerfile as an action!`);
+
+            // Extract the actionable properties from the Dockerfile
+            const splitText = data.split('\n');
+            const dockerActionFile: DockerActionFiles = {};
             splitText.forEach((line: string) => {
               if (line.startsWith('LABEL com.github.actions.')) {
-                const type = line.split('.')[3].split('=')[0]
-                const data = line.split('"')[1]
-                dockerActionFile[type] = data
+                const type = line.split('.')[3].split('=')[0];
+                const data = line.split('"')[1];
+                dockerActionFile[type] = data;
               }
-            })
-            core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
-            dockerFilesWithAction.push(dockerActionFile)
+            });
+
+            core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`);
+            dockerFilesWithActionArray.push(dockerActionFile);
           }
         } catch (err) {
-          core.info(String(err))
+          core.info(String(err));
         }
       }
     })
-  )
-  return dockerFilesWithAction
-}
+  );
+  return dockerFilesWithActionArray;
+};
