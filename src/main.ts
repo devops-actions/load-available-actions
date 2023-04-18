@@ -41,7 +41,6 @@ const returnActionableDockerFiles = (path: string) => {
           const splitText = data.split('\n')
           let dockerActionFile: dockerActionFiles = {}
           splitText.forEach(line => {
-            core.info(line)
             if (line.startsWith('LABEL com.github.actions.')) {
               const type = line.split('.')[3].split('=')[0] // like name, description etc
               const data = line.split('"')[1]
