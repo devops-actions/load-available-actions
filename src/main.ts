@@ -1,13 +1,13 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
-import GetDateFormatted from './utils'
+import {GetDateFormatted,returnActionableDockerFiles} from './utils'
 import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
-import {promisify} from 'util'
+
 //import { SearchResult } from '@jest/core/build/SearchSource'
 
 dotenv.config()
@@ -18,53 +18,6 @@ const getInputOrEnv = (input: string) =>
 const removeTokenSetting = getInputOrEnv('removeToken')
 const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
 const hostname = 'github.com' // todo: support GHES
-
-// TODO change this function to module
-const returnActionableDockerFiles = async (path: string) => {
-  interface dockerActionFiles {
-    [key: string]: string | undefined
-    name?: string
-    description?: string
-    icon?: string
-    color?: string
-  }
-  let dockerFilesWithAction: dockerActionFiles[] = []
-  const dockerFiles = execSync(
-    `
-    find ${path} -name "Dockerfile" -o -name "dockerfile"`,
-    {encoding: 'utf8'}
-  ).split('\n')
-  await Promise.all(
-    dockerFiles.map(async item => {
-      if (item) {
-        item = item.replace(`actions/${path}/`, '')
-        try {
-          const data = await promisify(fs.readFile)(item, 'utf8')
-          if (data.includes('LABEL com.github.actions.name=')) {
-            core.info(`${item} has dockerfile as an action!`)
-            const splitText = data.split('\n')
-            const dockerActionFile: dockerActionFiles = {}
-            splitText.forEach(line => {
-              if (line.startsWith('LABEL com.github.actions.')) {
-                const type = line.split('.')[3].split('=')[0]
-                const data = line.split('"')[1]
-                dockerActionFile[type] = data
-              }
-            })
-            core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
-            dockerFilesWithAction.push(dockerActionFile)
-          }
-        } catch (err) {
-          core.info(String(err))
-        }
-      }
-    })
-  )
-  core.info(`dockerfiles: ${JSON.stringify(dockerFilesWithAction)}`)
-  return dockerFilesWithAction
-}
-
-
 
 async function run(): Promise<void> {
   core.info('Starting')
