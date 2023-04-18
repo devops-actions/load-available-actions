@@ -7,7 +7,7 @@ import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {exec, execSync} from 'child_process'
-import {promises} from 'dns'
+import {json} from 'stream/consumers'
 //import { SearchResult } from '@jest/core/build/SearchSource'
 
 dotenv.config()
@@ -61,7 +61,10 @@ const returnActionableDockerFiles = async (path: string) => {
     })
   })
   const results = await Promise.all(filesPromises)
-  return results.filter((result: any) => result !== undefined)
+  core.info(JSON.stringify(results))
+  const everything = results.filter((result: any) => result !== undefined)
+  core.info(`This is everything: ${JSON.stringify(everything)}`)
+  return everything
 }
 
 async function run(): Promise<void> {
@@ -290,7 +293,7 @@ async function getAllActionsFromForkedRepos(
         actionFiles.length - 1
       }] action in repo [${repoName}] that was cloned to [${repoPath}]`
     )
-    core.info('actionableDockerFiles:')
+    core.info('actionableDockerFiels:')
     const actionableDockerFiles = await returnActionableDockerFiles(repoPath)
     core.info(JSON.stringify(actionableDockerFiles))
 
