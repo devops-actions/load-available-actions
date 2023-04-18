@@ -247,7 +247,7 @@ async function getAllActionsFromForkedRepos(
     )
     let actionableDockerFiles
     core.info('actionableDockerFiles:')
-    path
+    repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
     core.info(JSON.stringify(actionableDockerFiles))
