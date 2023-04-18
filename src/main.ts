@@ -27,7 +27,7 @@ const returnActionableDockerFiles = (path: string) => {
     color?: string
   }
   let dockerFilesWithAction: dockerActionFiles[] = []
-  const dockerFiles = await exec(
+  const dockerFiles = execSync(
     `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
     {encoding: 'utf8'}
   ).split('\n')
@@ -47,7 +47,7 @@ const returnActionableDockerFiles = (path: string) => {
               dockerActionFile = {...dockerActionFile, [type]: data}
             }
           })
-          core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
+          // core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
           dockerFilesWithAction.push(dockerActionFile)
         }
       })
