@@ -1,6 +1,6 @@
 import {wait} from '../src/wait'
 import {expect, test} from '@jest/globals'
-import GetDateFormatted from '../src/utils'
+import {GetDateFormatted} from '../src/utils'
 import {parseYAML} from '../src/utils'
 
 test('throws invalid number', async () => {
