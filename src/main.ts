@@ -245,10 +245,13 @@ async function getAllActionsFromForkedRepos(
         actionFiles.length - 1
       }] action in repo [${repoName}] that was cloned to [${repoPath}]`
     )
-    core.info('actionableDockerFiels:')
-    const actionableDockerFiles = await returnActionableDockerFiles(repoPath)
+    let actionableDockerFiles
+    core.info('actionableDockerFiles:')
+    path
+      ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
+      : null
     core.info(JSON.stringify(actionableDockerFiles))
-
+    
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
         `Found action file [${actionFiles[index]}] in repo [${repoName}]`
