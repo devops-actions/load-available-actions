@@ -20,7 +20,8 @@ const hostname = 'github.com' // todo: support GHES
 
 // TODO change this function to module
 const returnActionableDockerFiles = (path: string) => {
-  type dockerActionFiles = {
+  interface dockerActionFiles {
+    [key: string]: string | undefined
     name?: string
     description?: string
     icon?: string
@@ -28,23 +29,25 @@ const returnActionableDockerFiles = (path: string) => {
   }
   let dockerFilesWithAction: dockerActionFiles[] = []
   const dockerFiles = execSync(
-    `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
+    `
+    find ${path} -name "Dockerfile" -o -name "dockerfile"`,
     {encoding: 'utf8'}
   ).split('\n')
   dockerFiles.forEach(item => {
     if (item) {
       item = item.replace(`actions/${path}/`, '')
       fs.readFile(item, 'utf8', (err, data) => {
-        err ? core.info(String(err)) : 0
-        if (data.includes('LABEL com.github.actions.name=')) {
+        if (err) {
+          core.info(String(err))
+        } else if (data.includes('LABEL com.github.actions.name=')) {
           core.info(`${item} has dockerfile as an action!`)
           const splitText = data.split('\n')
-          let dockerActionFile: dockerActionFiles = {}
+          const dockerActionFile: dockerActionFiles = {}
           splitText.forEach(line => {
             if (line.startsWith('LABEL com.github.actions.')) {
               const type = line.split('.')[3].split('=')[0] // like name, description etc
               const data = line.split('"')[1]
-              dockerActionFile = {...dockerActionFile, [type]: data}
+              dockerActionFile[type] = data
             }
           })
           core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`)
@@ -53,9 +56,11 @@ const returnActionableDockerFiles = (path: string) => {
       })
     }
   })
-  core.info(`dockerifles: ${JSON.stringify(dockerFilesWithAction)}`)
+  core.info(`dockerfiles: ${JSON.stringify(dockerFilesWithAction)}`)
   return dockerFilesWithAction
 }
+
+
 
 async function run(): Promise<void> {
   core.info('Starting')
