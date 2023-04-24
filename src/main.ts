@@ -269,7 +269,7 @@ async function getAllActionsFromForkedRepos(
         actionFile,
         parentInfo
       )
-
+      core.info(`action object: ${JSON.stringify(action)}`)
       actions.push(action)
     }
   }
