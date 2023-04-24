@@ -8,8 +8,6 @@ import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
 
-//import { SearchResult } from '@jest/core/build/SearchSource'
-
 dotenv.config()
 
 const getInputOrEnv = (input: string) =>
