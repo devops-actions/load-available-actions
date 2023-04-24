@@ -133,13 +133,13 @@ async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
   // we can probably load it from an api call and see if it is enabled, or try .. catch
   if (!isEnterpriseServer) {
     // search API has a strict rate limit, prevent errors
-    var ratelimit = await client.rest.rateLimit.get()
+    const ratelimit = await client.rest.rateLimit.get()
     if (ratelimit.data.resources.search.remaining <= 2) {
       // show the reset time
-      var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+      const resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
       core.debug(`Search API reset time: ${resetTime}`)
       // wait until the reset time
-      var waitTime = resetTime.getTime() - new Date().getTime()
+      let waitTime = resetTime.getTime() - new Date().getTime()
       if (waitTime < 0) {
         // if the reset time is in the past, wait 6 seconds for good measure (Search API rate limit is 10 requests per minute)
         waitTime = 7000
@@ -187,7 +187,7 @@ async function getAllActionsFromForkedRepos(
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
   const actions: Content[] = []
-  var searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
+  let searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
   if (username) {
     core.info(
       `Search for action files of the user [${username}] in forked repos`
@@ -210,8 +210,8 @@ async function getAllActionsFromForkedRepos(
   )
 
   if (!searchResult) {
-    var searchType = username ? 'user' : 'organization'
-    var searchValue = username ? username : organization
+    const searchType = username ? 'user' : 'organization'
+    const searchValue = username ? username : organization
     core.info(`No forked repos found in the ${searchType} [${searchValue}]`)
     return actions
   }
@@ -225,8 +225,8 @@ async function getAllActionsFromForkedRepos(
     }
     checkRateLimits(client, isEnterpriseServer)
     // check if the repo contains action files in the root of the repo
-    var repoName = repo.name
-    var repoOwner = repo.owner ? repo.owner.login : ''
+    const repoName = repo.name
+    const repoOwner = repo.owner ? repo.owner.login : ''
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
@@ -251,7 +251,7 @@ async function getAllActionsFromForkedRepos(
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
     core.info(JSON.stringify(actionableDockerFiles))
-    
+
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
         `Found action file [${actionFiles[index]}] in repo [${repoName}]`
@@ -398,7 +398,7 @@ async function getAllActionsUsingSearch(
 ): Promise<Content[]> {
   const actions: Content[] = []
 
-  var searchQuery = '+filename:action+language:YAML' //todo: search for 'Dockerfile' or 'dockerfile' as well
+  let searchQuery = '+filename:action+language:YAML' //todo: search for 'Dockerfile' or 'dockerfile' as well
   if (username) {
     core.info(`Search for action files of the user [${username}]`)
     searchQuery = searchQuery.concat('+user:', username)
@@ -419,8 +419,8 @@ async function getAllActionsUsingSearch(
   )
 
   if (!searchResult) {
-    var searchType = username ? 'user' : 'organization'
-    var searchValue = username ? username : organization
+    const searchType = username ? 'user' : 'organization'
+    const searchValue = username ? username : organization
     core.info(`No actions found in the ${searchType} [${searchValue}]`)
     return actions
   }
@@ -428,10 +428,10 @@ async function getAllActionsUsingSearch(
   for (let index = 0; index < searchResult.length; index++) {
     checkRateLimits(client, isEnterpriseServer)
 
-    var fileName = searchResult[index].name
-    var filePath = searchResult[index].path
-    var repoName = searchResult[index].repository.name
-    var repoOwner = searchResult[index].repository.owner.login
+    const fileName = searchResult[index].name
+    const filePath = searchResult[index].path
+    const repoName = searchResult[index].repository.name
+    const repoOwner = searchResult[index].repository.owner.login
 
     // Push file to action list if filename matches action.yaml or action.yml
     if (fileName == 'action.yaml' || fileName == 'action.yml') {
