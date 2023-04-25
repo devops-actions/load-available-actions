@@ -7,7 +7,7 @@ import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
-import {v4 as uuidv4} from 'uuid'
+
 dotenv.config()
 
 const getInputOrEnv = (input: string) =>
@@ -356,7 +356,7 @@ function cloneRepo(repo: string, owner: string): string {
   try {
     const repolink = `https://${hostname}/${owner}/${repo}.git` // todo: support GHES
     // create a temp directory
-    const repoPath = uuidv4()
+    const repoPath = repo
     if (!fs.existsSync(repoPath)) {
       fs.mkdirSync(repoPath)
     }
