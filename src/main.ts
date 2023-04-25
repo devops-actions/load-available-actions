@@ -183,15 +183,15 @@ async function getAllActions(
     organization,
     isEnterpriseServer
   )
-  const actionableDockerFiles = await getActionableDockerFiles(
-    client,
-    username,
-    organization,
-    isEnterpriseServer
-  )
-  core.info(
-    `actionable docker files (final) : ${JSON.stringify(actionableDockerFiles)}`
-  )
+  // const actionableDockerFiles = await getActionableDockerFiles(
+  //   client,
+  //   username,
+  //   organization,
+  //   isEnterpriseServer
+  // )
+  // core.info(
+  //   `actionable docker files (final) : ${JSON.stringify(actionableDockerFiles)}`
+  // )
   actions = actions.concat(forkedActions)
   return actions
 }
