@@ -1,5 +1,5 @@
 import {expect, test} from '@jest/globals'
-import GetDateFormatted from '../src/utils'
+import {GetDateFormatted} from '../src/utils'
 import {parseYAML} from '../src/utils'
 import {sanitize} from '../src/utils'
 

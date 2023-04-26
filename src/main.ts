@@ -1,21 +1,25 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
-import GetDateFormatted from './utils'
+import {
+  DockerActionFiles,
+  GetDateFormatted,
+  returnActionableDockerFiles
+} from './utils'
 import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
-//import { SearchResult } from '@jest/core/build/SearchSource'
 
 dotenv.config()
 
-const getInputOrEnv = (input: string) => core.getInput(input) || process.env.input || ''
+const getInputOrEnv = (input: string) =>
+  core.getInput(input) || process.env.input || ''
 //Optional values
 const removeTokenSetting = getInputOrEnv('removeToken')
 const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
-const hostname = "github.com" // todo: support GHES
+const hostname = 'github.com' // todo: support GHES
 
 async function run(): Promise<void> {
   core.info('Starting')
@@ -66,6 +70,16 @@ async function run(): Promise<void> {
     // load the information in the files
     actionFiles = await enrichActionFiles(octokit, actionFiles)
 
+    let allActionableDockerFiles = await getActionableDockerFiles(
+      octokit,
+      user,
+      organization,
+      isEnterpriseServer
+    )
+    core.debug(
+      `All actionable docker files :${JSON.stringify(allActionableDockerFiles)}`
+    )
+    actionFiles = [...actionFiles, ...allActionableDockerFiles]
     // output the json we want to output
     const output: {
       lastUpdated: string
@@ -112,8 +126,12 @@ async function enrichActionFiles(
     if (action.downloadUrl) {
       const {data: content} = await client.request({url: action.downloadUrl})
 
-      // try to parse the yaml      
-      const {name, author, description} = parseYAML(action.downloadUrl, action.repo, content)
+      // try to parse the yaml
+      const {name, author, description} = parseYAML(
+        action.downloadUrl,
+        action.repo,
+        content
+      )
       action.name = name
       action.author = author
       action.description = description
@@ -121,11 +139,45 @@ async function enrichActionFiles(
   }
   return actionFiles
 }
-
-async function checkRateLimits (
+const getSearchResult = async (
   client: Octokit,
-  isEnterpriseServer: boolean
-) {
+  username: string,
+  organization: string,
+  isEnterpriseServer: boolean,
+  searchQuery: string
+) => {
+  if (username) {
+    core.info(
+      `Search for action files of the user [${username}] in forked repos`
+    )
+    searchQuery = searchQuery.concat('+user:', username)
+  }
+
+  if (organization !== '') {
+    core.info(
+      `Search for action files under the organization [${organization}] in forked repos`
+    )
+    searchQuery = searchQuery.concat('+org:', organization)
+  }
+  let searchResult
+  if (searchQuery.includes('fork')) {
+    searchResult = await executeRepoSearch(
+      client,
+      searchQuery,
+      isEnterpriseServer,
+      0
+    )
+  } else {
+    searchResult = await executeCodeSearch(
+      client,
+      searchQuery,
+      isEnterpriseServer,
+      0
+    )
+  }
+  return searchResult
+}
+async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
   // todo: ratelimiting can be enabled on GHES as well, but is off by default
   // we can probably load it from an api call and see if it is enabled, or try .. catch
 
@@ -134,9 +186,8 @@ async function checkRateLimits (
     // this call will give a 404 on GHES when ratelimit is not enabled
     try {
       ratelimit = await client.rest.rateLimit.get()
-    }
-    // handle the 404
-    catch (error) {
+    } catch (error) {
+      // handle the 404
       if ((error as Error).message === 'Not Found') {
         core.info(
           'Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.'
@@ -144,8 +195,7 @@ async function checkRateLimits (
         return
       }
     }
-  }
-  else {
+  } else {
     // search API has a strict rate limit, prevent errors
     ratelimit = await client.rest.rateLimit.get()
   }
@@ -164,23 +214,30 @@ async function checkRateLimits (
       waitTime = waitTime + 1000
     }
     core.info(
-      `Waiting ${
-        waitTime / 1000
-      } seconds to prevent the search API rate limit`
+      `Waiting ${waitTime / 1000} seconds to prevent the search API rate limit`
     )
     await new Promise(r => setTimeout(r, waitTime))
   }
 }
 
-async function getAllActions (
+async function getAllActions(
   client: Octokit,
   username: string,
   organization: string,
   isEnterpriseServer: boolean
-): Promise<Content[]> { 
-  // todo: include the filepath in the information: some repos have the same filename in multiple locations, with the same content
-  let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer)
-  let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer)
+): Promise<Content[]> {
+  let actions = await getAllActionsUsingSearch(
+    client,
+    username,
+    organization,
+    isEnterpriseServer
+  )
+  let forkedActions = await getAllActionsFromForkedRepos(
+    client,
+    username,
+    organization,
+    isEnterpriseServer
+  )
 
   actions = actions.concat(forkedActions)
   core.debug(`Found [${actions.length}] actions in total`)
@@ -188,39 +245,30 @@ async function getAllActions (
   // deduplicate the actions list
   actions = actions.filter(
     (action, index, self) =>
-      index === self.findIndex(t => (`${t.name} ${t.repo}`) === (`${action.name} ${action.repo}`))
-  )  
+      index ===
+      self.findIndex(
+        t => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`
+      )
+  )
   core.debug(`After dedupliation we have [${actions.length}] actions in total`)
   return actions
 }
 
-async function getAllActionsFromForkedRepos(
+async function getActionableDockerFiles(
   client: Octokit,
   username: string,
   organization: string,
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
-
-  const actions: Content[] = []
-  var searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
-  if (username) {
-    core.info(`Search for action files of the user [${username}] in forked repos`)
-    searchQuery = searchQuery.concat('+user:', username)
-  }
-
-  if (organization !== '') {
-    core.info(`Search for action files under the organization [${organization}] in forked repos`)
-    searchQuery = searchQuery.concat('+org:', organization)
-  }
-
-  const searchResult = await executeRepoSearch(client, searchQuery, isEnterpriseServer, 0)
-
-  if (!searchResult) {
-    var searchType = username ? 'user' : 'organization'
-    var searchValue = username ? username : organization
-    core.info(`No forked repos found in the ${searchType} [${searchValue}]`)
-    return actions
-  }
+  let dockerActions: DockerActionFiles[] | undefined = []
+  let actions: Content[] = []
+  const searchResult = await getSearchResult(
+    client,
+    username,
+    organization,
+    isEnterpriseServer,
+    '+fork:true'
+  )
 
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
@@ -231,30 +279,104 @@ async function getAllActionsFromForkedRepos(
     }
     checkRateLimits(client, isEnterpriseServer)
     // check if the repo contains action files in the root of the repo
-    var repoName = repo.name
-    var repoOwner = repo.owner ? repo.owner.login : ""
+    const repoName = repo.name
+    const repoOwner = repo.owner ? repo.owner.login : ''
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
     const repoPath = cloneRepo(repoName, repoOwner)
-    if (repoPath === '') {
+    if (!repoPath) {
+      // error cloning the repo, skip it
+      continue
+    }
+    let actionableDockerFiles
+    repoPath
+      ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
+      : null
+    core.debug(JSON.stringify(repo))
+    if (JSON.stringify(actionableDockerFiles) !== '[]') {
+      core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
+      actionableDockerFiles?.map(item => {
+        item.author = repoOwner
+        item.repo = repoName
+        item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`
+      })
+      dockerActions = actionableDockerFiles
+    }
+  }
+  dockerActions?.forEach((value, index) => {
+    actions[index] = new Content()
+    actions[index].name = value.name
+    actions[index].repo = value.repo
+    actions[index].forkedfrom = ''
+    actions[index].downloadUrl = value.downloadUrl
+    actions[index].author = value.author
+    actions[index].description = value.description
+  })
+  return actions
+}
+async function getAllActionsFromForkedRepos(
+  client: Octokit,
+  username: string,
+  organization: string,
+  isEnterpriseServer: boolean
+): Promise<Content[]> {
+  const actions: Content[] = []
+  const searchResult = await getSearchResult(
+    client,
+    username,
+    organization,
+    isEnterpriseServer,
+    '+fork:true'
+  )
+  core.info(`Found [${searchResult.length}] repos, checking only the forks`)
+  for (let index = 0; index < searchResult.length; index++) {
+    const repo = searchResult[index]
+    if (!repo.fork) {
+      // we only want forked repos
+      continue
+    }
+    checkRateLimits(client, isEnterpriseServer)
+    // check if the repo contains action files in the root of the repo
+    const repoName = repo.name
+    const repoOwner = repo.owner ? repo.owner.login : ''
+
+    core.debug(`Checking repo [${repoName}] for action files`)
+    // clone the repo
+    const repoPath = cloneRepo(repoName, repoOwner)
+    if (!repoPath) {
       // error cloning the repo, skip it
       continue
     }
     // check with a shell command if the repo contains action files in the root of the repo
-    const actionFiles = execSync(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: 'utf8' }).split('\n')
-    core.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`)
-
+    const actionFiles = execSync(
+      `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
+      {encoding: 'utf8'}
+    ).split('\n')
+    core.debug(
+      `Found [${
+        actionFiles.length - 1
+      }] action in repo [${repoName}] that was cloned to [${repoPath}]`
+    )
     for (let index = 0; index < actionFiles.length - 1; index++) {
-      core.debug(`Found action file [${actionFiles[index]}] in repo [${repoName}]`)
+      core.debug(
+        `Found action file [${actionFiles[index]}] in repo [${repoName}]`
+      )
       // remove the actions/$repopath
-      const actionFile = actionFiles[index].substring((`actions/${repoName}/`).length)
+      const actionFile = actionFiles[index].substring(
+        `actions/${repoName}/`.length
+      )
       core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
       // Get "Forked from" info for the repo
       const parentInfo = await getForkParent(client, repoOwner, repoName)
       // get the action info
-      const action = await getActionInfo(client, repoOwner, repoName, actionFile, parentInfo)
-
+      const action = await getActionInfo(
+        client,
+        repoOwner,
+        repoName,
+        actionFile,
+        parentInfo
+      )
       actions.push(action)
     }
   }
@@ -262,24 +384,23 @@ async function getAllActionsFromForkedRepos(
   return actions
 }
 
-function cloneRepo (
-  repo: string, 
-  owner: string
-  ) : string {
-  
+function cloneRepo(repo: string, owner: string): string {
   try {
     const repolink = `https://${hostname}/${owner}/${repo}.git` // todo: support GHES
     // create a temp directory
     const repoPath = 'actions'
-    if (!fs.existsSync(repoPath)){
-      fs.mkdirSync(repoPath);
+    if (fs.existsSync(repoPath)) {
+      core.debug('folder already exists, deleting')
+      fs.rmSync(repoPath, {recursive: true})
     }
+    fs.mkdirSync(repoPath)
+
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
-    
+
     // clone the repo
     execSync(`git clone ${repolink}`, {
       stdio: [0, 1, 2], // we need this so node will print the command output
-      cwd: repoPath, // path to where you want to run the command
+      cwd: repoPath // path to where you want to run the command
     })
 
     return path.join(repoPath, repo)
@@ -290,29 +411,30 @@ function cloneRepo (
   }
 }
 
-async function executeCodeSearch (
+async function executeCodeSearch(
   client: Octokit,
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<SearchResult> {
+): Promise<any> {
   if (retryCount > 0) {
     const backoffTime = Math.pow(2, retryCount) * 5000
     core.info(`Retrying code search [${retryCount}] more times`)
-    core.info(`Waiting [${backoffTime / 1000}] seconds before retrying code search`)
+    core.info(
+      `Waiting [${backoffTime / 1000}] seconds before retrying code search`
+    )
     await new Promise(r => setTimeout(r, backoffTime))
   }
   try {
     checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for code: [${searchQuery}]`)
-    
+
     const searchResult = await client.paginate(client.rest.search.code, {
       q: searchQuery
     })
-    
+
     core.debug(`Found [${searchResult.total_count}] code search results`)
     return searchResult
-
   } catch (error) {
     core.info(`executeCodeSearch: catch! Error is: ${error}`)
     if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
@@ -325,17 +447,18 @@ async function executeCodeSearch (
   }
 }
 
-async function executeRepoSearch (
+async function executeRepoSearch(
   client: Octokit,
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<SearchResult> {
-  
+): Promise<any> {
   if (retryCount > 0) {
-    const backoffTime = Math.pow(2, retryCount) * 5000
-    core.info(`Retrying code search with retry number [${retryCount}]`)
-    core.info(`Waiting [${backoffTime / 1000}] seconds before retrying code search`)
+    const backoffTime = Math.pow(2, retryCount) * 1000
+    core.info(`Retrying code search [${retryCount}] more times`)
+    core.info(
+      `Waiting [${backoffTime / 1000}] seconds before retrying code search`
+    )
     await new Promise(r => setTimeout(r, backoffTime))
   }
   try {
@@ -350,13 +473,16 @@ async function executeRepoSearch (
   } catch (error) {
     core.info(`executeRepoSearch: catch!`)
     if (
-      (error as Error).message.includes('SecondaryRateLimit detected for request')
-      ||
-      (error as Error).message.includes('API rate limit exceeded for installation ID')
-    )
-    {
-      core.info(`API ratelimit hit: ${error}`)
-      return executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
+      (error as Error).message.includes(
+        'SecondaryRateLimit detected for request'
+      )
+    ) {
+      return executeRepoSearch(
+        client,
+        searchQuery,
+        isEnterpriseServer,
+        retryCount + 1
+      )
     } else {
       core.info(`Error executing repo search: ${error}`)
       throw error
@@ -364,62 +490,57 @@ async function executeRepoSearch (
   }
 }
 
-async function getAllActionsUsingSearch (
+async function getAllActionsUsingSearch(
   client: Octokit,
   username: string,
   organization: string,
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
   const actions: Content[] = []
-
-  var searchQuery = '+filename:action+language:YAML' //todo: search for 'Dockerfile' or 'dockerfile' as well
-  if (username) {
-    core.info(`Search for action files of the user [${username}]`)
-    searchQuery = searchQuery.concat('+user:', username)
-  }
-
-  if (organization !== '') {
-    core.info(
-      `Search for action files under the organization [${organization}]`
-    )
-    searchQuery = searchQuery.concat('+org:', organization)
-  }
-
-  const searchResult = await executeCodeSearch(client, searchQuery, isEnterpriseServer, 0)
-
-  if (!searchResult) {
-    var searchType = username ? 'user' : 'organization'
-    var searchValue = username ? username : organization
-    core.info(`No actions found in the ${searchType} [${searchValue}]`)
-    return actions
-  }
+  const searchResult = await getSearchResult(
+    client,
+    username,
+    organization,
+    isEnterpriseServer,
+    '+filename:action+language:YAML'
+  )
 
   for (let index = 0; index < searchResult.length; index++) {
     checkRateLimits(client, isEnterpriseServer)
 
-    var fileName = searchResult[index].name
-    var filePath = searchResult[index].path
-    var repoName = searchResult[index].repository.name
-    var repoOwner = searchResult[index].repository.owner.login
+    const fileName = searchResult[index].name
+    const filePath = searchResult[index].path
+    const repoName = searchResult[index].repository.name
+    const repoOwner = searchResult[index].repository.owner.login
 
     // Push file to action list if filename matches action.yaml or action.yml
     if (fileName == 'action.yaml' || fileName == 'action.yml') {
       core.info(`Found action in ${repoName}/${filePath}`)
 
       // Get "Forked from" info for the repo
-      let parentInfo = ''  
+      let parentInfo = ''
       if (searchResult[index].repository.fork) {
         parentInfo = await getForkParent(client, repoOwner, repoName)
       }
-      
-      const result = await getActionInfo(client, repoOwner, repoName, filePath, parentInfo)
+
+      const result = await getActionInfo(
+        client,
+        repoOwner,
+        repoName,
+        filePath,
+        parentInfo
+      )
       actions.push(result)
     }
   }
   return actions
 }
 
-async function getForkParent(client: Octokit, owner: string, repo: string) : Promise<string> {
+async function getForkParent(
+  client: Octokit,
+  owner: string,
+  repo: string
+): Promise<string> {
   const {data: repoInfo} = await client.rest.repos.get({
     owner: owner,
     repo: repo
@@ -439,7 +560,7 @@ async function getActionInfo(
   repo: string,
   path: string,
   forkedFrom: string
-) : Promise<Content> {
+): Promise<Content> {
   // Get File content
   const {data: yaml} = await client.rest.repos.getContent({
     owner,
@@ -448,7 +569,7 @@ async function getActionInfo(
   })
 
   const result = new Content()
-  if ('name' in yaml && 'download_url' in yaml) {  
+  if ('name' in yaml && 'download_url' in yaml) {
     result.name = yaml.name
     result.repo = repo
     result.forkedfrom = forkedFrom
