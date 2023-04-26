@@ -177,13 +177,13 @@ async function getAllActions(
     organization,
     isEnterpriseServer
   )
-  // const allActionableDockerFiles = await getActionableDockerFiles(
-  //   client,
-  //   username,
-  //   organization,
-  //   isEnterpriseServer
-  // )
-  // core.info(`all actionable docker files: ${allActionableDockerFiles}`)
+  const allActionableDockerFiles = await getActionableDockerFiles(
+    client,
+    username,
+    organization,
+    isEnterpriseServer
+  )
+  core.info(`all actionable docker files: ${allActionableDockerFiles}`)
   actions = actions.concat(forkedActions)
   return actions
 }
@@ -316,13 +316,6 @@ async function getAllActionsFromForkedRepos(
         actionFiles.length - 1
       }] action in repo [${repoName}] that was cloned to [${repoPath}]`
     )
-    let actionableDockerFiles
-    core.info('actionableDockerFiles:')
-    repoPath
-      ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
-      : null
-    core.info(JSON.stringify(actionableDockerFiles))
-
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
         `Found action file [${actionFiles[index]}] in repo [${repoName}]`
