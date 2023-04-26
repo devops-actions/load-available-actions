@@ -71,18 +71,18 @@ async function run(): Promise<void> {
     // load the information in the files
     actionFiles = await enrichActionFiles(octokit, actionFiles)
 
-    const allActionableDockerFiles = await getActionableDockerFiles(
+    let allActionableDockerFiles = await getActionableDockerFiles(
       octokit,
       user,
       organization,
       isEnterpriseServer
     )
     core.info(
-      `All actionable docker files :[${JSON.stringify(
-        allActionableDockerFiles
-      )}]`
+      `All actionable docker files :${JSON.stringify(allActionableDockerFiles)}`
     )
+    core.info(`ActionFIles: ${actionFiles}`)
     actionFiles.concat(allActionableDockerFiles)
+    core.info(`concated action files: ${actionFiles}`)
     // output the json we want to output
     const output: {
       lastUpdated: string
