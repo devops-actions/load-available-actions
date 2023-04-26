@@ -144,29 +144,43 @@ async function enrichActionFiles(
 async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
   // todo: ratelimiting can be enabled on GHES as well, but is off by default
   // we can probably load it from an api call and see if it is enabled, or try .. catch
-  if (!isEnterpriseServer) {
-    // search API has a strict rate limit, prevent errors
-    const ratelimit = await client.rest.rateLimit.get()
-    if (ratelimit.data.resources.search.remaining <= 2) {
-      // show the reset time
-      const resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-      core.debug(`Search API reset time: ${resetTime}`)
-      // wait until the reset time
-      let waitTime = resetTime.getTime() - new Date().getTime()
-      if (waitTime < 0) {
-        // if the reset time is in the past, wait 6 seconds for good measure (Search API rate limit is 10 requests per minute)
-        waitTime = 7000
-      } else {
-        // back off a bit more to be more certain
-        waitTime = waitTime + 1000
+
+  var ratelimit
+  if (isEnterpriseServer) {
+    // this call will give a 404 on GHES when ratelimit is not enabled
+    try {
+      ratelimit = await client.rest.rateLimit.get()
+    } catch (error) {
+      // handle the 404
+      if ((error as Error).message === 'Not Found') {
+        core.info(
+          'Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.'
+        )
+        return
       }
-      core.info(
-        `Waiting ${
-          waitTime / 1000
-        } seconds to prevent the search API rate limit`
-      )
-      await new Promise(r => setTimeout(r, waitTime))
     }
+  } else {
+    // search API has a strict rate limit, prevent errors
+    ratelimit = await client.rest.rateLimit.get()
+  }
+
+  if (ratelimit && ratelimit.data.resources.search.remaining <= 2) {
+    // show the reset time
+    var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+    core.debug(`Search API reset time: ${resetTime}, backing off untill then`)
+    // wait until the reset time
+    var waitTime = resetTime.getTime() - new Date().getTime()
+    if (waitTime < 0) {
+      // if the reset time is in the past, wait 6 seconds for good measure (Search API rate limit is 10 requests per minute)
+      waitTime = 7000
+    } else {
+      // back off a bit more to be more certain
+      waitTime = waitTime + 1000
+    }
+    core.info(
+      `Waiting ${waitTime / 1000} seconds to prevent the search API rate limit`
+    )
+    await new Promise(r => setTimeout(r, waitTime))
   }
 }
 
@@ -188,7 +202,19 @@ async function getAllActions(
     organization,
     isEnterpriseServer
   )
+
   actions = actions.concat(forkedActions)
+  core.debug(`Found [${actions.length}] actions in total`)
+
+  // deduplicate the actions list
+  actions = actions.filter(
+    (action, index, self) =>
+      index ===
+      self.findIndex(
+        t => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`
+      )
+  )
+  core.debug(`After dedupliation we have [${actions.length}] actions in total`)
   return actions
 }
 
@@ -399,7 +425,7 @@ async function executeCodeSearch(
   retryCount: number
 ): Promise<SearchResult> {
   if (retryCount > 0) {
-    const backoffTime = Math.pow(2, retryCount) * 1000
+    const backoffTime = Math.pow(2, retryCount) * 5000
     core.info(`Retrying code search [${retryCount}] more times`)
     core.info(
       `Waiting [${backoffTime / 1000}] seconds before retrying code search`

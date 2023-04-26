@@ -32598,22 +32598,34 @@ function enrichActionFiles(client, actionFiles) {
 }
 function checkRateLimits(client, isEnterpriseServer) {
   return __async(this, null, function* () {
-    if (!isEnterpriseServer) {
-      var ratelimit = yield client.rest.rateLimit.get();
-      if (ratelimit.data.resources.search.remaining <= 2) {
-        var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
-        core3.debug(`Search API reset time: ${resetTime}`);
-        var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
-        if (waitTime < 0) {
-          waitTime = 7e3;
-        } else {
-          waitTime = waitTime + 1e3;
+    var ratelimit;
+    if (isEnterpriseServer) {
+      try {
+        ratelimit = yield client.rest.rateLimit.get();
+      } catch (error) {
+        if (error.message === "Not Found") {
+          core3.info(
+            "Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks."
+          );
+          return;
         }
-        core3.info(
-          `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
-        );
-        yield new Promise((r) => setTimeout(r, waitTime));
       }
+    } else {
+      ratelimit = yield client.rest.rateLimit.get();
+    }
+    if (ratelimit && ratelimit.data.resources.search.remaining <= 2) {
+      var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+      core3.debug(`Search API reset time: ${resetTime}, backing off untill then`);
+      var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
+      if (waitTime < 0) {
+        waitTime = 7e3;
+      } else {
+        waitTime = waitTime + 1e3;
+      }
+      core3.info(
+        `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
+      );
+      yield new Promise((r) => setTimeout(r, waitTime));
     }
   });
 }
@@ -32622,6 +32634,11 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
     let actions = yield getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
     let forkedActions = yield getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
     actions = actions.concat(forkedActions);
+    core3.debug(`Found [${actions.length}] actions in total`);
+    actions = actions.filter(
+      (action, index, self2) => index === self2.findIndex((t) => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`)
+    );
+    core3.debug(`After dedupliation we have [${actions.length}] actions in total`);
     return actions;
   });
 }
@@ -32695,7 +32712,7 @@ function cloneRepo(repo, owner) {
 function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) {
   return __async(this, null, function* () {
     if (retryCount > 0) {
-      const backoffTime = Math.pow(2, retryCount) * 1e3;
+      const backoffTime = Math.pow(2, retryCount) * 5e3;
       core3.info(`Retrying code search [${retryCount}] more times`);
       core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
       yield new Promise((r) => setTimeout(r, backoffTime));
@@ -32709,7 +32726,7 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
       core3.debug(`Found [${searchResult.total_count}] code search results`);
       return searchResult;
     } catch (error) {
-      core3.info(`executeCodeSearch: catch!`);
+      core3.info(`executeCodeSearch: catch! Error is: ${error}`);
       if (error.message.includes("SecondaryRateLimit detected for request")) {
         return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
@@ -32722,8 +32739,8 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
 function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
   return __async(this, null, function* () {
     if (retryCount > 0) {
-      const backoffTime = Math.pow(2, retryCount) * 1e3;
-      core3.info(`Retrying code search [${retryCount}] more times`);
+      const backoffTime = Math.pow(2, retryCount) * 5e3;
+      core3.info(`Retrying code search with retry number [${retryCount}]`);
       core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
       yield new Promise((r) => setTimeout(r, backoffTime));
     }
@@ -32737,7 +32754,8 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
       return searchResult;
     } catch (error) {
       core3.info(`executeRepoSearch: catch!`);
-      if (error.message.includes("SecondaryRateLimit detected for request")) {
+      if (error.message.includes("SecondaryRateLimit detected for request") || error.message.includes("API rate limit exceeded for installation ID")) {
+        core3.info(`API ratelimit hit: ${error}`);
         return executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
         core3.info(`Error executing repo search: ${error}`);

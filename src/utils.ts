@@ -41,7 +41,7 @@ export function parseYAML(
   return {name, author, description}
 }
 
-function sanitize(value: string) {
+export function sanitize(value: string) {
   return string.sanitize.keepSpace(value)
 }
 

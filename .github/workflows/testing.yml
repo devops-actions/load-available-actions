@@ -155,7 +155,6 @@ jobs:
   test-load-from-organization: # test the action for the organization space
     name: Org without forks
     runs-on: ubuntu-latest
-    needs: test-load-from-organization-with-forks
     concurrency: single-run
     env:
       organization: actions
