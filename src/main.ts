@@ -214,6 +214,7 @@ async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
     // show the reset time
     var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
     core.debug(`Search API reset time: ${resetTime}, backing off untill then`)
+    core.debug(`Search ratelimit info: ${JSON.stringify(ratelimit.data.resources.search)}`)
     // wait until the reset time
     var waitTime = resetTime.getTime() - new Date().getTime()
     if (waitTime < 0) {
