@@ -243,11 +243,11 @@ async function getActionableDockerFiles(
       continue
     }
     let actionableDockerFiles
-    core.info('actionableDockerFiles:')
     repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
     actions = actionableDockerFiles
+    core.info(`actionabledokcerfiles : ${actionableDockerFiles}`)
   }
   return actions
 }
