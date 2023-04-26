@@ -11,6 +11,7 @@ import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
+import {json} from 'stream/consumers'
 
 dotenv.config()
 
@@ -197,7 +198,6 @@ async function getActionableDockerFiles(
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
   let dockerActions: DockerActionFiles[] | undefined = []
-  let dockerMetadata: any
   let actions: Content[] = []
   let searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
   if (username) {
@@ -251,20 +251,20 @@ async function getActionableDockerFiles(
     repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
+    core.debug(JSON.stringify(repo))
     if (JSON.stringify(actionableDockerFiles) !== '[]') {
       core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
+      actionableDockerFiles?.map(item => {
+        item.author = repoOwner
+      })
       dockerActions = actionableDockerFiles
-      core.info(
-        `reponame ${repoName} repoOwner ${repoOwner} repopath ${repoPath} `
-      )
-      // dockerMetadata = {author=repoOwner}
     }
   }
   dockerActions?.forEach((value, index) => {
     actions[index] = new Content()
     actions[index].description = value.description
     actions[index].name = value.name
-    // actions[index].
+    actions[index].author = value.author
   })
   return actions
 }
