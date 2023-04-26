@@ -46,7 +46,7 @@ function sanitize(value: string) {
 }
 
 // Interface for a Dockerfile with actionable properties
-interface DockerActionFiles {
+export interface DockerActionFiles {
   [key: string]: string | undefined
   name?: string
   description?: string

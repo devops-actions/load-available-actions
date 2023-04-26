@@ -1,6 +1,10 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
-import {GetDateFormatted,returnActionableDockerFiles} from './utils'
+import {
+  DockerActionFiles,
+  GetDateFormatted,
+  returnActionableDockerFiles
+} from './utils'
 import dotenv from 'dotenv'
 import fs from 'fs'
 import path from 'path'
@@ -177,7 +181,70 @@ async function getAllActions(
   actions = actions.concat(forkedActions)
   return actions
 }
+async function getActionableDockerFiles(
+  client: Octokit,
+  username: string,
+  organization: string,
+  isEnterpriseServer: boolean
+): Promise<DockerActionFiles[] | undefined> {
+  let actions: DockerActionFiles[] | undefined = []
+  let searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
+  if (username) {
+    core.info(
+      `Search for action files of the user [${username}] in forked repos`
+    )
+    searchQuery = searchQuery.concat('+user:', username)
+  }
 
+  if (organization !== '') {
+    core.info(
+      `Search for action files under the organization [${organization}] in forked repos`
+    )
+    searchQuery = searchQuery.concat('+org:', organization)
+  }
+
+  const searchResult = await executeRepoSearch(
+    client,
+    searchQuery,
+    isEnterpriseServer,
+    0
+  )
+
+  if (!searchResult) {
+    const searchType = username ? 'user' : 'organization'
+    const searchValue = username ? username : organization
+    core.info(`No forked repos found in the ${searchType} [${searchValue}]`)
+    return actions
+  }
+
+  core.info(`Found [${searchResult.length}] repos, checking only the forks`)
+  for (let index = 0; index < searchResult.length; index++) {
+    const repo = searchResult[index]
+    if (!repo.fork) {
+      // we only want forked repos
+      continue
+    }
+    checkRateLimits(client, isEnterpriseServer)
+    // check if the repo contains action files in the root of the repo
+    const repoName = repo.name
+    const repoOwner = repo.owner ? repo.owner.login : ''
+
+    core.debug(`Checking repo [${repoName}] for action files`)
+    // clone the repo
+    const repoPath = cloneRepo(repoName, repoOwner)
+    if (!repoPath) {
+      // error cloning the repo, skip it
+      continue
+    }
+    let actionableDockerFiles
+    core.info('actionableDockerFiles:')
+    repoPath
+      ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
+      : null
+    actions = actionableDockerFiles
+  }
+  return actions
+}
 async function getAllActionsFromForkedRepos(
   client: Octokit,
   username: string,
@@ -269,7 +336,6 @@ async function getAllActionsFromForkedRepos(
         actionFile,
         parentInfo
       )
-      core.info(`action object: ${JSON.stringify(action)}`)
       actions.push(action)
     }
   }
