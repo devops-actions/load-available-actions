@@ -71,6 +71,14 @@ async function run(): Promise<void> {
     // load the information in the files
     actionFiles = await enrichActionFiles(octokit, actionFiles)
 
+    const allActionableDockerFiles = await getActionableDockerFiles(
+      octokit,
+      user,
+      organization,
+      isEnterpriseServer
+    )
+    core.info(`all actionable ${JSON.stringify(allActionableDockerFiles)}`)
+    actionFiles.concat(allActionableDockerFiles)
     // output the json we want to output
     const output: {
       lastUpdated: string
@@ -178,14 +186,6 @@ async function getAllActions(
     organization,
     isEnterpriseServer
   )
-  const allActionableDockerFiles = await getActionableDockerFiles(
-    client,
-    username,
-    organization,
-    isEnterpriseServer
-  )
-  core.info(`all actionable ${JSON.stringify(allActionableDockerFiles)}`)
-  // actions = actions.concat(allActionableDockerFiles)
   actions = actions.concat(forkedActions)
   return actions
 }
