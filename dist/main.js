@@ -32728,6 +32728,7 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     } catch (error) {
       core3.info(`executeCodeSearch: catch! Error is: ${error}`);
       if (error.message.includes("SecondaryRateLimit detected for request")) {
+        checkRateLimits(client, isEnterpriseServer);
         return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
         core3.info(`Error executing code search: ${error}`);
