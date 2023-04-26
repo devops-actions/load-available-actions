@@ -140,7 +140,46 @@ async function enrichActionFiles(
   }
   return actionFiles
 }
+const getSearchResult = async (
+  client: Octokit,
+  username: string,
+  organization: string,
+  isEnterpriseServer: boolean,
+  searchQuery: string
+) => {
+  const actions: Content[] = []
+  //todo: search for 'Dockerfile' or 'dockerfile' as well
+  if (username) {
+    core.info(
+      `Search for action files of the user [${username}] in forked repos`
+    )
+    searchQuery = searchQuery.concat('+user:', username)
+  }
 
+  if (organization !== '') {
+    core.info(
+      `Search for action files under the organization [${organization}] in forked repos`
+    )
+    searchQuery = searchQuery.concat('+org:', organization)
+  }
+  let searchResult
+  if (searchQuery.includes('fork')) {
+    searchResult = await executeRepoSearch(
+      client,
+      searchQuery,
+      isEnterpriseServer,
+      0
+    )
+  } else {
+    searchResult = await executeCodeSearch(
+      client,
+      searchQuery,
+      isEnterpriseServer,
+      0
+    )
+  }
+  return searchResult
+}
 async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
   // todo: ratelimiting can be enabled on GHES as well, but is off by default
   // we can probably load it from an api call and see if it is enabled, or try .. catch
@@ -226,34 +265,13 @@ async function getActionableDockerFiles(
 ): Promise<Content[]> {
   let dockerActions: DockerActionFiles[] | undefined = []
   let actions: Content[] = []
-  let searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
-  if (username) {
-    core.info(
-      `Search for action files of the user [${username}] in forked repos`
-    )
-    searchQuery = searchQuery.concat('+user:', username)
-  }
-
-  if (organization !== '') {
-    core.info(
-      `Search for action files under the organization [${organization}] in forked repos`
-    )
-    searchQuery = searchQuery.concat('+org:', organization)
-  }
-
-  const searchResult = await executeRepoSearch(
+  const searchResult = await getSearchResult(
     client,
-    searchQuery,
+    username,
+    organization,
     isEnterpriseServer,
-    0
+    '+fork:true'
   )
-
-  if (!searchResult) {
-    const searchType = username ? 'user' : 'organization'
-    const searchValue = username ? username : organization
-    core.info(`No forked repos found in the ${searchType} [${searchValue}]`)
-    return actions
-  }
 
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
