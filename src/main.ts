@@ -183,7 +183,9 @@ async function getAllActions(
     organization,
     isEnterpriseServer
   )
-  core.info(`all actionable docker files: ${allActionableDockerFiles}`)
+  core.info(
+    `all actionable docker files: ${JSON.stringify(allActionableDockerFiles)}`
+  )
   actions = actions.concat(forkedActions)
   return actions
 }
@@ -255,13 +257,14 @@ async function getActionableDockerFiles(
       core.info(
         `reponame ${repoName} repoOwner ${repoOwner} repopath ${repoPath} `
       )
-      // dockerMetadata = {}
+      // dockerMetadata = {author=repoOwner}
     }
   }
   dockerActions?.forEach((value, index) => {
     actions[index] = new Content()
     actions[index].description = value.description
     actions[index].name = value.name
+    // actions[index].
   })
   return actions
 }

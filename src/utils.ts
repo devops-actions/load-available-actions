@@ -50,6 +50,7 @@ export interface DockerActionFiles {
   [key: string]: string | undefined
   name?: string
   description?: string
+  author?: string
   // icon?: string
   // color?: string
 
