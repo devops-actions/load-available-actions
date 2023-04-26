@@ -11,7 +11,6 @@ import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
-import {json} from 'stream/consumers'
 
 dotenv.config()
 
