@@ -368,7 +368,7 @@ function cloneRepo(repo: string, owner: string): string {
     // create a temp directory
     const repoPath = 'actions'
     if (fs.existsSync(repoPath)) {
-      // core.info('folder already exists, deleting')
+      core.debug('folder already exists, deleting')
       fs.rmSync(repoPath, {recursive: true})
     }
     fs.mkdirSync(repoPath)

@@ -82,7 +82,7 @@ export const returnActionableDockerFiles = async (path: string) => {
             data.includes(`${label}name=`) &&
             data.includes(`${label}description=`)
           ) {
-            core.info(`${item} has dockerfile as an action!`)
+            core.info(`[${item}] has dockerfile as an action!`)
 
             // Extract the actionable properties from the Dockerfile
             const splitText = data.split('\n')
