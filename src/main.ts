@@ -3,7 +3,7 @@ import {Octokit} from 'octokit'
 import {
   DockerActionFiles,
   GetDateFormatted,
-  returnActionableDockerFiles
+  getActionableDockerFilesFromDisk
 } from './utils'
 import dotenv from 'dotenv'
 import fs from 'fs'
@@ -51,7 +51,7 @@ async function run(): Promise<void> {
     })
 
     try {
-      // this call fails from an app, so we need a better way to validate this
+      // this call fails from a GitHub App token, so we need a better way to validate this
       //const currentUser = await octokit.rest.users.getAuthenticated()
       //core.info(`Hello, ${currentUser.data.login}`)
     } catch (error) {
@@ -61,25 +61,8 @@ async function run(): Promise<void> {
       return
     }
 
-    let actionFiles = await getAllActions(
-      octokit,
-      user,
-      organization,
-      isEnterpriseServer
-    )
-    // load the information in the files
-    actionFiles = await enrichActionFiles(octokit, actionFiles)
+    let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
 
-    let allActionableDockerFiles = await getActionableDockerFiles(
-      octokit,
-      user,
-      organization,
-      isEnterpriseServer
-    )
-    core.debug(
-      `All actionable docker files :${JSON.stringify(allActionableDockerFiles)}`
-    )
-    actionFiles = [...actionFiles, ...allActionableDockerFiles]
     // output the json we want to output
     const output: {
       lastUpdated: string
@@ -114,6 +97,36 @@ export class Content {
   description: string | undefined
   forkedfrom: string | undefined
   readme: string | undefined
+}
+
+async function getAllActions(
+  client: Octokit, 
+  user: string,
+  organization: string,
+  isEnterpriseServer: boolean) : Promise<Content[]> {
+
+  // get all action files (action.yml and action.yaml) from the user or organization
+  let actionFiles = await getAllNormalActions(
+    client,
+    user,
+    organization,
+    isEnterpriseServer
+  )
+  // load the information inside of the action definition files
+  actionFiles = await enrichActionFiles(client, actionFiles)
+
+  // get all docker action definition (Dockerfile / dockerfile) from the user or organization
+  const allActionableDockerFiles = await getActionableDockerFiles(
+    client,
+    user,
+    organization,
+    isEnterpriseServer
+  )
+  core.info(`Found [${allActionableDockerFiles.length}] docker files with action definitions`)
+
+  // concat the arrays before we return them in one go
+  const actionFilesToReturn = [...actionFiles, ...allActionableDockerFiles]
+  return actionFilesToReturn
 }
 
 async function enrichActionFiles(
@@ -178,9 +191,8 @@ const getSearchResult = async (
   return searchResult
 }
 async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
-  // todo: ratelimiting can be enabled on GHES as well, but is off by default
-  // we can probably load it from an api call and see if it is enabled, or try .. catch
-
+  // ratelimiting can be enabled on GHES as well, but is off by default
+  // we load it from an api call and see if it is enabled, wrapped with try .. catch to handle the error
   var ratelimit
   if (isEnterpriseServer) {
     // this call will give a 404 on GHES when ratelimit is not enabled
@@ -189,9 +201,7 @@ async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
     } catch (error) {
       // handle the 404
       if ((error as Error).message === 'Not Found') {
-        core.info(
-          'Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.'
-        )
+        core.info('Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.')
         return
       }
     }
@@ -220,7 +230,7 @@ async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
   }
 }
 
-async function getAllActions(
+async function getAllNormalActions(
   client: Octokit,
   username: string,
   organization: string,
@@ -289,11 +299,9 @@ async function getActionableDockerFiles(
       // error cloning the repo, skip it
       continue
     }
-    let actionableDockerFiles
-    repoPath
-      ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
-      : null
+    const actionableDockerFiles = await getActionableDockerFilesFromDisk(repoPath)
     core.debug(JSON.stringify(repo))
+
     if (JSON.stringify(actionableDockerFiles) !== '[]') {
       core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
       actionableDockerFiles?.map(item => {
@@ -304,6 +312,7 @@ async function getActionableDockerFiles(
       dockerActions = actionableDockerFiles
     }
   }
+
   dockerActions?.forEach((value, index) => {
     actions[index] = new Content()
     actions[index].name = value.name
@@ -315,6 +324,7 @@ async function getActionableDockerFiles(
   })
   return actions
 }
+
 async function getAllActionsFromForkedRepos(
   client: Octokit,
   username: string,

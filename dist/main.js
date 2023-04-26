@@ -539,7 +539,7 @@ var require_file_command = __commonJS({
     };
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.prepareKeyValueMessage = exports.issueFileCommand = void 0;
-    var fs2 = __importStar(require("fs"));
+    var fs3 = __importStar(require("fs"));
     var os = __importStar(require("os"));
     var uuid_1 = (init_esm_node(), __toCommonJS(esm_node_exports));
     var utils_1 = require_utils();
@@ -548,10 +548,10 @@ var require_file_command = __commonJS({
       if (!filePath) {
         throw new Error(`Unable to find environment variable for file command ${command}`);
       }
-      if (!fs2.existsSync(filePath)) {
+      if (!fs3.existsSync(filePath)) {
         throw new Error(`Missing file at path: ${filePath}`);
       }
-      fs2.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
+      fs3.appendFileSync(filePath, `${utils_1.toCommandValue(message)}${os.EOL}`, {
         encoding: "utf8"
       });
     }
@@ -26252,8 +26252,8 @@ var require_stringifyString = __commonJS({
     "use strict";
     var Scalar = require_Scalar();
     var foldFlowLines = require_foldFlowLines();
-    var getFoldOptions = (ctx) => ({
-      indentAtStart: ctx.indentAtStart,
+    var getFoldOptions = (ctx, isBlock) => ({
+      indentAtStart: isBlock ? ctx.indent.length : ctx.indentAtStart,
       lineWidth: ctx.options.lineWidth,
       minContentWidth: ctx.options.minContentWidth
     });
@@ -26354,7 +26354,7 @@ var require_stringifyString = __commonJS({
           }
       }
       str = start ? str + json.slice(start) : json;
-      return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx));
+      return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_QUOTED, getFoldOptions(ctx, false));
     }
     function singleQuotedString(value, ctx) {
       if (ctx.options.singleQuote === false || ctx.implicitKey && value.includes("\n") || /[ \t]\n|\n[ \t]/.test(value))
@@ -26362,7 +26362,7 @@ var require_stringifyString = __commonJS({
       const indent = ctx.indent || (containsDocumentMarker(value) ? "  " : "");
       const res = "'" + value.replace(/'/g, "''").replace(/\n+/g, `$&
 ${indent}`) + "'";
-      return ctx.implicitKey ? res : foldFlowLines.foldFlowLines(res, indent, foldFlowLines.FOLD_FLOW, getFoldOptions(ctx));
+      return ctx.implicitKey ? res : foldFlowLines.foldFlowLines(res, indent, foldFlowLines.FOLD_FLOW, getFoldOptions(ctx, false));
     }
     function quotedString(value, ctx) {
       const { singleQuote } = ctx.options;
@@ -26444,13 +26444,13 @@ ${indent}`) + "'";
 ${indent}${start}${value}${end}`;
       }
       value = value.replace(/\n+/g, "\n$&").replace(/(?:^|\n)([\t ].*)(?:([\n\t ]*)\n(?![\n\t ]))?/g, "$1$2").replace(/\n+/g, `$&${indent}`);
-      const body = foldFlowLines.foldFlowLines(`${start}${value}${end}`, indent, foldFlowLines.FOLD_BLOCK, getFoldOptions(ctx));
+      const body = foldFlowLines.foldFlowLines(`${start}${value}${end}`, indent, foldFlowLines.FOLD_BLOCK, getFoldOptions(ctx, true));
       return `${header}
 ${indent}${body}`;
     }
     function plainString(item, ctx, onComment, onChompKeep) {
       const { type, value } = item;
-      const { actualString, implicitKey, indent, inFlow } = ctx;
+      const { actualString, implicitKey, indent, indentStep, inFlow } = ctx;
       if (implicitKey && /[\n[\]{},]/.test(value) || inFlow && /[[\]{},]/.test(value)) {
         return quotedString(value, ctx);
       }
@@ -26460,9 +26460,13 @@ ${indent}${body}`;
       if (!implicitKey && !inFlow && type !== Scalar.Scalar.PLAIN && value.includes("\n")) {
         return blockString(item, ctx, onComment, onChompKeep);
       }
-      if (indent === "" && containsDocumentMarker(value)) {
-        ctx.forceBlockIndent = true;
-        return blockString(item, ctx, onComment, onChompKeep);
+      if (containsDocumentMarker(value)) {
+        if (indent === "") {
+          ctx.forceBlockIndent = true;
+          return blockString(item, ctx, onComment, onChompKeep);
+        } else if (implicitKey && indent === indentStep) {
+          return quotedString(value, ctx);
+        }
       }
       const str = value.replace(/\n+/g, `$&
 ${indent}`);
@@ -26472,7 +26476,7 @@ ${indent}`);
         if (tags.some(test) || compat?.some(test))
           return quotedString(value, ctx);
       }
-      return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_FLOW, getFoldOptions(ctx));
+      return implicitKey ? str : foldFlowLines.foldFlowLines(str, indent, foldFlowLines.FOLD_FLOW, getFoldOptions(ctx, false));
     }
     function stringifyString(item, ctx, onComment, onChompKeep) {
       const { implicitKey, inFlow } = ctx;
@@ -26529,6 +26533,7 @@ var require_stringify = __commonJS({
         doubleQuotedAsJSON: false,
         doubleQuotedMinMultiLineLength: 40,
         falseStr: "false",
+        flowCollectionPadding: true,
         indentSeq: true,
         lineWidth: 80,
         minContentWidth: 20,
@@ -26552,6 +26557,7 @@ var require_stringify = __commonJS({
       return {
         anchors: /* @__PURE__ */ new Set(),
         doc,
+        flowCollectionPadding: opt.flowCollectionPadding ? " " : "",
         indent: "",
         indentStep: typeof opt.indent === "number" ? " ".repeat(opt.indent) : "  ",
         inFlow,
@@ -26688,43 +26694,64 @@ ${indent}:`;
         if (keyComment)
           str += stringifyComment.lineComment(str, ctx.indent, commentString(keyComment));
       }
-      let vcb = "";
-      let valueComment = null;
+      let vsb, vcb, valueComment;
       if (Node.isNode(value)) {
-        if (value.spaceBefore)
-          vcb = "\n";
-        if (value.commentBefore) {
-          const cs = commentString(value.commentBefore);
-          vcb += `
-${stringifyComment.indentComment(cs, ctx.indent)}`;
-        }
+        vsb = !!value.spaceBefore;
+        vcb = value.commentBefore;
         valueComment = value.comment;
-      } else if (value && typeof value === "object") {
-        value = doc.createNode(value);
+      } else {
+        vsb = false;
+        vcb = null;
+        valueComment = null;
+        if (value && typeof value === "object")
+          value = doc.createNode(value);
       }
       ctx.implicitKey = false;
       if (!explicitKey && !keyComment && Node.isScalar(value))
         ctx.indentAtStart = str.length + 1;
       chompKeep = false;
       if (!indentSeq && indentStep.length >= 2 && !ctx.inFlow && !explicitKey && Node.isSeq(value) && !value.flow && !value.tag && !value.anchor) {
-        ctx.indent = ctx.indent.substr(2);
+        ctx.indent = ctx.indent.substring(2);
       }
       let valueCommentDone = false;
       const valueStr = stringify2.stringify(value, ctx, () => valueCommentDone = true, () => chompKeep = true);
       let ws = " ";
-      if (vcb || keyComment) {
-        if (valueStr === "" && !ctx.inFlow)
-          ws = vcb === "\n" ? "\n\n" : vcb;
-        else
-          ws = `${vcb}
+      if (keyComment || vsb || vcb) {
+        ws = vsb ? "\n" : "";
+        if (vcb) {
+          const cs = commentString(vcb);
+          ws += `
+${stringifyComment.indentComment(cs, ctx.indent)}`;
+        }
+        if (valueStr === "" && !ctx.inFlow) {
+          if (ws === "\n")
+            ws = "\n\n";
+        } else {
+          ws += `
 ${ctx.indent}`;
+        }
       } else if (!explicitKey && Node.isCollection(value)) {
-        const flow = valueStr[0] === "[" || valueStr[0] === "{";
-        if (!flow || valueStr.includes("\n"))
-          ws = `
+        const vs0 = valueStr[0];
+        const nl0 = valueStr.indexOf("\n");
+        const hasNewline = nl0 !== -1;
+        const flow = ctx.inFlow ?? value.flow ?? value.items.length === 0;
+        if (hasNewline || !flow) {
+          let hasPropsLine = false;
+          if (hasNewline && (vs0 === "&" || vs0 === "!")) {
+            let sp0 = valueStr.indexOf(" ");
+            if (vs0 === "&" && sp0 !== -1 && sp0 < nl0 && valueStr[sp0 + 1] === "!") {
+              sp0 = valueStr.indexOf(" ", sp0 + 1);
+            }
+            if (sp0 === -1 || nl0 < sp0)
+              hasPropsLine = true;
+          }
+          if (!hasPropsLine)
+            ws = `
 ${ctx.indent}`;
-      } else if (valueStr === "" || valueStr[0] === "\n")
+        }
+      } else if (valueStr === "" || valueStr[0] === "\n") {
         ws = "";
+      }
       str += ws + valueStr;
       if (ctx.inFlow) {
         if (valueCommentDone && onComment)
@@ -26958,7 +26985,7 @@ ${indent}${line}` : "\n";
       return str;
     }
     function stringifyFlowCollection({ comment, items }, ctx, { flowChars, itemIndent, onComment }) {
-      const { indent, indentStep, options: { commentString } } = ctx;
+      const { indent, indentStep, flowCollectionPadding: fcPadding, options: { commentString } } = ctx;
       itemIndent += indentStep;
       const itemCtx = Object.assign({}, ctx, {
         indent: itemIndent,
@@ -27025,11 +27052,11 @@ ${indentStep}${indent}${line}` : "\n";
           str += `
 ${indent}${end}`;
         } else {
-          str = `${start} ${lines.join(" ")} ${end}`;
+          str = `${start}${fcPadding}${lines.join(" ")}${fcPadding}${end}`;
         }
       }
       if (comment) {
-        str += stringifyComment.lineComment(str, commentString(comment), indent);
+        str += stringifyComment.lineComment(str, indent, commentString(comment));
         if (onComment)
           onComment();
       }
@@ -27070,12 +27097,12 @@ var require_YAMLMap = __commonJS({
       return void 0;
     }
     var YAMLMap = class extends Collection.Collection {
+      static get tagName() {
+        return "tag:yaml.org,2002:map";
+      }
       constructor(schema) {
         super(Node.MAP, schema);
         this.items = [];
-      }
-      static get tagName() {
-        return "tag:yaml.org,2002:map";
       }
       /**
        * Adds a value to the collection.
@@ -27220,12 +27247,12 @@ var require_YAMLSeq = __commonJS({
     var Scalar = require_Scalar();
     var toJS = require_toJS();
     var YAMLSeq = class extends Collection.Collection {
+      static get tagName() {
+        return "tag:yaml.org,2002:seq";
+      }
       constructor(schema) {
         super(Node.SEQ, schema);
         this.items = [];
-      }
-      static get tagName() {
-        return "tag:yaml.org,2002:seq";
       }
       add(value) {
         this.items.push(value);
@@ -28825,7 +28852,7 @@ var require_errors = __commonJS({
         let count = 1;
         const end = error.linePos[1];
         if (end && end.line === line && end.col > col) {
-          count = Math.min(end.col - col, 80 - ci);
+          count = Math.max(1, Math.min(end.col - col, 80 - ci));
         }
         const pointer = " ".repeat(ci) + "^".repeat(count);
         error.message += `:
@@ -31872,14 +31899,14 @@ var require_parser = __commonJS({
             case "scalar":
             case "single-quoted-scalar":
             case "double-quoted-scalar": {
-              const fs2 = this.flowScalar(this.type);
+              const fs3 = this.flowScalar(this.type);
               if (atNextItem || it.value) {
-                map.items.push({ start, key: fs2, sep: [] });
+                map.items.push({ start, key: fs3, sep: [] });
                 this.onKeyLine = true;
               } else if (it.sep) {
-                this.stack.push(fs2);
+                this.stack.push(fs3);
               } else {
-                Object.assign(it, { key: fs2, sep: [] });
+                Object.assign(it, { key: fs3, sep: [] });
                 this.onKeyLine = true;
               }
               return;
@@ -31997,13 +32024,13 @@ var require_parser = __commonJS({
             case "scalar":
             case "single-quoted-scalar":
             case "double-quoted-scalar": {
-              const fs2 = this.flowScalar(this.type);
+              const fs3 = this.flowScalar(this.type);
               if (!it || it.value)
-                fc.items.push({ start: [], key: fs2, sep: [] });
+                fc.items.push({ start: [], key: fs3, sep: [] });
               else if (it.sep)
-                this.stack.push(fs2);
+                this.stack.push(fs3);
               else
-                Object.assign(it, { key: fs2, sep: [] });
+                Object.assign(it, { key: fs3, sep: [] });
               return;
             }
             case "flow-map-end":
@@ -32376,7 +32403,7 @@ var require_package = __commonJS({
 // node_modules/dotenv/lib/main.js
 var require_main = __commonJS({
   "node_modules/dotenv/lib/main.js"(exports, module2) {
-    var fs2 = require("fs");
+    var fs3 = require("fs");
     var path2 = require("path");
     var os = require("os");
     var packageJson = require_package();
@@ -32421,7 +32448,7 @@ var require_main = __commonJS({
         }
       }
       try {
-        const parsed = DotenvModule.parse(fs2.readFileSync(dotenvPath, { encoding }));
+        const parsed = DotenvModule.parse(fs3.readFileSync(dotenvPath, { encoding }));
         Object.keys(parsed).forEach(function(key) {
           if (!Object.prototype.hasOwnProperty.call(process.env, key)) {
             process.env[key] = parsed[key];
@@ -32467,9 +32494,12 @@ var import_octokit = __toESM(require_dist_node25());
 
 // src/utils.ts
 var core = __toESM(require_core());
+var import_child_process = require("child_process");
 var import_moment = __toESM(require_moment());
 var import_string_sanitizer = __toESM(require_string_sanitizer());
 var import_yaml = __toESM(require_dist());
+var import_util = require("util");
+var import_fs = __toESM(require("fs"));
 function GetDateFormatted(date) {
   return (0, import_moment.default)(date).format("YYYYMMDD_HHmm");
 }
@@ -32484,18 +32514,57 @@ function parseYAML(filePath, repo, content) {
     author = parsed.author ? sanitize(parsed.author) : defaultValue;
     description = parsed.description ? sanitize(parsed.description) : defaultValue;
   } catch (error) {
-    core.warning(`Error parsing action file [${filePath}] in repo [${repo}] with error: ${error}`);
-    core.info(`The parsing error is informational, seaching for actions has continued`);
+    core.warning(
+      `Error parsing action file [${filePath}] in repo [${repo}] with error: ${error}`
+    );
+    core.info(
+      `The parsing error is informational, seaching for actions has continued`
+    );
   }
   return { name, author, description };
 }
 function sanitize(value) {
   return import_string_sanitizer.default.sanitize.keepSpace(value);
 }
+var getActionableDockerFilesFromDisk = (path2) => __async(void 0, null, function* () {
+  const dockerFilesWithActionArray = [];
+  const dockerFiles = (0, import_child_process.execSync)(
+    `find ${path2} -name "Dockerfile" -o -name "dockerfile"`,
+    { encoding: "utf8" }
+  ).split("\n");
+  yield Promise.all(
+    dockerFiles.map((item) => __async(void 0, null, function* () {
+      if (item) {
+        item = item.replace(`actions/${path2}/`, "");
+        try {
+          const data = yield (0, import_util.promisify)(import_fs.default.readFile)(item, "utf8");
+          const label = "LABEL com.github.actions.";
+          if (data.includes(`${label}name=`) && data.includes(`${label}description=`)) {
+            core.info(`[${item}] has dockerfile as an action!`);
+            const splitText = data.split("\n");
+            const dockerActionFile = {};
+            splitText.forEach((line) => {
+              if (line.startsWith("LABEL com.github.actions.")) {
+                const type = line.split(".")[3].split("=")[0];
+                const data2 = line.split('"')[1];
+                dockerActionFile[type] = data2;
+              }
+            });
+            core.info(`Pushing: ${JSON.stringify(dockerActionFile)}`);
+            dockerFilesWithActionArray.push(dockerActionFile);
+          }
+        } catch (err) {
+          core.info(String(err));
+        }
+      }
+    }))
+  );
+  return dockerFilesWithActionArray;
+});
 
 // src/main.ts
 var import_dotenv = __toESM(require_main());
-var import_fs = __toESM(require("fs"));
+var import_fs2 = __toESM(require("fs"));
 var import_path = __toESM(require("path"));
 
 // src/optionalActions.ts
@@ -32516,7 +32585,7 @@ function getReadmeContent(client, repo, owner) {
 }
 
 // src/main.ts
-var import_child_process = require("child_process");
+var import_child_process2 = require("child_process");
 import_dotenv.default.config();
 var getInputOrEnv = (input) => core3.getInput(input) || process.env.input || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
@@ -32555,13 +32624,7 @@ function run() {
         );
         return;
       }
-      let actionFiles = yield getAllActions(
-        octokit,
-        user,
-        organization,
-        isEnterpriseServer
-      );
-      actionFiles = yield enrichActionFiles(octokit, actionFiles);
+      let actionFiles = yield getAllActions(octokit, user, organization, isEnterpriseServer);
       const output = {
         lastUpdated: GetDateFormatted(/* @__PURE__ */ new Date()),
         actions: actionFiles,
@@ -32570,7 +32633,7 @@ function run() {
       };
       core3.info(`Found [${actionFiles.length}] actions`);
       const json = JSON.stringify(output);
-      import_fs.default.writeFileSync(outputFilename, json);
+      import_fs2.default.writeFileSync(outputFilename, json);
       const fullPath = import_path.default.resolve(outputFilename);
       core3.info(`Writing results to [${fullPath}]`);
       core3.setOutput("actions-file-path", fullPath);
@@ -32581,13 +32644,37 @@ function run() {
 }
 var Content = class {
 };
+function getAllActions(client, user, organization, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    let actionFiles = yield getAllNormalActions(
+      client,
+      user,
+      organization,
+      isEnterpriseServer
+    );
+    actionFiles = yield enrichActionFiles(client, actionFiles);
+    const allActionableDockerFiles = yield getActionableDockerFiles(
+      client,
+      user,
+      organization,
+      isEnterpriseServer
+    );
+    core3.info(`Found [${allActionableDockerFiles.length}] docker files with action definitions`);
+    const actionFilesToReturn = [...actionFiles, ...allActionableDockerFiles];
+    return actionFilesToReturn;
+  });
+}
 function enrichActionFiles(client, actionFiles) {
   return __async(this, null, function* () {
     for (const action of actionFiles) {
       core3.debug(`Enrich action information from file: [${action.downloadUrl}]`);
       if (action.downloadUrl) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
-        const { name, author, description } = parseYAML(action.downloadUrl, action.repo, content);
+        const { name, author, description } = parseYAML(
+          action.downloadUrl,
+          action.repo,
+          content
+        );
         action.name = name;
         action.author = author;
         action.description = description;
@@ -32596,6 +32683,37 @@ function enrichActionFiles(client, actionFiles) {
     return actionFiles;
   });
 }
+var getSearchResult = (client, username, organization, isEnterpriseServer, searchQuery) => __async(void 0, null, function* () {
+  if (username) {
+    core3.info(
+      `Search for action files of the user [${username}] in forked repos`
+    );
+    searchQuery = searchQuery.concat("+user:", username);
+  }
+  if (organization !== "") {
+    core3.info(
+      `Search for action files under the organization [${organization}] in forked repos`
+    );
+    searchQuery = searchQuery.concat("+org:", organization);
+  }
+  let searchResult;
+  if (searchQuery.includes("fork")) {
+    searchResult = yield executeRepoSearch(
+      client,
+      searchQuery,
+      isEnterpriseServer,
+      0
+    );
+  } else {
+    searchResult = yield executeCodeSearch(
+      client,
+      searchQuery,
+      isEnterpriseServer,
+      0
+    );
+  }
+  return searchResult;
+});
 function checkRateLimits(client, isEnterpriseServer) {
   return __async(this, null, function* () {
     var ratelimit;
@@ -32604,9 +32722,7 @@ function checkRateLimits(client, isEnterpriseServer) {
         ratelimit = yield client.rest.rateLimit.get();
       } catch (error) {
         if (error.message === "Not Found") {
-          core3.info(
-            "Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks."
-          );
+          core3.info("Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.");
           return;
         }
       }
@@ -32629,38 +32745,42 @@ function checkRateLimits(client, isEnterpriseServer) {
     }
   });
 }
-function getAllActions(client, username, organization, isEnterpriseServer) {
+function getAllNormalActions(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
-    let actions = yield getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
-    let forkedActions = yield getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
+    let actions = yield getAllActionsUsingSearch(
+      client,
+      username,
+      organization,
+      isEnterpriseServer
+    );
+    let forkedActions = yield getAllActionsFromForkedRepos(
+      client,
+      username,
+      organization,
+      isEnterpriseServer
+    );
     actions = actions.concat(forkedActions);
     core3.debug(`Found [${actions.length}] actions in total`);
     actions = actions.filter(
-      (action, index, self2) => index === self2.findIndex((t) => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`)
+      (action, index, self2) => index === self2.findIndex(
+        (t) => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`
+      )
     );
     core3.debug(`After dedupliation we have [${actions.length}] actions in total`);
     return actions;
   });
 }
-function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
+function getActionableDockerFiles(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
-    const actions = [];
-    var searchQuery = "+fork:true";
-    if (username) {
-      core3.info(`Search for action files of the user [${username}] in forked repos`);
-      searchQuery = searchQuery.concat("+user:", username);
-    }
-    if (organization !== "") {
-      core3.info(`Search for action files under the organization [${organization}] in forked repos`);
-      searchQuery = searchQuery.concat("+org:", organization);
-    }
-    const searchResult = yield executeRepoSearch(client, searchQuery, isEnterpriseServer, 0);
-    if (!searchResult) {
-      var searchType = username ? "user" : "organization";
-      var searchValue = username ? username : organization;
-      core3.info(`No forked repos found in the ${searchType} [${searchValue}]`);
-      return actions;
-    }
+    let dockerActions = [];
+    let actions = [];
+    const searchResult = yield getSearchResult(
+      client,
+      username,
+      organization,
+      isEnterpriseServer,
+      "+fork:true"
+    );
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
@@ -32668,21 +32788,84 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
         continue;
       }
       checkRateLimits(client, isEnterpriseServer);
-      var repoName = repo.name;
-      var repoOwner = repo.owner ? repo.owner.login : "";
+      const repoName = repo.name;
+      const repoOwner = repo.owner ? repo.owner.login : "";
       core3.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
-      if (repoPath === "") {
+      if (!repoPath) {
         continue;
       }
-      const actionFiles = (0, import_child_process.execSync)(`find ${repoPath} -name "action.yml" -o -name "action.yaml"`, { encoding: "utf8" }).split("\n");
-      core3.debug(`Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`);
+      const actionableDockerFiles = yield getActionableDockerFilesFromDisk(repoPath);
+      core3.debug(JSON.stringify(repo));
+      if (JSON.stringify(actionableDockerFiles) !== "[]") {
+        core3.info(`adding ${JSON.stringify(actionableDockerFiles)}`);
+        actionableDockerFiles == null ? void 0 : actionableDockerFiles.map((item) => {
+          item.author = repoOwner;
+          item.repo = repoName;
+          item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`;
+        });
+        dockerActions = actionableDockerFiles;
+      }
+    }
+    dockerActions == null ? void 0 : dockerActions.forEach((value, index) => {
+      actions[index] = new Content();
+      actions[index].name = value.name;
+      actions[index].repo = value.repo;
+      actions[index].forkedfrom = "";
+      actions[index].downloadUrl = value.downloadUrl;
+      actions[index].author = value.author;
+      actions[index].description = value.description;
+    });
+    return actions;
+  });
+}
+function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    const actions = [];
+    const searchResult = yield getSearchResult(
+      client,
+      username,
+      organization,
+      isEnterpriseServer,
+      "+fork:true"
+    );
+    core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
+    for (let index = 0; index < searchResult.length; index++) {
+      const repo = searchResult[index];
+      if (!repo.fork) {
+        continue;
+      }
+      checkRateLimits(client, isEnterpriseServer);
+      const repoName = repo.name;
+      const repoOwner = repo.owner ? repo.owner.login : "";
+      core3.debug(`Checking repo [${repoName}] for action files`);
+      const repoPath = cloneRepo(repoName, repoOwner);
+      if (!repoPath) {
+        continue;
+      }
+      const actionFiles = (0, import_child_process2.execSync)(
+        `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
+        { encoding: "utf8" }
+      ).split("\n");
+      core3.debug(
+        `Found [${actionFiles.length - 1}] action in repo [${repoName}] that was cloned to [${repoPath}]`
+      );
       for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
-        core3.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
-        const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
+        core3.debug(
+          `Found action file [${actionFiles[index2]}] in repo [${repoName}]`
+        );
+        const actionFile = actionFiles[index2].substring(
+          `actions/${repoName}/`.length
+        );
         core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
         const parentInfo = yield getForkParent(client, repoOwner, repoName);
-        const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo);
+        const action = yield getActionInfo(
+          client,
+          repoOwner,
+          repoName,
+          actionFile,
+          parentInfo
+        );
         actions.push(action);
       }
     }
@@ -32693,11 +32876,13 @@ function cloneRepo(repo, owner) {
   try {
     const repolink = `https://${hostname}/${owner}/${repo}.git`;
     const repoPath = "actions";
-    if (!import_fs.default.existsSync(repoPath)) {
-      import_fs.default.mkdirSync(repoPath);
+    if (import_fs2.default.existsSync(repoPath)) {
+      core3.debug("folder already exists, deleting");
+      import_fs2.default.rmSync(repoPath, { recursive: true });
     }
+    import_fs2.default.mkdirSync(repoPath);
     core3.debug(`Cloning repo [${repo}] to [${repoPath}]`);
-    (0, import_child_process.execSync)(`git clone ${repolink}`, {
+    (0, import_child_process2.execSync)(`git clone ${repolink}`, {
       stdio: [0, 1, 2],
       // we need this so node will print the command output
       cwd: repoPath
@@ -32714,7 +32899,9 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     if (retryCount > 0) {
       const backoffTime = Math.pow(2, retryCount) * 5e3;
       core3.info(`Retrying code search [${retryCount}] more times`);
-      core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
+      core3.info(
+        `Waiting [${backoffTime / 1e3}] seconds before retrying code search`
+      );
       yield new Promise((r) => setTimeout(r, backoffTime));
     }
     try {
@@ -32740,9 +32927,11 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
 function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
   return __async(this, null, function* () {
     if (retryCount > 0) {
-      const backoffTime = Math.pow(2, retryCount) * 5e3;
-      core3.info(`Retrying code search with retry number [${retryCount}]`);
-      core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
+      const backoffTime = Math.pow(2, retryCount) * 1e3;
+      core3.info(`Retrying code search [${retryCount}] more times`);
+      core3.info(
+        `Waiting [${backoffTime / 1e3}] seconds before retrying code search`
+      );
       yield new Promise((r) => setTimeout(r, backoffTime));
     }
     try {
@@ -32755,9 +32944,15 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
       return searchResult;
     } catch (error) {
       core3.info(`executeRepoSearch: catch!`);
-      if (error.message.includes("SecondaryRateLimit detected for request") || error.message.includes("API rate limit exceeded for installation ID")) {
-        core3.info(`API ratelimit hit: ${error}`);
-        return executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
+      if (error.message.includes(
+        "SecondaryRateLimit detected for request"
+      )) {
+        return executeRepoSearch(
+          client,
+          searchQuery,
+          isEnterpriseServer,
+          retryCount + 1
+        );
       } else {
         core3.info(`Error executing repo search: ${error}`);
         throw error;
@@ -32768,37 +32963,32 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
 function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
-    var searchQuery = "+filename:action+language:YAML";
-    if (username) {
-      core3.info(`Search for action files of the user [${username}]`);
-      searchQuery = searchQuery.concat("+user:", username);
-    }
-    if (organization !== "") {
-      core3.info(
-        `Search for action files under the organization [${organization}]`
-      );
-      searchQuery = searchQuery.concat("+org:", organization);
-    }
-    const searchResult = yield executeCodeSearch(client, searchQuery, isEnterpriseServer, 0);
-    if (!searchResult) {
-      var searchType = username ? "user" : "organization";
-      var searchValue = username ? username : organization;
-      core3.info(`No actions found in the ${searchType} [${searchValue}]`);
-      return actions;
-    }
+    const searchResult = yield getSearchResult(
+      client,
+      username,
+      organization,
+      isEnterpriseServer,
+      "+filename:action+language:YAML"
+    );
     for (let index = 0; index < searchResult.length; index++) {
       checkRateLimits(client, isEnterpriseServer);
-      var fileName = searchResult[index].name;
-      var filePath = searchResult[index].path;
-      var repoName = searchResult[index].repository.name;
-      var repoOwner = searchResult[index].repository.owner.login;
+      const fileName = searchResult[index].name;
+      const filePath = searchResult[index].path;
+      const repoName = searchResult[index].repository.name;
+      const repoOwner = searchResult[index].repository.owner.login;
       if (fileName == "action.yaml" || fileName == "action.yml") {
         core3.info(`Found action in ${repoName}/${filePath}`);
         let parentInfo = "";
         if (searchResult[index].repository.fork) {
           parentInfo = yield getForkParent(client, repoOwner, repoName);
         }
-        const result = yield getActionInfo(client, repoOwner, repoName, filePath, parentInfo);
+        const result = yield getActionInfo(
+          client,
+          repoOwner,
+          repoName,
+          filePath,
+          parentInfo
+        );
         actions.push(result);
       }
     }
