@@ -263,7 +263,7 @@ async function getActionableDockerFiles(
   }
   dockerActions?.forEach((value, index) => {
     actions[index] = new Content()
-    actions[index].name = value.name ? value.name : value.repo
+    actions[index].name = value.name
     actions[index].repo = value.repo
     actions[index].forkedfrom = ''
     actions[index].downloadUrl = value.downloadUrl
