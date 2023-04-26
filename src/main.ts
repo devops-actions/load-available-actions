@@ -184,7 +184,8 @@ async function getAllActions(
     organization,
     isEnterpriseServer
   )
-  actions = actions.concat(allActionableDockerFiles)
+  core.info(`all actionable ${JSON.stringify(allActionableDockerFiles)}`)
+  // actions = actions.concat(allActionableDockerFiles)
   actions = actions.concat(forkedActions)
   return actions
 }
@@ -262,7 +263,7 @@ async function getActionableDockerFiles(
   }
   dockerActions?.forEach((value, index) => {
     actions[index] = new Content()
-    actions[index].name = value.name
+    actions[index].name = value.name ? value.name : value.repo
     actions[index].repo = value.repo
     actions[index].forkedfrom = ''
     actions[index].downloadUrl = value.downloadUrl
