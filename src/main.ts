@@ -247,7 +247,7 @@ async function getActionableDockerFiles(
     repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
-    if (JSON.stringify(actionableDockerFiles)) {
+    if (JSON.stringify(actionableDockerFiles) !== '[]') {
       core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
       actions = actionableDockerFiles
     }
