@@ -147,8 +147,6 @@ const getSearchResult = async (
   isEnterpriseServer: boolean,
   searchQuery: string
 ) => {
-  const actions: Content[] = []
-  //todo: search for 'Dockerfile' or 'dockerfile' as well
   if (username) {
     core.info(
       `Search for action files of the user [${username}] in forked repos`
@@ -325,35 +323,13 @@ async function getAllActionsFromForkedRepos(
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
   const actions: Content[] = []
-  let searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
-  if (username) {
-    core.info(
-      `Search for action files of the user [${username}] in forked repos`
-    )
-    searchQuery = searchQuery.concat('+user:', username)
-  }
-
-  if (organization !== '') {
-    core.info(
-      `Search for action files under the organization [${organization}] in forked repos`
-    )
-    searchQuery = searchQuery.concat('+org:', organization)
-  }
-
-  const searchResult = await executeRepoSearch(
+  const searchResult = await getSearchResult(
     client,
-    searchQuery,
+    username,
+    organization,
     isEnterpriseServer,
-    0
+    '+fork:true'
   )
-
-  if (!searchResult) {
-    const searchType = username ? 'user' : 'organization'
-    const searchValue = username ? username : organization
-    core.info(`No forked repos found in the ${searchType} [${searchValue}]`)
-    return actions
-  }
-
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
@@ -441,7 +417,7 @@ async function executeCodeSearch(
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<SearchResult> {
+): Promise<any> {
   if (retryCount > 0) {
     const backoffTime = Math.pow(2, retryCount) * 5000
     core.info(`Retrying code search [${retryCount}] more times`)
@@ -485,7 +461,7 @@ async function executeRepoSearch(
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<SearchResult> {
+): Promise<any> {
   if (retryCount > 0) {
     const backoffTime = Math.pow(2, retryCount) * 1000
     core.info(`Retrying code search [${retryCount}] more times`)
