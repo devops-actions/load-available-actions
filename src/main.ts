@@ -288,7 +288,7 @@ async function executeCodeSearch (
   retryCount: number
 ): Promise<SearchResult> {
   if (retryCount > 0) {
-    const backoffTime = Math.pow(2, retryCount) * 1000
+    const backoffTime = Math.pow(2, retryCount) * 5000
     core.info(`Retrying code search [${retryCount}] more times`)
     core.info(`Waiting [${backoffTime / 1000}] seconds before retrying code search`)
     await new Promise(r => setTimeout(r, backoffTime))
@@ -305,7 +305,7 @@ async function executeCodeSearch (
     return searchResult
 
   } catch (error) {
-    core.info(`executeCodeSearch: catch!`)
+    core.info(`executeCodeSearch: catch! Error is: ${error}`)
     if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
       return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
     } else {
@@ -323,8 +323,8 @@ async function executeRepoSearch (
 ): Promise<SearchResult> {
   
   if (retryCount > 0) {
-    const backoffTime = Math.pow(2, retryCount) * 1000
-    core.info(`Retrying code search [${retryCount}] more times`)
+    const backoffTime = Math.pow(2, retryCount) * 5000
+    core.info(`Retrying code search with retry number [${retryCount}]`)
     core.info(`Waiting [${backoffTime / 1000}] seconds before retrying code search`)
     await new Promise(r => setTimeout(r, backoffTime))
   }
