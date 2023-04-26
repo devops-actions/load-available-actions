@@ -193,9 +193,10 @@ async function getActionableDockerFiles(
   username: string,
   organization: string,
   isEnterpriseServer: boolean
-): Promise<Content[] | undefined> {
+): Promise<Content[]> {
   let dockerActions: DockerActionFiles[] | undefined = []
-  let actions: Content[] | undefined
+  let dockerMetadata: any
+  let actions: Content[] = []
   let searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
   if (username) {
     core.info(
@@ -251,10 +252,15 @@ async function getActionableDockerFiles(
     if (JSON.stringify(actionableDockerFiles) !== '[]') {
       core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
       dockerActions = actionableDockerFiles
+      core.info(
+        `reponame ${repoName} repoOwner ${repoOwner} repopath ${repoPath} `
+      )
+      // dockerMetadata = {}
     }
   }
   dockerActions?.forEach((value, index) => {
-    // do things
+    actions[index].description = value.description
+    actions[index].name = value.name
   })
   return actions
 }
