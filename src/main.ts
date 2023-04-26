@@ -184,9 +184,7 @@ async function getAllActions(
     organization,
     isEnterpriseServer
   )
-  core.info(
-    `all actionable docker files: ${JSON.stringify(allActionableDockerFiles)}`
-  )
+  actions = actions.concat(allActionableDockerFiles)
   actions = actions.concat(forkedActions)
   return actions
 }
@@ -257,7 +255,7 @@ async function getActionableDockerFiles(
       actionableDockerFiles?.map(item => {
         item.author = repoOwner
         item.repo = repoName
-        item.downloadUrl = `https://${hostname}/${repoOwner}/${repo}.git`
+        item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`
       })
       dockerActions = actionableDockerFiles
     }
