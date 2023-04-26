@@ -5,7 +5,6 @@ import string from 'string-sanitizer'
 import YAML from 'yaml'
 import {promisify} from 'util'
 import fs from 'fs'
-import { DockerActionFiles } from './main'
 export function GetDateFormatted(date: Date): string {
   return moment(date).format('YYYYMMDD_HHmm')
 }
@@ -47,7 +46,15 @@ function sanitize(value: string) {
 }
 
 // Interface for a Dockerfile with actionable properties
+interface DockerActionFiles {
+  [key: string]: string | undefined
+  name?: string
+  description?: string
+  // icon?: string
+  // color?: string
 
+  // Icon and color is needed for using dockerfiles as actions, but it's not used in the marketplace.
+}
 
 export const returnActionableDockerFiles = async (path: string) => {
   const dockerFilesWithActionArray: DockerActionFiles[] = []

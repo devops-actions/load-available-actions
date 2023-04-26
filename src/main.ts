@@ -91,15 +91,6 @@ async function run(): Promise<void> {
     core.setFailed(`Error running action: : ${error.message}`)
   }
 }
-export interface DockerActionFiles {
-  [key: string]: string | undefined
-  name?: string
-  description?: string
-  // icon?: string
-  // color?: string
-
-  // Icon and color is needed for using dockerfiles as actions, but it's not used in the marketplace.
-}
 export class Content {
   name: string | undefined
   owner: string | undefined
@@ -109,7 +100,6 @@ export class Content {
   description: string | undefined
   forkedfrom: string | undefined
   readme: string | undefined
-  dockerfile: DockerActionFiles[] | undefined
 }
 
 async function enrichActionFiles(
@@ -183,80 +173,8 @@ async function getAllActions(
     organization,
     isEnterpriseServer
   )
-  // const actionableDockerFiles = await getActionableDockerFiles(
-  //   client,
-  //   username,
-  //   organization,
-  //   isEnterpriseServer
-  // )
-  // core.info(
-  //   `actionable docker files (final) : ${JSON.stringify(actionableDockerFiles)}`
-  // )
+
   actions = actions.concat(forkedActions)
-  return actions
-}
-async function getActionableDockerFiles(
-  client: Octokit,
-  username: string,
-  organization: string,
-  isEnterpriseServer: boolean
-): Promise<DockerActionFiles[] | undefined> {
-  let actions: DockerActionFiles[] | undefined = []
-  let searchQuery = '+fork:true' //todo: search for 'Dockerfile' or 'dockerfile' as well
-  if (username) {
-    core.info(
-      `Search for action files of the user [${username}] in forked repos`
-    )
-    searchQuery = searchQuery.concat('+user:', username)
-  }
-
-  if (organization !== '') {
-    core.info(
-      `Search for action files under the organization [${organization}] in forked repos`
-    )
-    searchQuery = searchQuery.concat('+org:', organization)
-  }
-
-  const searchResult = await executeRepoSearch(
-    client,
-    searchQuery,
-    isEnterpriseServer,
-    0
-  )
-
-  if (!searchResult) {
-    const searchType = username ? 'user' : 'organization'
-    const searchValue = username ? username : organization
-    core.info(`No forked repos found in the ${searchType} [${searchValue}]`)
-    return actions
-  }
-
-  core.info(`Found [${searchResult.length}] repos, checking only the forks`)
-  for (let index = 0; index < searchResult.length; index++) {
-    const repo = searchResult[index]
-    if (!repo.fork) {
-      // we only want forked repos
-      continue
-    }
-    checkRateLimits(client, isEnterpriseServer)
-    // check if the repo contains action files in the root of the repo
-    const repoName = repo.name
-    const repoOwner = repo.owner ? repo.owner.login : ''
-
-    core.debug(`Checking repo [${repoName}] for action files`)
-    // clone the repo
-    const repoPath = cloneRepo(repoName, repoOwner)
-    if (!repoPath) {
-      // error cloning the repo, skip it
-      continue
-    }
-    let actionableDockerFiles
-    core.info('actionableDockerFiles:')
-    repoPath
-      ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
-      : null
-    actions = actionableDockerFiles
-  }
   return actions
 }
 
@@ -325,6 +243,13 @@ async function getAllActionsFromForkedRepos(
         actionFiles.length - 1
       }] action in repo [${repoName}] that was cloned to [${repoPath}]`
     )
+    let actionableDockerFiles
+    core.info('actionableDockerFiles:')
+    repoPath
+      ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
+      : null
+    core.info(JSON.stringify(actionableDockerFiles))
+
     for (let index = 0; index < actionFiles.length - 1; index++) {
       core.debug(
         `Found action file [${actionFiles[index]}] in repo [${repoName}]`
@@ -356,7 +281,7 @@ function cloneRepo(repo: string, owner: string): string {
   try {
     const repolink = `https://${hostname}/${owner}/${repo}.git` // todo: support GHES
     // create a temp directory
-    const repoPath = repo
+    const repoPath = 'actions'
     if (!fs.existsSync(repoPath)) {
       fs.mkdirSync(repoPath)
     }
@@ -381,7 +306,7 @@ async function executeCodeSearch(
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<any> {
+): Promise<SearchResult> {
   if (retryCount > 0) {
     const backoffTime = Math.pow(2, retryCount) * 1000
     core.info(`Retrying code search [${retryCount}] more times`)
@@ -425,7 +350,7 @@ async function executeRepoSearch(
   searchQuery: string,
   isEnterpriseServer: boolean,
   retryCount: number
-): Promise<any> {
+): Promise<SearchResult> {
   if (retryCount > 0) {
     const backoffTime = Math.pow(2, retryCount) * 1000
     core.info(`Retrying code search [${retryCount}] more times`)
