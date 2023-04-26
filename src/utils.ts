@@ -51,6 +51,8 @@ export interface DockerActionFiles {
   name?: string
   description?: string
   author?: string
+  repo?: string
+  downloadUrl?: string
   // icon?: string
   // color?: string
 

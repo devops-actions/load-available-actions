@@ -256,15 +256,20 @@ async function getActionableDockerFiles(
       core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
       actionableDockerFiles?.map(item => {
         item.author = repoOwner
+        item.repo = repoName
+        item.downloadUrl = `https://${hostname}/${repoOwner}/${repo}.git`
       })
       dockerActions = actionableDockerFiles
     }
   }
   dockerActions?.forEach((value, index) => {
     actions[index] = new Content()
-    actions[index].description = value.description
     actions[index].name = value.name
+    actions[index].repo = value.repo
+    actions[index].forkedfrom = ''
+    actions[index].downloadUrl = value.downloadUrl
     actions[index].author = value.author
+    actions[index].description = value.description
   })
   return actions
 }
