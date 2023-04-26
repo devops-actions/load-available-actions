@@ -246,8 +246,9 @@ async function getActionableDockerFiles(
     repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
-
-    actionableDockerFiles ? (actions = actionableDockerFiles) : null
+    actions = actionableDockerFiles
+    core.info(`actionabledokcerfiles : ${actionableDockerFiles}`)
+    if (!actionableDockerFiles) core.info(`actionableDockerFiles is empty`)
   }
   core.info(`returning actions: ${actions}`)
   return actions
