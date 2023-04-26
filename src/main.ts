@@ -247,6 +247,7 @@ async function getActionableDockerFiles(
     repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
+    fs.rmSync(repoPath, {recursive: true})
     actions = actionableDockerFiles
   }
   return actions
