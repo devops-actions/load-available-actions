@@ -32634,6 +32634,11 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
     let actions = yield getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
     let forkedActions = yield getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
     actions = actions.concat(forkedActions);
+    core3.debug(`Found [${actions.length}] actions in total`);
+    actions = actions.filter(
+      (action, index, self2) => index === self2.findIndex((t) => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`)
+    );
+    core3.debug(`After dedupliation we have [${actions.length}] actions in total`);
     return actions;
   });
 }
@@ -32707,7 +32712,7 @@ function cloneRepo(repo, owner) {
 function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) {
   return __async(this, null, function* () {
     if (retryCount > 0) {
-      const backoffTime = Math.pow(2, retryCount) * 1e3;
+      const backoffTime = Math.pow(2, retryCount) * 5e3;
       core3.info(`Retrying code search [${retryCount}] more times`);
       core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
       yield new Promise((r) => setTimeout(r, backoffTime));
@@ -32721,7 +32726,7 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
       core3.debug(`Found [${searchResult.total_count}] code search results`);
       return searchResult;
     } catch (error) {
-      core3.info(`executeCodeSearch: catch!`);
+      core3.info(`executeCodeSearch: catch! Error is: ${error}`);
       if (error.message.includes("SecondaryRateLimit detected for request")) {
         return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
@@ -32734,8 +32739,8 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
 function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
   return __async(this, null, function* () {
     if (retryCount > 0) {
-      const backoffTime = Math.pow(2, retryCount) * 1e3;
-      core3.info(`Retrying code search [${retryCount}] more times`);
+      const backoffTime = Math.pow(2, retryCount) * 5e3;
+      core3.info(`Retrying code search with retry number [${retryCount}]`);
       core3.info(`Waiting [${backoffTime / 1e3}] seconds before retrying code search`);
       yield new Promise((r) => setTimeout(r, backoffTime));
     }

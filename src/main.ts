@@ -178,10 +178,19 @@ async function getAllActions (
   organization: string,
   isEnterpriseServer: boolean
 ): Promise<Content[]> { 
+  // todo: include the filepath in the information: some repos have the same filename in multiple locations, with the same content
   let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer)
   let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer)
 
   actions = actions.concat(forkedActions)
+  core.debug(`Found [${actions.length}] actions in total`)
+
+  // deduplicate the actions list
+  actions = actions.filter(
+    (action, index, self) =>
+      index === self.findIndex(t => (`${t.name} ${t.repo}`) === (`${action.name} ${action.repo}`))
+  )  
+  core.debug(`After dedupliation we have [${actions.length}] actions in total`)
   return actions
 }
 
@@ -288,7 +297,7 @@ async function executeCodeSearch (
   retryCount: number
 ): Promise<SearchResult> {
   if (retryCount > 0) {
-    const backoffTime = Math.pow(2, retryCount) * 1000
+    const backoffTime = Math.pow(2, retryCount) * 5000
     core.info(`Retrying code search [${retryCount}] more times`)
     core.info(`Waiting [${backoffTime / 1000}] seconds before retrying code search`)
     await new Promise(r => setTimeout(r, backoffTime))
@@ -305,7 +314,7 @@ async function executeCodeSearch (
     return searchResult
 
   } catch (error) {
-    core.info(`executeCodeSearch: catch!`)
+    core.info(`executeCodeSearch: catch! Error is: ${error}`)
     if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
       return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
     } else {
@@ -323,8 +332,8 @@ async function executeRepoSearch (
 ): Promise<SearchResult> {
   
   if (retryCount > 0) {
-    const backoffTime = Math.pow(2, retryCount) * 1000
-    core.info(`Retrying code search [${retryCount}] more times`)
+    const backoffTime = Math.pow(2, retryCount) * 5000
+    core.info(`Retrying code search with retry number [${retryCount}]`)
     core.info(`Waiting [${backoffTime / 1000}] seconds before retrying code search`)
     await new Promise(r => setTimeout(r, backoffTime))
   }
