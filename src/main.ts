@@ -357,6 +357,7 @@ function cloneRepo(repo: string, owner: string): string {
     if (!fs.existsSync(repoPath)) {
       fs.mkdirSync(repoPath)
     } else {
+      core.info('folder already exists!!!')
       fs.rmSync(repoPath, {recursive: true})
     }
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
