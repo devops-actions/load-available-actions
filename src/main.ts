@@ -247,7 +247,6 @@ async function getActionableDockerFiles(
     repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
-    fs.rmSync(repoPath, {recursive: true})
     actions = actionableDockerFiles
   }
   return actions
@@ -357,6 +356,8 @@ function cloneRepo(repo: string, owner: string): string {
     const repoPath = 'actions'
     if (!fs.existsSync(repoPath)) {
       fs.mkdirSync(repoPath)
+    } else {
+      fs.rmSync(repoPath, {recursive: true})
     }
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
 
