@@ -354,14 +354,12 @@ function cloneRepo(repo: string, owner: string): string {
     const repolink = `https://${hostname}/${owner}/${repo}.git` // todo: support GHES
     // create a temp directory
     const repoPath = 'actions'
-    if (!fs.existsSync(repoPath)) {
-      fs.mkdirSync(repoPath)
-    } else {
-      core.info('folder already exists!!!')
+    if (fs.existsSync(repoPath)) {
+      core.info('folder already exists, deleting')
       fs.rmSync(repoPath, {recursive: true})
-      core.info('deleted')
-
     }
+    fs.mkdirSync(repoPath)
+
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
 
     // clone the repo
