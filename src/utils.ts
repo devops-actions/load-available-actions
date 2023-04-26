@@ -59,7 +59,7 @@ export interface DockerActionFiles {
   // Icon and color is needed for using dockerfiles as actions, but it's not used in the marketplace.
 }
 
-export const returnActionableDockerFiles = async (path: string) => {
+export const getActionableDockerFilesFromDisk = async (path: string) => {
   const dockerFilesWithActionArray: DockerActionFiles[] = []
   const dockerFiles = execSync(
     `find ${path} -name "Dockerfile" -o -name "dockerfile"`,
