@@ -178,16 +178,19 @@ async function getAllActions (
   organization: string,
   isEnterpriseServer: boolean
 ): Promise<Content[]> { 
+  // todo: include the filepath in the information: some repos have the same filename in multiple locations, with the same content
   let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer)
   let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer)
 
   actions = actions.concat(forkedActions)
+  core.debug(`Found [${actions.length}] actions in total`)
 
   // deduplicate the actions list
   actions = actions.filter(
     (action, index, self) =>
-      index === self.findIndex(t => t.downloadUrl === action.downloadUrl)
-  )
+      index === self.findIndex(t => (`${t.name} ${t.repo}`) === (`${action.name} ${action.repo}`))
+  )  
+  core.debug(`After dedupliation we have [${actions.length}] actions in total`)
   return actions
 }
 

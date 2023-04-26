@@ -32634,9 +32634,11 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
     let actions = yield getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
     let forkedActions = yield getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
     actions = actions.concat(forkedActions);
+    core3.debug(`Found [${actions.length}] actions in total`);
     actions = actions.filter(
-      (action, index, self2) => index === self2.findIndex((t) => t.downloadUrl === action.downloadUrl)
+      (action, index, self2) => index === self2.findIndex((t) => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`)
     );
+    core3.debug(`After dedupliation we have [${actions.length}] actions in total`);
     return actions;
   });
 }
