@@ -246,9 +246,10 @@ async function getActionableDockerFiles(
     repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
-    actions = actionableDockerFiles
-    core.info(`actionabledokcerfiles : ${actionableDockerFiles}`)
+
+    actionableDockerFiles ? (actions = actionableDockerFiles) : null
   }
+  core.info(`returning actions: ${actions}`)
   return actions
 }
 async function getAllActionsFromForkedRepos(
