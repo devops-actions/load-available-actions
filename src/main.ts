@@ -80,9 +80,9 @@ async function run(): Promise<void> {
     core.info(
       `All actionable docker files :${JSON.stringify(allActionableDockerFiles)}`
     )
-    core.info(`ActionFIles: ${actionFiles}`)
+    core.info(`ActionFIles: ${JSON.stringify(actionFiles)}`)
     actionFiles.concat(allActionableDockerFiles)
-    core.info(`concated action files: ${actionFiles}`)
+    core.info(`concated action files: ${JSON.stringify(actionFiles)}`)
     // output the json we want to output
     const output: {
       lastUpdated: string
