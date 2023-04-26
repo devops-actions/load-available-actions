@@ -77,7 +77,9 @@ async function run(): Promise<void> {
       organization,
       isEnterpriseServer
     )
-    core.info(`all actionable ${JSON.stringify(allActionableDockerFiles)}`)
+    core.debug(
+      `All actionable files :[${JSON.stringify(allActionableDockerFiles)}]`
+    )
     actionFiles.concat(allActionableDockerFiles)
     // output the json we want to output
     const output: {
