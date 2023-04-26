@@ -359,6 +359,8 @@ function cloneRepo(repo: string, owner: string): string {
     } else {
       core.info('folder already exists!!!')
       fs.rmSync(repoPath, {recursive: true})
+      core.info('deleted')
+
     }
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
 
