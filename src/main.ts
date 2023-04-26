@@ -247,7 +247,10 @@ async function getActionableDockerFiles(
     repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
-    actionableDockerFiles?.toString ? (actions = actionableDockerFiles) : null
+    if (JSON.stringify(actionableDockerFiles)) {
+      core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
+      actions = actionableDockerFiles
+    }
   }
   return actions
 }
@@ -348,7 +351,7 @@ function cloneRepo(repo: string, owner: string): string {
     // create a temp directory
     const repoPath = 'actions'
     if (fs.existsSync(repoPath)) {
-      core.info('folder already exists, deleting')
+      // core.info('folder already exists, deleting')
       fs.rmSync(repoPath, {recursive: true})
     }
     fs.mkdirSync(repoPath)
