@@ -32634,6 +32634,9 @@ function getAllActions(client, username, organization, isEnterpriseServer) {
     let actions = yield getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
     let forkedActions = yield getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
     actions = actions.concat(forkedActions);
+    actions = actions.filter(
+      (action, index, self2) => index === self2.findIndex((t) => t.downloadUrl === action.downloadUrl)
+    );
     return actions;
   });
 }

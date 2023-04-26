@@ -182,6 +182,12 @@ async function getAllActions (
   let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer)
 
   actions = actions.concat(forkedActions)
+
+  // deduplicate the actions list
+  actions = actions.filter(
+    (action, index, self) =>
+      index === self.findIndex(t => t.downloadUrl === action.downloadUrl)
+  )
   return actions
 }
 
