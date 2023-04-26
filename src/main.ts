@@ -506,33 +506,13 @@ async function getAllActionsUsingSearch(
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
   const actions: Content[] = []
-
-  let searchQuery = '+filename:action+language:YAML' //todo: search for 'Dockerfile' or 'dockerfile' as well
-  if (username) {
-    core.info(`Search for action files of the user [${username}]`)
-    searchQuery = searchQuery.concat('+user:', username)
-  }
-
-  if (organization !== '') {
-    core.info(
-      `Search for action files under the organization [${organization}]`
-    )
-    searchQuery = searchQuery.concat('+org:', organization)
-  }
-
-  const searchResult = await executeCodeSearch(
+  const searchResult = await getSearchResult(
     client,
-    searchQuery,
+    username,
+    organization,
     isEnterpriseServer,
-    0
+    '+filename:action+language:YAML'
   )
-
-  if (!searchResult) {
-    const searchType = username ? 'user' : 'organization'
-    const searchValue = username ? username : organization
-    core.info(`No actions found in the ${searchType} [${searchValue}]`)
-    return actions
-  }
 
   for (let index = 0; index < searchResult.length; index++) {
     checkRateLimits(client, isEnterpriseServer)
