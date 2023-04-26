@@ -259,6 +259,7 @@ async function getActionableDockerFiles(
     }
   }
   dockerActions?.forEach((value, index) => {
+    actions[index] = new Content()
     actions[index].description = value.description
     actions[index].name = value.name
   })
