@@ -187,6 +187,7 @@ async function getAllActions(
   actions = actions.concat(forkedActions)
   return actions
 }
+
 async function getActionableDockerFiles(
   client: Octokit,
   username: string,
@@ -246,11 +247,8 @@ async function getActionableDockerFiles(
     repoPath
       ? (actionableDockerFiles = await returnActionableDockerFiles(repoPath))
       : null
-    actions = actionableDockerFiles
-    core.info(`actionabledokcerfiles : ${actionableDockerFiles}`)
-    if (!actionableDockerFiles) core.info(`actionableDockerFiles is empty`)
+    actionableDockerFiles?.toString ? (actions = actionableDockerFiles) : null
   }
-  core.info(`returning actions: ${actions}`)
   return actions
 }
 async function getAllActionsFromForkedRepos(
