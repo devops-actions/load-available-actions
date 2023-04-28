@@ -32945,9 +32945,11 @@ function callSearchQueryWithBackoff(client, searchQuery, page) {
       return results.data;
     } catch (error2) {
       if (error2.message.includes("API rate limit exceeded for")) {
-      } else {
-        throw error2;
       }
+      if (error2.message.includes("Cannot access beyond the first 1000 results")) {
+        return null;
+      }
+      throw error2;
     }
   });
 }
@@ -32968,6 +32970,8 @@ function paginateSearchQuery(client, searchQuery) {
         }
         page++;
         yield new Promise((r) => setTimeout(r, 6e3));
+      } else {
+        return items;
       }
     } while (items.length < total_count);
     return items;

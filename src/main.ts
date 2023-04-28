@@ -486,11 +486,15 @@ async function callSearchQueryWithBackoff(client: Octokit, searchQuery: string, 
   catch (error) {
     // check if we hit the rate limit
     if ((error as Error).message.includes('API rate limit exceeded for')) {
-      // backoff and retry
+      // todo: backoff and retry
     }
-    else {
-      throw error
+    
+    if ((error as Error).message.includes('Cannot access beyond the first 1000 results')) {
+      return null
     }
+
+    // if we get to here:
+    throw error    
   }
 }
 
@@ -515,6 +519,10 @@ async function paginateSearchQuery(client: Octokit, searchQuery: string) {
       page++
       // code endpoint has a ratelimit of 10 calls a minute, so wait 6 seconds between calls
       await new Promise(r => setTimeout(r, 6000))
+    }
+    else {
+      // no more results
+      return items
     }
   } while (items.length < total_count)
   return items
