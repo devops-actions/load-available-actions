@@ -1,4 +1,4 @@
-name: Testing the action
+name: Testing with big org
 
 on: 
   push:
