@@ -32933,7 +32933,7 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
         return [];
       }
       const backoffTime = Math.pow(2, retryCount) * 1e3;
-      core3.info(`Retrying code search [${retryCount}] more times`);
+      core3.info(`Retrying code search for the [${retryCount}] time`);
       core3.info(
         `Waiting [${backoffTime / 1e3}] seconds before retrying code search`
       );
@@ -32957,7 +32957,7 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
           retryCount + 1
         );
       } else {
-        core3.error(`Error executing repo search: ${error2}`);
+        core3.error(`Error executing repo search: ${error2} with message ${error2.message}`);
         return [];
       }
     }

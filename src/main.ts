@@ -472,7 +472,7 @@ async function executeRepoSearch(
     }
 
     const backoffTime = Math.pow(2, retryCount) * 1000
-    core.info(`Retrying code search [${retryCount}] more times`)
+    core.info(`Retrying code search for the [${retryCount}] time`)
     core.info(
       `Waiting [${backoffTime / 1000}] seconds before retrying code search`
     )
@@ -501,7 +501,7 @@ async function executeRepoSearch(
         retryCount + 1
       )
     } else {
-      core.error(`Error executing repo search: ${error}`)
+      core.error(`Error executing repo search: ${error} with message ${(error as Error).message}`)
       return []
     }
   }
