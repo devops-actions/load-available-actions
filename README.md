@@ -4,7 +4,16 @@
 
 Load all actions stored in the current organization, by calling the REST API with an  Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
 
-The output is stored with the name `actions`, which can be retrieved in another action with `${{ steps.<step id>.outputs.actions }}`.
+The output is stored in a file with the name `actions`, which can be retrieved in another action with `${{ steps.<step id>.outputs.outputFilename }}`.
+
+We use the search api to find the following files in your repositories:
+- action.yml
+- action.yaml
+- Dockerfile
+- dockerfile
+For the Dockerfiles we search for the required labels to identify them as actions.
+
+Note that the search API only supports up to a maximum of 1000 results, so we cannot return more actions than that at the moment.
 
 ## Inputs
 |Name|Description|
