@@ -1,0 +1,74 @@
+name: Testing with big org
+
+on: 
+  push:
+    paths: 
+    - .github/workflows/test-big-organization.yml
+    - src/main.ts
+
+  workflow_dispatch:
+
+# declare default GITHUB_TOKEN permissions as read only.
+permissions: read-all
+    
+jobs:
+  test-load-from-user: # test the action for the user space
+    name: Organization with lots of actions # testing the timeout / GitHub ratelimiting
+    runs-on: ubuntu-latest
+    env:
+      organization: actions-marketplace-validations
+    steps: 
+      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3.5.0
+      # make sure we have a new build, in case the dist folder was not updated
+      - name: Compile with NPM
+        run: | 
+          npm ci
+          npm run all
+
+      # run the test
+      - uses: ./
+        name: Load available actions
+        with: 
+          PAT: ${{ secrets.PAT }} 
+          organization: ${{ env.organization }}
+        id: load-actions 
+
+      # check if the result file is not empty
+      - name: Check if the result file is not empty
+        run: | 
+          if [ ! -s "${{ steps.load-actions.outputs.actions-file-path }}" ]; then
+            echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.user }}]" | tee "$GITHUB_STEP_SUMMARY"
+
+      - name: Check if the result file has actions in it
+        run: |
+          # check if the file has actions in it 
+          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
+            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+      - name: Check if the results file has duplicate actions
+        run: |
+          # check if the file has actions in it 
+          # this is WIP, it seems like there where duplicates of the actions results since we picked up the normal repos in the forks search as well (was fixed)
+          echo "Actions array length = $(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
+          echo "Unique actions by name = $(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
+          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
+            echo "The result file contains duplicate actions" | tee "$GITHUB_STEP_SUMMARY"
+            # group the actions to find the duplicates
+            jq '.actions | group_by({name, repo}) | map(select(length > 1))' "${{ steps.load-actions.outputs.actions-file-path }}"
+            
+            exit 1
+          fi
+
+      # upload the second result file as an artefact 
+      - name: Upload result file as artefact
+        if: ${{ steps.load-actions.conclusion == 'success' }}}
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with: 
+          name: actions-user
+          path: ${{ steps.load-actions.outputs.actions-file-path }}

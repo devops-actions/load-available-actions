@@ -755,18 +755,18 @@ var require_tunnel = __commonJS({
             res.statusCode
           );
           socket.destroy();
-          var error = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
-          error.code = "ECONNRESET";
-          options.request.emit("error", error);
+          var error2 = new Error("tunneling socket could not be established, statusCode=" + res.statusCode);
+          error2.code = "ECONNRESET";
+          options.request.emit("error", error2);
           self2.removeSocket(placeholder);
           return;
         }
         if (head.length > 0) {
           debug3("got illegal response body from proxy");
           socket.destroy();
-          var error = new Error("got illegal response body from proxy");
-          error.code = "ECONNRESET";
-          options.request.emit("error", error);
+          var error2 = new Error("got illegal response body from proxy");
+          error2.code = "ECONNRESET";
+          options.request.emit("error", error2);
           self2.removeSocket(placeholder);
           return;
         }
@@ -781,9 +781,9 @@ var require_tunnel = __commonJS({
           cause.message,
           cause.stack
         );
-        var error = new Error("tunneling socket could not be established, cause=" + cause.message);
-        error.code = "ECONNRESET";
-        options.request.emit("error", error);
+        var error2 = new Error("tunneling socket could not be established, cause=" + cause.message);
+        error2.code = "ECONNRESET";
+        options.request.emit("error", error2);
         self2.removeSocket(placeholder);
       }
     };
@@ -1610,12 +1610,12 @@ var require_oidc_utils = __commonJS({
         var _a;
         return __awaiter(this, void 0, void 0, function* () {
           const httpclient = OidcClient.createHttpClient();
-          const res = yield httpclient.getJson(id_token_url).catch((error) => {
+          const res = yield httpclient.getJson(id_token_url).catch((error2) => {
             throw new Error(`Failed to get ID Token. 
  
-        Error Code : ${error.statusCode}
+        Error Code : ${error2.statusCode}
  
-        Error Message: ${error.result.message}`);
+        Error Message: ${error2.result.message}`);
           });
           const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
           if (!id_token) {
@@ -1636,8 +1636,8 @@ var require_oidc_utils = __commonJS({
             const id_token = yield OidcClient.getCall(id_token_url);
             core_1.setSecret(id_token);
             return id_token;
-          } catch (error) {
-            throw new Error(`Error message: ${error.message}`);
+          } catch (error2) {
+            throw new Error(`Error message: ${error2.message}`);
           }
         });
       }
@@ -2132,7 +2132,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     exports.setCommandEcho = setCommandEcho;
     function setFailed2(message) {
       process.exitCode = ExitCode.Failure;
-      error(message);
+      error2(message);
     }
     exports.setFailed = setFailed2;
     function isDebug() {
@@ -2143,14 +2143,14 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("debug", {}, message);
     }
     exports.debug = debug3;
-    function error(message, properties = {}) {
+    function error2(message, properties = {}) {
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.error = error;
-    function warning2(message, properties = {}) {
+    exports.error = error2;
+    function warning3(message, properties = {}) {
       command_1.issueCommand("warning", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning2;
+    exports.warning = warning3;
     function notice(message, properties = {}) {
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -2292,8 +2292,8 @@ var require_add = __commonJS({
       }
       if (kind === "error") {
         hook = function(method, options) {
-          return Promise.resolve().then(method.bind(null, options)).catch(function(error) {
-            return orig(error, options);
+          return Promise.resolve().then(method.bind(null, options)).catch(function(error2) {
+            return orig(error2, options);
           });
         };
       }
@@ -2978,21 +2978,21 @@ var require_tr46 = __commonJS({
         label = punycode.toUnicode(label);
         processing_option = PROCESSING_OPTIONS.NONTRANSITIONAL;
       }
-      var error = false;
+      var error2 = false;
       if (normalize(label) !== label || label[3] === "-" && label[4] === "-" || label[0] === "-" || label[label.length - 1] === "-" || label.indexOf(".") !== -1 || label.search(combiningMarksRegex) === 0) {
-        error = true;
+        error2 = true;
       }
       var len = countSymbols(label);
       for (var i = 0; i < len; ++i) {
         var status = findStatus(label.codePointAt(i));
         if (processing === PROCESSING_OPTIONS.TRANSITIONAL && status[1] !== "valid" || processing === PROCESSING_OPTIONS.NONTRANSITIONAL && status[1] !== "valid" && status[1] !== "deviation") {
-          error = true;
+          error2 = true;
           break;
         }
       }
       return {
         label,
-        error
+        error: error2
       };
     }
     function processing(domain_name, useSTD3, processing_option) {
@@ -4644,8 +4644,8 @@ var require_lib3 = __commonJS({
       this.timeout = timeout;
       if (body instanceof Stream) {
         body.on("error", function(err) {
-          const error = err.name === "AbortError" ? err : new FetchError(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, "system", err);
-          _this[INTERNALS].error = error;
+          const error2 = err.name === "AbortError" ? err : new FetchError(`Invalid response body while trying to fetch ${_this.url}: ${err.message}`, "system", err);
+          _this[INTERNALS].error = error2;
         });
       }
     }
@@ -5488,14 +5488,14 @@ var require_lib3 = __commonJS({
         const signal = request.signal;
         let response = null;
         const abort = function abort2() {
-          let error = new AbortError("The user aborted a request.");
-          reject(error);
+          let error2 = new AbortError("The user aborted a request.");
+          reject(error2);
           if (request.body && request.body instanceof Stream.Readable) {
-            request.body.destroy(error);
+            request.body.destroy(error2);
           }
           if (!response || !response.body)
             return;
-          response.body.emit("error", error);
+          response.body.emit("error", error2);
         };
         if (signal && signal.aborted) {
           abort();
@@ -5893,7 +5893,7 @@ var require_dist_node5 = __commonJS({
         }
         if (status >= 400) {
           const data = await getResponseData(response);
-          const error = new requestError.RequestError(toErrorMessage(data), status, {
+          const error2 = new requestError.RequestError(toErrorMessage(data), status, {
             response: {
               url,
               status,
@@ -5902,7 +5902,7 @@ var require_dist_node5 = __commonJS({
             },
             request: requestOptions
           });
-          throw error;
+          throw error2;
         }
         return getResponseData(response);
       }).then((data) => {
@@ -5912,12 +5912,12 @@ var require_dist_node5 = __commonJS({
           headers,
           data
         };
-      }).catch((error) => {
-        if (error instanceof requestError.RequestError)
-          throw error;
-        else if (error.name === "AbortError")
-          throw error;
-        throw new requestError.RequestError(error.message, 500, {
+      }).catch((error2) => {
+        if (error2 instanceof requestError.RequestError)
+          throw error2;
+        else if (error2.name === "AbortError")
+          throw error2;
+        throw new requestError.RequestError(error2.message, 500, {
           request: requestOptions
         });
       });
@@ -6291,9 +6291,9 @@ var require_dist_node9 = __commonJS({
               return {
                 value: normalizedResponse
               };
-            } catch (error) {
-              if (error.status !== 409)
-                throw error;
+            } catch (error2) {
+              if (error2.status !== 409)
+                throw error2;
               url = "";
               return {
                 value: {
@@ -7623,8 +7623,8 @@ var require_light = __commonJS({
                 } else {
                   return returned;
                 }
-              } catch (error) {
-                e2 = error;
+              } catch (error2) {
+                e2 = error2;
                 {
                   this.trigger("error", e2);
                 }
@@ -7634,8 +7634,8 @@ var require_light = __commonJS({
             return (await Promise.all(promises)).find(function(x) {
               return x != null;
             });
-          } catch (error) {
-            e = error;
+          } catch (error2) {
+            e = error2;
             {
               this.trigger("error", e);
             }
@@ -7747,10 +7747,10 @@ var require_light = __commonJS({
         _randomIndex() {
           return Math.random().toString(36).slice(2);
         }
-        doDrop({ error, message = "This job has been dropped by Bottleneck" } = {}) {
+        doDrop({ error: error2, message = "This job has been dropped by Bottleneck" } = {}) {
           if (this._states.remove(this.options.id)) {
             if (this.rejectOnDrop) {
-              this._reject(error != null ? error : new BottleneckError$1(message));
+              this._reject(error2 != null ? error2 : new BottleneckError$1(message));
             }
             this.Events.trigger("dropped", { args: this.args, options: this.options, task: this.task, promise: this.promise });
             return true;
@@ -7784,7 +7784,7 @@ var require_light = __commonJS({
           return this.Events.trigger("scheduled", { args: this.args, options: this.options });
         }
         async doExecute(chained, clearGlobalState, run2, free) {
-          var error, eventInfo, passed;
+          var error2, eventInfo, passed;
           if (this.retryCount === 0) {
             this._assertStatus("RUNNING");
             this._states.next(this.options.id);
@@ -7802,24 +7802,24 @@ var require_light = __commonJS({
               return this._resolve(passed);
             }
           } catch (error1) {
-            error = error1;
-            return this._onFailure(error, eventInfo, clearGlobalState, run2, free);
+            error2 = error1;
+            return this._onFailure(error2, eventInfo, clearGlobalState, run2, free);
           }
         }
         doExpire(clearGlobalState, run2, free) {
-          var error, eventInfo;
+          var error2, eventInfo;
           if (this._states.jobStatus(this.options.id === "RUNNING")) {
             this._states.next(this.options.id);
           }
           this._assertStatus("EXECUTING");
           eventInfo = { args: this.args, options: this.options, retryCount: this.retryCount };
-          error = new BottleneckError$1(`This job timed out after ${this.options.expiration} ms.`);
-          return this._onFailure(error, eventInfo, clearGlobalState, run2, free);
+          error2 = new BottleneckError$1(`This job timed out after ${this.options.expiration} ms.`);
+          return this._onFailure(error2, eventInfo, clearGlobalState, run2, free);
         }
-        async _onFailure(error, eventInfo, clearGlobalState, run2, free) {
+        async _onFailure(error2, eventInfo, clearGlobalState, run2, free) {
           var retry, retryAfter;
           if (clearGlobalState()) {
-            retry = await this.Events.trigger("failed", error, eventInfo);
+            retry = await this.Events.trigger("failed", error2, eventInfo);
             if (retry != null) {
               retryAfter = ~~retry;
               this.Events.trigger("retry", `Retrying ${this.options.id} after ${retryAfter} ms`, eventInfo);
@@ -7829,7 +7829,7 @@ var require_light = __commonJS({
               this.doDone(eventInfo);
               await free(this.options, eventInfo);
               this._assertStatus("DONE");
-              return this._reject(error);
+              return this._reject(error2);
             }
           }
         }
@@ -8108,7 +8108,7 @@ var require_light = __commonJS({
           return this._queue.length === 0;
         }
         async _tryToRun() {
-          var args, cb, error, reject, resolve, returned, task;
+          var args, cb, error2, reject, resolve, returned, task;
           if (this._running < 1 && this._queue.length > 0) {
             this._running++;
             ({ task, args, resolve, reject } = this._queue.shift());
@@ -8119,9 +8119,9 @@ var require_light = __commonJS({
                   return resolve(returned);
                 };
               } catch (error1) {
-                error = error1;
+                error2 = error1;
                 return function() {
-                  return reject(error);
+                  return reject(error2);
                 };
               }
             }();
@@ -8255,8 +8255,8 @@ var require_light = __commonJS({
                   } else {
                     results.push(void 0);
                   }
-                } catch (error) {
-                  e = error;
+                } catch (error2) {
+                  e = error2;
                   results.push(v.Events.trigger("error", e));
                 }
               }
@@ -8589,14 +8589,14 @@ var require_light = __commonJS({
             return done;
           }
           async _addToQueue(job) {
-            var args, blocked, error, options, reachedHWM, shifted, strategy;
+            var args, blocked, error2, options, reachedHWM, shifted, strategy;
             ({ args, options } = job);
             try {
               ({ reachedHWM, blocked, strategy } = await this._store.__submit__(this.queued(), options.weight));
             } catch (error1) {
-              error = error1;
-              this.Events.trigger("debug", `Could not queue ${options.id}`, { args, options, error });
-              job.doDrop({ error });
+              error2 = error1;
+              this.Events.trigger("debug", `Could not queue ${options.id}`, { args, options, error: error2 });
+              job.doDrop({ error: error2 });
               return false;
             }
             if (blocked) {
@@ -8771,22 +8771,22 @@ var require_dist_node11 = __commonJS({
       return ex && typeof ex === "object" && "default" in ex ? ex["default"] : ex;
     }
     var Bottleneck = _interopDefault(require_light());
-    async function errorRequest(octokit, state, error, options) {
-      if (!error.request || !error.request.request) {
-        throw error;
+    async function errorRequest(octokit, state, error2, options) {
+      if (!error2.request || !error2.request.request) {
+        throw error2;
       }
-      if (error.status >= 400 && !state.doNotRetry.includes(error.status)) {
+      if (error2.status >= 400 && !state.doNotRetry.includes(error2.status)) {
         const retries = options.request.retries != null ? options.request.retries : state.retries;
         const retryAfter = Math.pow((options.request.retryCount || 0) + 1, 2);
-        throw octokit.retry.retryRequest(error, retries, retryAfter);
+        throw octokit.retry.retryRequest(error2, retries, retryAfter);
       }
-      throw error;
+      throw error2;
     }
     async function wrapRequest(state, request, options) {
       const limiter = new Bottleneck();
-      limiter.on("failed", function(error, info3) {
-        const maxRetries = ~~error.request.request.retries;
-        const after = ~~error.request.request.retryAfter;
+      limiter.on("failed", function(error2, info3) {
+        const maxRetries = ~~error2.request.request.retries;
+        const after = ~~error2.request.request.retryAfter;
         options.request.retryCount = info3.retryCount + 1;
         if (maxRetries > info3.retryCount) {
           return after * state.retryAfterBaseValue;
@@ -8808,12 +8808,12 @@ var require_dist_node11 = __commonJS({
       }
       return {
         retry: {
-          retryRequest: (error, retries, retryAfter) => {
-            error.request.request = Object.assign({}, error.request.request, {
+          retryRequest: (error2, retries, retryAfter) => {
+            error2.request.request = Object.assign({}, error2.request.request, {
               retries,
               retryAfter
             });
-            return error;
+            return error2;
           }
         }
       };
@@ -8866,12 +8866,12 @@ var require_dist_node12 = __commonJS({
       if (isGraphQL) {
         const res = await req;
         if (res.data.errors != null && // @ts-expect-error
-        res.data.errors.some((error) => error.type === "RATE_LIMITED")) {
-          const error = Object.assign(new Error("GraphQL Rate Limit Exceeded"), {
+        res.data.errors.some((error2) => error2.type === "RATE_LIMITED")) {
+          const error2 = Object.assign(new Error("GraphQL Rate Limit Exceeded"), {
             response: res,
             data: res.data
           });
-          throw error;
+          throw error2;
         }
       }
       return req;
@@ -8960,13 +8960,13 @@ var require_dist_node12 = __commonJS({
       } : state.onSecondaryRateLimit);
       events.on("rate-limit", state.onRateLimit);
       events.on("error", (e) => octokit.log.warn("Error in throttling-plugin limit handler", e));
-      state.retryLimiter.on("failed", async function(error, info3) {
+      state.retryLimiter.on("failed", async function(error2, info3) {
         const [state2, request, options] = info3.args;
         const {
           pathname
         } = new URL(options.url, "http://github.test");
-        const shouldRetryGraphQL = pathname.startsWith("/graphql") && error.status !== 401;
-        if (!(shouldRetryGraphQL || error.status === 403)) {
+        const shouldRetryGraphQL = pathname.startsWith("/graphql") && error2.status !== 401;
+        if (!(shouldRetryGraphQL || error2.status === 403)) {
           return;
         }
         const retryCount = ~~request.retryCount;
@@ -8976,16 +8976,16 @@ var require_dist_node12 = __commonJS({
           wantRetry,
           retryAfter = 0
         } = await async function() {
-          if (/\bsecondary rate\b/i.test(error.message)) {
-            const retryAfter2 = Math.max(~~error.response.headers["retry-after"], state2.minimumSecondaryRateRetryAfter);
+          if (/\bsecondary rate\b/i.test(error2.message)) {
+            const retryAfter2 = Math.max(~~error2.response.headers["retry-after"], state2.minimumSecondaryRateRetryAfter);
             const wantRetry2 = await emitter.trigger("secondary-limit", retryAfter2, options, octokit, retryCount);
             return {
               wantRetry: wantRetry2,
               retryAfter: retryAfter2
             };
           }
-          if (error.response.headers != null && error.response.headers["x-ratelimit-remaining"] === "0") {
-            const rateLimitReset = new Date(~~error.response.headers["x-ratelimit-reset"] * 1e3).getTime();
+          if (error2.response.headers != null && error2.response.headers["x-ratelimit-remaining"] === "0") {
+            const rateLimitReset = new Date(~~error2.response.headers["x-ratelimit-reset"] * 1e3).getTime();
             const retryAfter2 = Math.max(Math.ceil((rateLimitReset - Date.now()) / 1e3), 0);
             const wantRetry2 = await emitter.trigger("rate-limit", retryAfter2, options, octokit, retryCount);
             return {
@@ -9095,12 +9095,12 @@ var require_dist_node14 = __commonJS({
       };
       const response = await request2(route, withOAuthParameters);
       if ("error" in response.data) {
-        const error = new requestError.RequestError(`${response.data.error_description} (${response.data.error}, ${response.data.error_uri})`, 400, {
+        const error2 = new requestError.RequestError(`${response.data.error_description} (${response.data.error}, ${response.data.error_uri})`, 400, {
           request: request2.endpoint.merge(route, withOAuthParameters),
           headers: response.headers
         });
-        error.response = response;
-        throw error;
+        error2.response = response;
+        throw error2;
       }
       return response;
     }
@@ -9403,10 +9403,10 @@ var require_dist_node15 = __commonJS({
           tokenType: "oauth",
           ...authentication
         };
-      } catch (error) {
-        if (!error.response)
-          throw error;
-        const errorType = error.response.data.error;
+      } catch (error2) {
+        if (!error2.response)
+          throw error2;
+        const errorType = error2.response.data.error;
         if (errorType === "authorization_pending") {
           await wait(verification.interval);
           return waitForAccessToken(request2, clientId, clientType, verification);
@@ -9415,7 +9415,7 @@ var require_dist_node15 = __commonJS({
           await wait(verification.interval + 5);
           return waitForAccessToken(request2, clientId, clientType, verification);
         }
-        throw error;
+        throw error2;
       }
     }
     async function auth(state, authOptions) {
@@ -9599,12 +9599,12 @@ var require_dist_node16 = __commonJS({
             }));
           }
           return state.authentication;
-        } catch (error) {
-          if (error.status === 404) {
-            error.message = "[@octokit/auth-oauth-user] Token is invalid";
+        } catch (error2) {
+          if (error2.status === 404) {
+            error2.message = "[@octokit/auth-oauth-user] Token is invalid";
             state.authentication.invalid = true;
           }
-          throw error;
+          throw error2;
         }
       }
       if (options.type === "delete" || options.type === "deleteAuthorization") {
@@ -9618,9 +9618,9 @@ var require_dist_node16 = __commonJS({
             token: state.authentication.token,
             request: state.request
           });
-        } catch (error) {
-          if (error.status !== 404)
-            throw error;
+        } catch (error2) {
+          if (error2.status !== 404)
+            throw error2;
         }
         state.authentication.invalid = true;
         return state.authentication;
@@ -9745,11 +9745,11 @@ var require_dist_node17 = __commonJS({
       endpoint.headers.authorization = `basic ${credentials}`;
       try {
         return await request2(endpoint);
-      } catch (error) {
-        if (error.status !== 401)
-          throw error;
-        error.message = `[@octokit/auth-oauth-app] "${endpoint.method} ${endpoint.url}" does not support clientId/clientSecret basic authentication.`;
-        throw error;
+      } catch (error2) {
+        if (error2.status !== 401)
+          throw error2;
+        error2.message = `[@octokit/auth-oauth-app] "${endpoint.method} ${endpoint.url}" does not support clientId/clientSecret basic authentication.`;
+        throw error2;
       }
     }
     var VERSION = "5.0.5";
@@ -9779,15 +9779,15 @@ var require_dist_node17 = __commonJS({
 // node_modules/jsonwebtoken/lib/JsonWebTokenError.js
 var require_JsonWebTokenError = __commonJS({
   "node_modules/jsonwebtoken/lib/JsonWebTokenError.js"(exports, module2) {
-    var JsonWebTokenError = function(message, error) {
+    var JsonWebTokenError = function(message, error2) {
       Error.call(this, message);
       if (Error.captureStackTrace) {
         Error.captureStackTrace(this, this.constructor);
       }
       this.name = "JsonWebTokenError";
       this.message = message;
-      if (error)
-        this.inner = error;
+      if (error2)
+        this.inner = error2;
     };
     JsonWebTokenError.prototype = Object.create(Error.prototype);
     JsonWebTokenError.prototype.constructor = JsonWebTokenError;
@@ -19001,8 +19001,8 @@ var require_sign = __commonJS({
       } else if (isObjectPayload) {
         try {
           validatePayload(payload);
-        } catch (error) {
-          return failure(error);
+        } catch (error2) {
+          return failure(error2);
         }
         if (!options.mutatePayload) {
           payload = Object.assign({}, payload);
@@ -19023,14 +19023,14 @@ var require_sign = __commonJS({
       }
       try {
         validateOptions(options);
-      } catch (error) {
-        return failure(error);
+      } catch (error2) {
+        return failure(error2);
       }
       if (!options.allowInvalidAsymmetricKeyTypes) {
         try {
           validateAsymmetricKey(header.alg, secretOrPrivateKey);
-        } catch (error) {
-          return failure(error);
+        } catch (error2) {
+          return failure(error2);
         }
       }
       const timestamp = payload.iat || Math.floor(Date.now() / 1e3);
@@ -19185,11 +19185,11 @@ var require_dist_node19 = __commonJS({
           appId: appAuthentication.appId,
           expiresAt: new Date(appAuthentication.expiration * 1e3).toISOString()
         };
-      } catch (error) {
+      } catch (error2) {
         if (privateKey === "-----BEGIN RSA PRIVATE KEY-----") {
           throw new Error("The 'privateKey` option contains only the first line '-----BEGIN RSA PRIVATE KEY-----'. If you are setting it using a `.env` file, make sure it is set on a single line with newlines replaced by '\n'");
         } else {
-          throw error;
+          throw error2;
         }
       }
     }
@@ -19403,8 +19403,8 @@ var require_dist_node19 = __commonJS({
       return !!url && REGEX.test(url);
     }
     var FIVE_SECONDS_IN_MS = 5 * 1e3;
-    function isNotTimeSkewError(error) {
-      return !(error.message.match(/'Expiration time' claim \('exp'\) must be a numeric value representing the future time at which the assertion expires/) || error.message.match(/'Issued at' claim \('iat'\) must be an Integer representing the time that the assertion was issued/));
+    function isNotTimeSkewError(error2) {
+      return !(error2.message.match(/'Expiration time' claim \('exp'\) must be a numeric value representing the future time at which the assertion expires/) || error2.message.match(/'Issued at' claim \('iat'\) must be an Integer representing the time that the assertion was issued/));
     }
     async function hook(state, request2, route, parameters) {
       const endpoint = request2.endpoint.merge(route, parameters);
@@ -19420,15 +19420,15 @@ var require_dist_node19 = __commonJS({
         let response;
         try {
           response = await request2(endpoint);
-        } catch (error) {
-          if (isNotTimeSkewError(error)) {
-            throw error;
+        } catch (error2) {
+          if (isNotTimeSkewError(error2)) {
+            throw error2;
           }
-          if (typeof error.response.headers.date === "undefined") {
-            throw error;
+          if (typeof error2.response.headers.date === "undefined") {
+            throw error2;
           }
-          const diff = Math.floor((Date.parse(error.response.headers.date) - Date.parse((/* @__PURE__ */ new Date()).toString())) / 1e3);
-          state.log.warn(error.message);
+          const diff = Math.floor((Date.parse(error2.response.headers.date) - Date.parse((/* @__PURE__ */ new Date()).toString())) / 1e3);
+          state.log.warn(error2.message);
           state.log.warn(`[@octokit/auth-app] GitHub API time and system time are different by ${diff} seconds. Retrying request with the difference accounted for.`);
           const {
             token: token3
@@ -19464,15 +19464,15 @@ var require_dist_node19 = __commonJS({
       const timeSinceTokenCreationInMs = +/* @__PURE__ */ new Date() - +new Date(createdAt);
       try {
         return await request2(options);
-      } catch (error) {
-        if (error.status !== 401) {
-          throw error;
+      } catch (error2) {
+        if (error2.status !== 401) {
+          throw error2;
         }
         if (timeSinceTokenCreationInMs >= FIVE_SECONDS_IN_MS) {
           if (retries > 0) {
-            error.message = `After ${retries} retries within ${timeSinceTokenCreationInMs / 1e3}s of creating the installation access token, the response remains 401. At this point, the cause may be an authentication problem or a system outage. Please check https://www.githubstatus.com for status information`;
+            error2.message = `After ${retries} retries within ${timeSinceTokenCreationInMs / 1e3}s of creating the installation access token, the response remains 401. At this point, the cause may be an authentication problem or a system outage. Please check https://www.githubstatus.com for status information`;
           }
-          throw error;
+          throw error2;
         }
         ++retries;
         const awaitTime = retries * 1e3;
@@ -19542,45 +19542,45 @@ var require_dist_node20 = __commonJS({
         reason
       };
     }
-    function isRateLimitError(error) {
-      if (error.status !== 403) {
+    function isRateLimitError(error2) {
+      if (error2.status !== 403) {
         return false;
       }
-      if (!error.response) {
+      if (!error2.response) {
         return false;
       }
-      return error.response.headers["x-ratelimit-remaining"] === "0";
+      return error2.response.headers["x-ratelimit-remaining"] === "0";
     }
     var REGEX_ABUSE_LIMIT_MESSAGE = /\babuse\b/i;
-    function isAbuseLimitError(error) {
-      if (error.status !== 403) {
+    function isAbuseLimitError(error2) {
+      if (error2.status !== 403) {
         return false;
       }
-      return REGEX_ABUSE_LIMIT_MESSAGE.test(error.message);
+      return REGEX_ABUSE_LIMIT_MESSAGE.test(error2.message);
     }
     async function hook(reason, request, route, parameters) {
       const endpoint = request.endpoint.merge(route, parameters);
-      return request(endpoint).catch((error) => {
-        if (error.status === 404) {
-          error.message = `Not found. May be due to lack of authentication. Reason: ${reason}`;
-          throw error;
+      return request(endpoint).catch((error2) => {
+        if (error2.status === 404) {
+          error2.message = `Not found. May be due to lack of authentication. Reason: ${reason}`;
+          throw error2;
         }
-        if (isRateLimitError(error)) {
-          error.message = `API rate limit exceeded. This maybe caused by the lack of authentication. Reason: ${reason}`;
-          throw error;
+        if (isRateLimitError(error2)) {
+          error2.message = `API rate limit exceeded. This maybe caused by the lack of authentication. Reason: ${reason}`;
+          throw error2;
         }
-        if (isAbuseLimitError(error)) {
-          error.message = `You have triggered an abuse detection mechanism. This maybe caused by the lack of authentication. Reason: ${reason}`;
-          throw error;
+        if (isAbuseLimitError(error2)) {
+          error2.message = `You have triggered an abuse detection mechanism. This maybe caused by the lack of authentication. Reason: ${reason}`;
+          throw error2;
         }
-        if (error.status === 401) {
-          error.message = `Unauthorized. "${endpoint.method} ${endpoint.url}" failed most likely due to lack of authentication. Reason: ${reason}`;
-          throw error;
+        if (error2.status === 401) {
+          error2.message = `Unauthorized. "${endpoint.method} ${endpoint.url}" failed most likely due to lack of authentication. Reason: ${reason}`;
+          throw error2;
         }
-        if (error.status >= 400 && error.status < 500) {
-          error.message = error.message.replace(/\.?$/, `. May be caused by lack of authentication (${reason}).`);
+        if (error2.status >= 400 && error2.status < 500) {
+          error2.message = error2.message.replace(/\.?$/, `. May be caused by lack of authentication (${reason}).`);
         }
-        throw error;
+        throw error2;
       });
     }
     var createUnauthenticatedAuth = function createUnauthenticatedAuth2(options) {
@@ -19988,7 +19988,7 @@ var require_dist_node21 = __commonJS({
       try {
         const text = await request.text();
         json = text ? JSON.parse(text) : {};
-      } catch (error) {
+      } catch (error2) {
         return {
           status: 400,
           headers: {
@@ -20181,7 +20181,7 @@ var require_dist_node21 = __commonJS({
             "access-control-allow-origin": "*"
           }
         };
-      } catch (error) {
+      } catch (error2) {
         return {
           status: 400,
           headers: {
@@ -20189,7 +20189,7 @@ var require_dist_node21 = __commonJS({
             "access-control-allow-origin": "*"
           },
           text: JSON.stringify({
-            error: error.message
+            error: error2.message
           })
         };
       }
@@ -20481,17 +20481,17 @@ var require_aggregate_error = __commonJS({
         if (!Array.isArray(errors)) {
           throw new TypeError(`Expected input to be an Array, got ${typeof errors}`);
         }
-        errors = [...errors].map((error) => {
-          if (error instanceof Error) {
-            return error;
+        errors = [...errors].map((error2) => {
+          if (error2 instanceof Error) {
+            return error2;
           }
-          if (error !== null && typeof error === "object") {
-            return Object.assign(new Error(error.message), error);
+          if (error2 !== null && typeof error2 === "object") {
+            return Object.assign(new Error(error2.message), error2);
           }
-          return new Error(error);
+          return new Error(error2);
         });
-        let message = errors.map((error) => {
-          return typeof error.stack === "string" ? cleanInternalStack(cleanStack(error.stack)) : String(error);
+        let message = errors.map((error2) => {
+          return typeof error2.stack === "string" ? cleanInternalStack(cleanStack(error2.stack)) : String(error2);
         }).join("\n");
         message = "\n" + indentString(message, 4);
         super(message);
@@ -20499,8 +20499,8 @@ var require_aggregate_error = __commonJS({
         Object.defineProperty(this, "_errors", { value: errors });
       }
       *[Symbol.iterator]() {
-        for (const error of this._errors) {
-          yield error;
+        for (const error2 of this._errors) {
+          yield error2;
         }
       }
     };
@@ -20612,18 +20612,18 @@ var require_dist_node23 = __commonJS({
     function receiverOnError(state, handler) {
       handleEventHandlers(state, "error", handler);
     }
-    function wrapErrorHandler(handler, error) {
+    function wrapErrorHandler(handler, error2) {
       let returnValue;
       try {
-        returnValue = handler(error);
-      } catch (error2) {
+        returnValue = handler(error2);
+      } catch (error3) {
         console.log('FATAL: Error occurred in "error" event handler');
-        console.log(error2);
+        console.log(error3);
       }
       if (returnValue && returnValue.catch) {
-        returnValue.catch((error2) => {
+        returnValue.catch((error3) => {
           console.log('FATAL: Error occurred in "error" event handler');
-          console.log(error2);
+          console.log(error3);
         });
       }
     }
@@ -20637,12 +20637,12 @@ var require_dist_node23 = __commonJS({
     function receiverHandle(state, event) {
       const errorHandlers = state.hooks.error || [];
       if (event instanceof Error) {
-        const error = Object.assign(new AggregateError([event]), {
+        const error2 = Object.assign(new AggregateError([event]), {
           event,
           errors: [event]
         });
-        errorHandlers.forEach((handler) => wrapErrorHandler(handler, error));
-        return Promise.reject(error);
+        errorHandlers.forEach((handler) => wrapErrorHandler(handler, error2));
+        return Promise.reject(error2);
       }
       if (!event || !event.name) {
         throw new AggregateError(["Event name not passed"]);
@@ -20662,7 +20662,7 @@ var require_dist_node23 = __commonJS({
         }
         return promise.then((event2) => {
           return handler(event2);
-        }).catch((error) => errors.push(Object.assign(error, {
+        }).catch((error2) => errors.push(Object.assign(error2, {
           event
         })));
       });
@@ -20670,13 +20670,13 @@ var require_dist_node23 = __commonJS({
         if (errors.length === 0) {
           return;
         }
-        const error = new AggregateError(errors);
-        Object.assign(error, {
+        const error2 = new AggregateError(errors);
+        Object.assign(error2, {
           event,
           errors
         });
-        errorHandlers.forEach((handler) => wrapErrorHandler(handler, error));
-        throw error;
+        errorHandlers.forEach((handler) => wrapErrorHandler(handler, error2));
+        throw error2;
       });
     }
     function removeListener(state, webhookNameOrNames, handler) {
@@ -20725,8 +20725,8 @@ var require_dist_node23 = __commonJS({
     async function verifyAndReceive(state, event) {
       const matchesSignature = await webhooksMethods.verify(state.secret, typeof event.payload === "object" ? toNormalizedJsonString(event.payload) : event.payload, event.signature);
       if (!matchesSignature) {
-        const error = new Error("[@octokit/webhooks] signature does not match event payload and secret");
-        return state.eventHandler.receive(Object.assign(error, {
+        const error2 = new Error("[@octokit/webhooks] signature does not match event payload and secret");
+        return state.eventHandler.receive(Object.assign(error2, {
           event,
           status: 400
         }));
@@ -20751,16 +20751,16 @@ var require_dist_node23 = __commonJS({
       return new Promise((resolve, reject) => {
         let data = "";
         request.setEncoding("utf8");
-        request.on("error", (error) => reject(new AggregateError([error])));
+        request.on("error", (error2) => reject(new AggregateError([error2])));
         request.on("data", (chunk) => data += chunk);
         request.on("end", () => {
           try {
             JSON.parse(data);
             resolve(data);
-          } catch (error) {
-            error.message = "Invalid JSON";
-            error.status = 400;
-            reject(new AggregateError([error]));
+          } catch (error2) {
+            error2.message = "Invalid JSON";
+            error2.status = 400;
+            reject(new AggregateError([error2]));
           }
         });
       });
@@ -20769,7 +20769,7 @@ var require_dist_node23 = __commonJS({
       let pathname;
       try {
         pathname = new URL(request.url, "http://localhost").pathname;
-      } catch (error) {
+      } catch (error2) {
         response.writeHead(422, {
           "content-type": "application/json"
         });
@@ -20829,14 +20829,14 @@ var require_dist_node23 = __commonJS({
         if (didTimeout)
           return;
         response.end("ok\n");
-      } catch (error) {
+      } catch (error2) {
         clearTimeout(timeout);
         if (didTimeout)
           return;
-        const err = Array.from(error)[0];
+        const err = Array.from(error2)[0];
         const errorMessage = err.message ? `${err.name}: ${err.message}` : "Error: An Unspecified error occurred";
         response.statusCode = typeof err.status !== "undefined" ? err.status : 500;
-        options.log.error(error);
+        options.log.error(error2);
         response.end(JSON.stringify({
           error: errorMessage
         }));
@@ -25715,9 +25715,9 @@ var require_anchors = __commonJS({
             if (typeof ref === "object" && ref.anchor && (Node.isScalar(ref.node) || Node.isCollection(ref.node))) {
               ref.node.anchor = ref.anchor;
             } else {
-              const error = new Error("Failed to resolve repeated object (this should not happen)");
-              error.source = source;
-              throw error;
+              const error2 = new Error("Failed to resolve repeated object (this should not happen)");
+              error2.source = source;
+              throw error2;
             }
           }
         },
@@ -26775,12 +26775,12 @@ var require_log = __commonJS({
       if (logLevel === "debug")
         console.log(...messages);
     }
-    function warn(logLevel, warning2) {
+    function warn(logLevel, warning3) {
       if (logLevel === "debug" || logLevel === "warn") {
         if (typeof process !== "undefined" && process.emitWarning)
-          process.emitWarning(warning2);
+          process.emitWarning(warning3);
         else
-          console.warn(warning2);
+          console.warn(warning3);
       }
     }
     exports.debug = debug3;
@@ -28827,12 +28827,12 @@ var require_errors = __commonJS({
         super("YAMLWarning", pos, code, message);
       }
     };
-    var prettifyError = (src, lc) => (error) => {
-      if (error.pos[0] === -1)
+    var prettifyError = (src, lc) => (error2) => {
+      if (error2.pos[0] === -1)
         return;
-      error.linePos = error.pos.map((pos) => lc.linePos(pos));
-      const { line, col } = error.linePos[0];
-      error.message += ` at line ${line}, column ${col}`;
+      error2.linePos = error2.pos.map((pos) => lc.linePos(pos));
+      const { line, col } = error2.linePos[0];
+      error2.message += ` at line ${line}, column ${col}`;
       let ci = col - 1;
       let lineStr = src.substring(lc.lineStarts[line - 1], lc.lineStarts[line]).replace(/[\n\r]+$/, "");
       if (ci >= 60 && lineStr.length > 80) {
@@ -28850,12 +28850,12 @@ var require_errors = __commonJS({
       }
       if (/[^ ]/.test(lineStr)) {
         let count = 1;
-        const end = error.linePos[1];
+        const end = error2.linePos[1];
         if (end && end.line === line && end.col > col) {
           count = Math.max(1, Math.min(end.col - col, 80 - ci));
         }
         const pointer = " ".repeat(ci) + "^".repeat(count);
-        error.message += `:
+        error2.message += `:
 
 ${lineStr}
 ${pointer}
@@ -29622,7 +29622,7 @@ var require_resolve_block_scalar = __commonJS({
       const mode = source[0];
       let indent = 0;
       let chomp = "";
-      let error = -1;
+      let error2 = -1;
       for (let i = 1; i < source.length; ++i) {
         const ch = source[i];
         if (!chomp && (ch === "-" || ch === "+"))
@@ -29631,12 +29631,12 @@ var require_resolve_block_scalar = __commonJS({
           const n = Number(ch);
           if (!indent && n)
             indent = n;
-          else if (error === -1)
-            error = offset + i;
+          else if (error2 === -1)
+            error2 = offset + i;
         }
       }
-      if (error !== -1)
-        onError(error, "UNEXPECTED_TOKEN", `Block scalar header includes extra characters: ${source}`);
+      if (error2 !== -1)
+        onError(error2, "UNEXPECTED_TOKEN", `Block scalar header includes extra characters: ${source}`);
       let hasSpace = false;
       let comment = "";
       let length = source.length;
@@ -29905,8 +29905,8 @@ var require_compose_scalar = __commonJS({
       try {
         const res = tag.resolve(value, (msg) => onError(tagToken ?? token, "TAG_RESOLVE_FAILED", msg), ctx.options);
         scalar = Node.isScalar(res) ? res : new Scalar.Scalar(res);
-      } catch (error) {
-        const msg = error instanceof Error ? error.message : String(error);
+      } catch (error2) {
+        const msg = error2 instanceof Error ? error2.message : String(error2);
         onError(tagToken ?? token, "TAG_RESOLVE_FAILED", msg);
         scalar = new Scalar.Scalar(value);
       }
@@ -30179,9 +30179,9 @@ var require_composer = __commonJS({
         this.prelude = [];
         this.errors = [];
         this.warnings = [];
-        this.onError = (source, code, message, warning2) => {
+        this.onError = (source, code, message, warning3) => {
           const pos = getErrorPos(source);
-          if (warning2)
+          if (warning3)
             this.warnings.push(new errors.YAMLWarning(pos, code, message));
           else
             this.errors.push(new errors.YAMLParseError(pos, code, message));
@@ -30252,10 +30252,10 @@ ${cb}` : comment;
           console.dir(token, { depth: null });
         switch (token.type) {
           case "directive":
-            this.directives.add(token.source, (offset, message, warning2) => {
+            this.directives.add(token.source, (offset, message, warning3) => {
               const pos = getErrorPos(token);
               pos[0] += offset;
-              this.onError(pos, "BAD_DIRECTIVE", message, warning2);
+              this.onError(pos, "BAD_DIRECTIVE", message, warning3);
             });
             this.prelude.push(token.source);
             this.atDirectives = true;
@@ -30280,11 +30280,11 @@ ${cb}` : comment;
             break;
           case "error": {
             const msg = token.source ? `${token.message}: ${JSON.stringify(token.source)}` : token.message;
-            const error = new errors.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", msg);
+            const error2 = new errors.YAMLParseError(getErrorPos(token), "UNEXPECTED_TOKEN", msg);
             if (this.atDirectives || !this.doc)
-              this.errors.push(error);
+              this.errors.push(error2);
             else
-              this.doc.errors.push(error);
+              this.doc.errors.push(error2);
             break;
           }
           case "doc-end": {
@@ -31563,8 +31563,8 @@ var require_parser = __commonJS({
       peek(n) {
         return this.stack[this.stack.length - n];
       }
-      *pop(error) {
-        const token = error ?? this.stack.pop();
+      *pop(error2) {
+        const token = error2 ?? this.stack.pop();
         if (!token) {
           const message = "Tried to pop an empty stack";
           yield { type: "error", offset: this.offset, source: "", message };
@@ -32246,7 +32246,7 @@ var require_public_api2 = __commonJS({
       const doc = parseDocument(src, options);
       if (!doc)
         return null;
-      doc.warnings.forEach((warning2) => log.warn(doc.options.logLevel, warning2));
+      doc.warnings.forEach((warning3) => log.warn(doc.options.logLevel, warning3));
       if (doc.errors.length > 0) {
         if (doc.options.logLevel !== "silent")
           throw doc.errors[0];
@@ -32513,9 +32513,9 @@ function parseYAML(filePath, repo, content) {
     name = parsed.name ? sanitize(parsed.name) : defaultValue;
     author = parsed.author ? sanitize(parsed.author) : defaultValue;
     description = parsed.description ? sanitize(parsed.description) : defaultValue;
-  } catch (error) {
+  } catch (error2) {
     core.warning(
-      `Error parsing action file [${filePath}] in repo [${repo}] with error: ${error}`
+      `Error parsing action file [${filePath}] in repo [${repo}] with error: ${error2}`
     );
     core.info(
       `The parsing error is informational, seaching for actions has continued`
@@ -32578,7 +32578,7 @@ function getReadmeContent(client, repo, owner) {
         path: "README.md"
       });
       return readme.content;
-    } catch (error) {
+    } catch (error2) {
       core2.debug(`No readme file found in repository: ${repo}`);
     }
   });
@@ -32618,9 +32618,9 @@ function run() {
         baseUrl
       });
       try {
-      } catch (error) {
+      } catch (error2) {
         core3.setFailed(
-          `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
+          `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error2}`
         );
         return;
       }
@@ -32637,8 +32637,8 @@ function run() {
       const fullPath = import_path.default.resolve(outputFilename);
       core3.info(`Writing results to [${fullPath}]`);
       core3.setOutput("actions-file-path", fullPath);
-    } catch (error) {
-      core3.setFailed(`Error running action: : ${error.message}`);
+    } catch (error2) {
+      core3.setFailed(`Error running action: : ${error2.message}`);
     }
   });
 }
@@ -32646,21 +32646,11 @@ var Content = class {
 };
 function getAllActions(client, user, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
-    let actionFiles = yield getAllNormalActions(
-      client,
-      user,
-      organization,
-      isEnterpriseServer
-    );
+    let actionFiles = yield getAllNormalActions(client, user, organization, isEnterpriseServer);
     actionFiles = yield enrichActionFiles(client, actionFiles);
-    const allActionableDockerFiles = yield getActionableDockerFiles(
-      client,
-      user,
-      organization,
-      isEnterpriseServer
-    );
+    const allActionableDockerFiles = yield getActionableDockerFiles(client, user, organization, isEnterpriseServer);
     core3.info(`Found [${allActionableDockerFiles.length}] docker files with action definitions`);
-    const actionFilesToReturn = [...actionFiles, ...allActionableDockerFiles];
+    const actionFilesToReturn = actionFiles.concat(allActionableDockerFiles);
     return actionFilesToReturn;
   });
 }
@@ -32692,36 +32682,26 @@ var getSearchResult = (client, username, organization, isEnterpriseServer, searc
   }
   if (organization !== "") {
     core3.info(
-      `Search for action files under the organization [${organization}] in forked repos`
+      `Search for action files under the organization [${organization}] in forked repos with the query [${searchQuery}]`
     );
     searchQuery = searchQuery.concat("+org:", organization);
   }
   let searchResult;
   if (searchQuery.includes("fork")) {
-    searchResult = yield executeRepoSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer,
-      0
-    );
+    searchResult = yield executeRepoSearch(client, searchQuery, isEnterpriseServer);
   } else {
-    searchResult = yield executeCodeSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer,
-      0
-    );
+    searchResult = yield executeCodeSearch(client, searchQuery, isEnterpriseServer);
   }
   return searchResult;
 });
-function checkRateLimits(client, isEnterpriseServer) {
+function checkRateLimits(client, isEnterpriseServer, limitToSearch = false) {
   return __async(this, null, function* () {
     var ratelimit;
     if (isEnterpriseServer) {
       try {
         ratelimit = yield client.rest.rateLimit.get();
-      } catch (error) {
-        if (error.message === "Not Found") {
+      } catch (error2) {
+        if (error2.message === "Not Found") {
           core3.info("Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.");
           return;
         }
@@ -32729,8 +32709,18 @@ function checkRateLimits(client, isEnterpriseServer) {
     } else {
       ratelimit = yield client.rest.rateLimit.get();
     }
-    if (ratelimit && ratelimit.data.resources.search.remaining <= 2) {
-      var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+    if (ratelimit) {
+      core3.debug(`Rate limit info: ${JSON.stringify(ratelimit.data.resources)}`);
+      let resetTime;
+      if (limitToSearch && ratelimit.data.resources.search.remaining <= 2) {
+        resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+      } else {
+        if (ratelimit.data.resources.core.remaining <= 2) {
+          resetTime = new Date(ratelimit.data.resources.core.reset * 1e3);
+        } else {
+          return;
+        }
+      }
       core3.debug(`Search API reset time: ${resetTime}, backing off untill then`);
       core3.debug(`Search ratelimit info: ${JSON.stringify(ratelimit.data.resources.search)}`);
       var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
@@ -32748,18 +32738,8 @@ function checkRateLimits(client, isEnterpriseServer) {
 }
 function getAllNormalActions(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
-    let actions = yield getAllActionsUsingSearch(
-      client,
-      username,
-      organization,
-      isEnterpriseServer
-    );
-    let forkedActions = yield getAllActionsFromForkedRepos(
-      client,
-      username,
-      organization,
-      isEnterpriseServer
-    );
+    let actions = yield getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
+    let forkedActions = yield getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
     actions = actions.concat(forkedActions);
     core3.debug(`Found [${actions.length}] actions in total`);
     actions = actions.filter(
@@ -32775,20 +32755,10 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
   return __async(this, null, function* () {
     let dockerActions = [];
     let actions = [];
-    const searchResult = yield getSearchResult(
-      client,
-      username,
-      organization,
-      isEnterpriseServer,
-      "+fork:true"
-    );
+    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:true");
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
-      if (!repo.fork) {
-        continue;
-      }
-      checkRateLimits(client, isEnterpriseServer);
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
       core3.debug(`Checking repo [${repoName}] for action files`);
@@ -32797,7 +32767,6 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
         continue;
       }
       const actionableDockerFiles = yield getActionableDockerFilesFromDisk(repoPath);
-      core3.debug(JSON.stringify(repo));
       if (JSON.stringify(actionableDockerFiles) !== "[]") {
         core3.info(`adding ${JSON.stringify(actionableDockerFiles)}`);
         actionableDockerFiles == null ? void 0 : actionableDockerFiles.map((item) => {
@@ -32823,20 +32792,13 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
 function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
-    const searchResult = yield getSearchResult(
-      client,
-      username,
-      organization,
-      isEnterpriseServer,
-      "+fork:true"
-    );
+    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:true");
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
       if (!repo.fork) {
         continue;
       }
-      checkRateLimits(client, isEnterpriseServer);
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
       core3.debug(`Checking repo [${repoName}] for action files`);
@@ -32852,21 +32814,11 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
         `Found [${actionFiles.length - 1}] action in repo [${repoName}] that was cloned to [${repoPath}]`
       );
       for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
-        core3.debug(
-          `Found action file [${actionFiles[index2]}] in repo [${repoName}]`
-        );
-        const actionFile = actionFiles[index2].substring(
-          `actions/${repoName}/`.length
-        );
+        core3.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
+        const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
         core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
         const parentInfo = yield getForkParent(client, repoOwner, repoName);
-        const action = yield getActionInfo(
-          client,
-          repoOwner,
-          repoName,
-          actionFile,
-          parentInfo
-        );
+        const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo);
         actions.push(action);
       }
     }
@@ -32890,73 +32842,90 @@ function cloneRepo(repo, owner) {
       // path to where you want to run the command
     });
     return import_path.default.join(repoPath, repo);
-  } catch (error) {
-    core3.info(`Error cloning repo [${repo}]: ${error}`);
+  } catch (error2) {
+    core3.info(`Error cloning repo [${repo}]: ${error2}`);
     return "";
   }
 }
-function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) {
+function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
   return __async(this, null, function* () {
-    if (retryCount > 0) {
-      const backoffTime = Math.pow(2, retryCount) * 5e3;
-      core3.info(`Retrying code search [${retryCount}] more times`);
-      core3.info(
-        `Waiting [${backoffTime / 1e3}] seconds before retrying code search`
-      );
-      yield new Promise((r) => setTimeout(r, backoffTime));
-    }
     try {
-      checkRateLimits(client, isEnterpriseServer);
       core3.debug(`searchQuery for code: [${searchQuery}]`);
-      const searchResult = yield client.paginate(client.rest.search.code, {
-        q: searchQuery
-      });
-      core3.debug(`Found [${searchResult.total_count}] code search results`);
+      const searchResult = yield paginateSearchQuery(client, searchQuery, isEnterpriseServer, false);
+      core3.debug(`Found [${searchResult.length}] code search results`);
       return searchResult;
-    } catch (error) {
-      core3.info(`executeCodeSearch: catch! Error is: ${error}`);
-      if (error.message.includes("SecondaryRateLimit detected for request")) {
-        checkRateLimits(client, isEnterpriseServer);
-        return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
+    } catch (error2) {
+      core3.info(`executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`);
+      if (error2.message.includes("SecondaryRateLimit detected for request") || error2.message.includes("API rate limit exceeded for")) {
       } else {
-        core3.info(`Error executing code search: ${error}`);
-        throw error;
+        core3.info(`Error executing code search: ${error2}`);
+        throw error2;
       }
     }
   });
 }
-function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
+function callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos) {
   return __async(this, null, function* () {
-    if (retryCount > 0) {
-      const backoffTime = Math.pow(2, retryCount) * 1e3;
-      core3.info(`Retrying code search [${retryCount}] more times`);
-      core3.info(
-        `Waiting [${backoffTime / 1e3}] seconds before retrying code search`
-      );
-      yield new Promise((r) => setTimeout(r, backoffTime));
-    }
     try {
-      checkRateLimits(client, isEnterpriseServer);
+      core3.debug(`Calling the search API with query [${searchQuery}] and page [${page}] `);
+      let results;
+      if (searchRepos) {
+        results = yield client.rest.search.repos({ q: searchQuery, per_page: 100, page });
+      } else {
+        results = yield client.rest.search.code({ q: searchQuery, per_page: 100, page });
+      }
+      return results.data;
+    } catch (error2) {
+      core3.info(`Error calling the search API with query [${searchQuery}] and page [${page}] `);
+      if (error2.message.includes("API rate limit exceeded for")) {
+        checkRateLimits(client, isEnterpriseServer, true);
+        return callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos);
+      }
+      if (error2.message.includes("Cannot access beyond the first 1000 results")) {
+        return null;
+      }
+      throw error2;
+    }
+  });
+}
+function paginateSearchQuery(client, searchQuery, isEnterpriseServer, searchRepos) {
+  return __async(this, null, function* () {
+    var page = 1;
+    var total_count = 0;
+    var items = [];
+    do {
+      var response = yield callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos);
+      if (response) {
+        total_count = response.total_count;
+        items = items.concat(response.items);
+        core3.debug(`Found [${items.length}] results so far`);
+        if (items.length >= 1e3) {
+          core3.warning(`Found [${items.length}] results, API does not give more results, stopping search and returning the first 1000 results`);
+          return items;
+        }
+        page++;
+        yield new Promise((r) => setTimeout(r, 6e3));
+      } else {
+        return items;
+      }
+    } while (items.length < total_count);
+    return items;
+  });
+}
+function executeRepoSearch(client, searchQuery, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    try {
       core3.debug(`searchQuery for repos: [${searchQuery}]`);
-      const searchResult = yield client.paginate(client.rest.search.repos, {
-        q: searchQuery
-      });
+      const searchResult = yield paginateSearchQuery(client, searchQuery, isEnterpriseServer, true);
       core3.debug(`Found [${searchResult.length}] repo search results`);
       return searchResult;
-    } catch (error) {
+    } catch (error2) {
       core3.info(`executeRepoSearch: catch!`);
-      if (error.message.includes(
-        "SecondaryRateLimit detected for request"
-      )) {
-        return executeRepoSearch(
-          client,
-          searchQuery,
-          isEnterpriseServer,
-          retryCount + 1
-        );
+      if (error2.message.includes("SecondaryRateLimit detected for request") || error2.message.includes(`API rate limit exceeded for`) || error2.message.includes(`You have exceeded a secondary rate limit`)) {
+        return [];
       } else {
-        core3.info(`Error executing repo search: ${error}`);
-        throw error;
+        core3.error(`Error executing repo search: ${error2} with message ${error2.message}`);
+        return [];
       }
     }
   });
