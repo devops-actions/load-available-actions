@@ -168,7 +168,7 @@ const getSearchResult = async (
 
   if (organization !== '') {
     core.info(
-      `Search for action files under the organization [${organization}] in forked repos`
+      `Search for action files under the organization [${organization}] in forked repos with the query [${searchQuery}]`
     )
     searchQuery = searchQuery.concat('+org:', organization)
   }
@@ -457,7 +457,7 @@ async function executeCodeSearch(
     checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for code: [${searchQuery}]`)
 
-    const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer)
+    const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer, false)
 
     core.debug(`Found [${searchResult.length}] code search results`)
     return searchResult
@@ -482,12 +482,19 @@ async function callSearchQueryWithBackoff
   client: Octokit,
   searchQuery: string, 
   page: number, 
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  searchRepos: boolean
 ): Promise<any>
 {
   try {
     core.debug(`Calling the search API with query [${searchQuery}] and page [${page}] `)
-    var results = await client.rest.search.code({q: searchQuery, per_page: 100, page})
+    let results
+    if (searchRepos) {
+      results = await client.rest.search.repos({q: searchQuery, per_page: 100, page})
+    }
+    else {      
+      results = await client.rest.search.code({q: searchQuery, per_page: 100, page})
+    }
     return results.data
   }
   catch (error) {
@@ -497,7 +504,7 @@ async function callSearchQueryWithBackoff
     if ((error as Error).message.includes('API rate limit exceeded for')) {
       // todo: backoff and retry
       checkRateLimits(client, isEnterpriseServer, true)
-      return callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer)
+      return callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos)
     }
     
     if ((error as Error).message.includes('Cannot access beyond the first 1000 results')) {
@@ -509,15 +516,12 @@ async function callSearchQueryWithBackoff
   }
 }
 
-async function paginateSearchQuery(client: Octokit, searchQuery: string, isEnterpriseServer: boolean) {
-  // return await client.paginate(client.rest.search.code, {
-  //   q: searchQuery
-  // })
+async function paginateSearchQuery(client: Octokit, searchQuery: string, isEnterpriseServer: boolean, searchRepos: boolean) {
   var page = 1
   var total_count = 0
   var items: any[] = []
   do {
-    var response = await callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer)
+    var response = await callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos)
     if (response) {
       total_count = response.total_count
       items = items.concat(response.items)
@@ -563,10 +567,7 @@ async function executeRepoSearch(
   }
   try {
     core.debug(`searchQuery for repos: [${searchQuery}]`)
-    const searchResult = await client.paginate(client.rest.search.repos, {
-      q: searchQuery
-    })
-    //core.info(`executeRepoSearch: ${JSON.stringify(searchResult)}`)
+    const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer, true)
     core.debug(`Found [${searchResult.length}] repo search results`)
     return searchResult
   } catch (error) {
@@ -575,13 +576,16 @@ async function executeRepoSearch(
       (error as Error).message.includes('SecondaryRateLimit detected for request')
        ||
       (error as Error).message.includes(`API rate limit exceeded for`)
+      ||
+      (error as Error).message.includes(`You have exceeded a secondary rate limit`)
     ) {
-      return executeRepoSearch(
-        client,
-        searchQuery,
-        isEnterpriseServer,
-        retryCount + 1
-      )
+      // return executeRepoSearch(
+      //   client,
+      //   searchQuery,
+      //   isEnterpriseServer,
+      //   retryCount + 1
+      // )
+      return []
     } else {
       core.error(`Error executing repo search: ${error} with message ${(error as Error).message}`)
       return []

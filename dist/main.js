@@ -32692,7 +32692,7 @@ var getSearchResult = (client, username, organization, isEnterpriseServer, searc
   }
   if (organization !== "") {
     core3.info(
-      `Search for action files under the organization [${organization}] in forked repos`
+      `Search for action files under the organization [${organization}] in forked repos with the query [${searchQuery}]`
     );
     searchQuery = searchQuery.concat("+org:", organization);
   }
@@ -32922,7 +32922,7 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     try {
       checkRateLimits(client, isEnterpriseServer);
       core3.debug(`searchQuery for code: [${searchQuery}]`);
-      const searchResult = yield paginateSearchQuery(client, searchQuery, isEnterpriseServer);
+      const searchResult = yield paginateSearchQuery(client, searchQuery, isEnterpriseServer, false);
       core3.debug(`Found [${searchResult.length}] code search results`);
       return searchResult;
     } catch (error2) {
@@ -32935,17 +32935,22 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     }
   });
 }
-function callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer) {
+function callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos) {
   return __async(this, null, function* () {
     try {
       core3.debug(`Calling the search API with query [${searchQuery}] and page [${page}] `);
-      var results = yield client.rest.search.code({ q: searchQuery, per_page: 100, page });
+      let results;
+      if (searchRepos) {
+        results = yield client.rest.search.repos({ q: searchQuery, per_page: 100, page });
+      } else {
+        results = yield client.rest.search.code({ q: searchQuery, per_page: 100, page });
+      }
       return results.data;
     } catch (error2) {
       core3.info(`Error calling the search API with query [${searchQuery}] and page [${page}] `);
       if (error2.message.includes("API rate limit exceeded for")) {
         checkRateLimits(client, isEnterpriseServer, true);
-        return callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer);
+        return callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos);
       }
       if (error2.message.includes("Cannot access beyond the first 1000 results")) {
         return null;
@@ -32954,13 +32959,13 @@ function callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServe
     }
   });
 }
-function paginateSearchQuery(client, searchQuery, isEnterpriseServer) {
+function paginateSearchQuery(client, searchQuery, isEnterpriseServer, searchRepos) {
   return __async(this, null, function* () {
     var page = 1;
     var total_count = 0;
     var items = [];
     do {
-      var response = yield callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer);
+      var response = yield callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos);
       if (response) {
         total_count = response.total_count;
         items = items.concat(response.items);
@@ -32995,20 +33000,13 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     }
     try {
       core3.debug(`searchQuery for repos: [${searchQuery}]`);
-      const searchResult = yield client.paginate(client.rest.search.repos, {
-        q: searchQuery
-      });
+      const searchResult = yield paginateSearchQuery(client, searchQuery, isEnterpriseServer, true);
       core3.debug(`Found [${searchResult.length}] repo search results`);
       return searchResult;
     } catch (error2) {
       core3.info(`executeRepoSearch: catch!`);
-      if (error2.message.includes("SecondaryRateLimit detected for request") || error2.message.includes(`API rate limit exceeded for`)) {
-        return executeRepoSearch(
-          client,
-          searchQuery,
-          isEnterpriseServer,
-          retryCount + 1
-        );
+      if (error2.message.includes("SecondaryRateLimit detected for request") || error2.message.includes(`API rate limit exceeded for`) || error2.message.includes(`You have exceeded a secondary rate limit`)) {
+        return [];
       } else {
         core3.error(`Error executing repo search: ${error2} with message ${error2.message}`);
         return [];
