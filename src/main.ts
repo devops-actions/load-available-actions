@@ -106,26 +106,16 @@ async function getAllActions(
   isEnterpriseServer: boolean) : Promise<Content[]> {
 
   // get all action files (action.yml and action.yaml) from the user or organization
-  let actionFiles = await getAllNormalActions(
-    client,
-    user,
-    organization,
-    isEnterpriseServer
-  )
+  let actionFiles = await getAllNormalActions(client, user, organization, isEnterpriseServer)
   // load the information inside of the action definition files
   actionFiles = await enrichActionFiles(client, actionFiles)
 
   // get all docker action definition (Dockerfile / dockerfile) from the user or organization
-  const allActionableDockerFiles = await getActionableDockerFiles(
-    client,
-    user,
-    organization,
-    isEnterpriseServer
-  )
+  const allActionableDockerFiles = await getActionableDockerFiles(client, user, organization, isEnterpriseServer )
   core.info(`Found [${allActionableDockerFiles.length}] docker files with action definitions`)
 
   // concat the arrays before we return them in one go
-  const actionFilesToReturn = [...actionFiles, ...allActionableDockerFiles]
+  const actionFilesToReturn = actionFiles.concat(allActionableDockerFiles)
   return actionFilesToReturn
 }
 
@@ -242,6 +232,7 @@ async function getAllNormalActions(
 ): Promise<Content[]> {
 
   let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer)
+  // search does not work on forked repos, so we need to loop over all forks manually
   let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer)
 
   actions = actions.concat(forkedActions)
@@ -272,11 +263,6 @@ async function getActionableDockerFiles(
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
-    if (!repo.fork) {
-      // we only want forked repos
-      continue
-    }
-    checkRateLimits(client, isEnterpriseServer)
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
@@ -289,7 +275,7 @@ async function getActionableDockerFiles(
       continue
     }
     const actionableDockerFiles = await getActionableDockerFilesFromDisk(repoPath)
-    core.debug(JSON.stringify(repo))
+    //core.debug(JSON.stringify(repo))
 
     if (JSON.stringify(actionableDockerFiles) !== '[]') {
       core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
@@ -321,13 +307,7 @@ async function getAllActionsFromForkedRepos(
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
   const actions: Content[] = []
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+fork:true'
-  )
+  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:true')
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
@@ -335,7 +315,6 @@ async function getAllActionsFromForkedRepos(
       // we only want forked repos
       continue
     }
-    checkRateLimits(client, isEnterpriseServer)
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
@@ -358,13 +337,10 @@ async function getAllActionsFromForkedRepos(
       }] action in repo [${repoName}] that was cloned to [${repoPath}]`
     )
     for (let index = 0; index < actionFiles.length - 1; index++) {
-      core.debug(
-        `Found action file [${actionFiles[index]}] in repo [${repoName}]`
-      )
+      core.debug(`Found action file [${actionFiles[index]}] in repo [${repoName}]`)
+
       // remove the actions/$repopath
-      const actionFile = actionFiles[index].substring(
-        `actions/${repoName}/`.length
-      )
+      const actionFile = actionFiles[index].substring(`actions/${repoName}/`.length)
       core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
       // Get "Forked from" info for the repo
       const parentInfo = await getForkParent(client, repoOwner, repoName)

@@ -32646,21 +32646,11 @@ var Content = class {
 };
 function getAllActions(client, user, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
-    let actionFiles = yield getAllNormalActions(
-      client,
-      user,
-      organization,
-      isEnterpriseServer
-    );
+    let actionFiles = yield getAllNormalActions(client, user, organization, isEnterpriseServer);
     actionFiles = yield enrichActionFiles(client, actionFiles);
-    const allActionableDockerFiles = yield getActionableDockerFiles(
-      client,
-      user,
-      organization,
-      isEnterpriseServer
-    );
+    const allActionableDockerFiles = yield getActionableDockerFiles(client, user, organization, isEnterpriseServer);
     core3.info(`Found [${allActionableDockerFiles.length}] docker files with action definitions`);
-    const actionFilesToReturn = [...actionFiles, ...allActionableDockerFiles];
+    const actionFilesToReturn = actionFiles.concat(allActionableDockerFiles);
     return actionFilesToReturn;
   });
 }
@@ -32748,18 +32738,8 @@ function checkRateLimits(client, isEnterpriseServer, limitToSearch = false) {
 }
 function getAllNormalActions(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
-    let actions = yield getAllActionsUsingSearch(
-      client,
-      username,
-      organization,
-      isEnterpriseServer
-    );
-    let forkedActions = yield getAllActionsFromForkedRepos(
-      client,
-      username,
-      organization,
-      isEnterpriseServer
-    );
+    let actions = yield getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
+    let forkedActions = yield getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
     actions = actions.concat(forkedActions);
     core3.debug(`Found [${actions.length}] actions in total`);
     actions = actions.filter(
@@ -32775,20 +32755,10 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
   return __async(this, null, function* () {
     let dockerActions = [];
     let actions = [];
-    const searchResult = yield getSearchResult(
-      client,
-      username,
-      organization,
-      isEnterpriseServer,
-      "+fork:true"
-    );
+    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:true");
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
-      if (!repo.fork) {
-        continue;
-      }
-      checkRateLimits(client, isEnterpriseServer);
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
       core3.debug(`Checking repo [${repoName}] for action files`);
@@ -32797,7 +32767,6 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
         continue;
       }
       const actionableDockerFiles = yield getActionableDockerFilesFromDisk(repoPath);
-      core3.debug(JSON.stringify(repo));
       if (JSON.stringify(actionableDockerFiles) !== "[]") {
         core3.info(`adding ${JSON.stringify(actionableDockerFiles)}`);
         actionableDockerFiles == null ? void 0 : actionableDockerFiles.map((item) => {
@@ -32823,20 +32792,13 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
 function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
-    const searchResult = yield getSearchResult(
-      client,
-      username,
-      organization,
-      isEnterpriseServer,
-      "+fork:true"
-    );
+    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:true");
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
       if (!repo.fork) {
         continue;
       }
-      checkRateLimits(client, isEnterpriseServer);
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
       core3.debug(`Checking repo [${repoName}] for action files`);
@@ -32852,21 +32814,11 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
         `Found [${actionFiles.length - 1}] action in repo [${repoName}] that was cloned to [${repoPath}]`
       );
       for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
-        core3.debug(
-          `Found action file [${actionFiles[index2]}] in repo [${repoName}]`
-        );
-        const actionFile = actionFiles[index2].substring(
-          `actions/${repoName}/`.length
-        );
+        core3.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
+        const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
         core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
         const parentInfo = yield getForkParent(client, repoOwner, repoName);
-        const action = yield getActionInfo(
-          client,
-          repoOwner,
-          repoName,
-          actionFile,
-          parentInfo
-        );
+        const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo);
         actions.push(action);
       }
     }
