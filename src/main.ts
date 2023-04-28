@@ -470,7 +470,7 @@ async function executeCodeSearch(
         || 
       (error as Error).message.includes('API rate limit exceeded for')
     ) {
-      checkRateLimits(client, isEnterpriseServer)
+      checkRateLimits(client, isEnterpriseServer, true)
       return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
     } else {
       core.info(`Error executing code search: ${error}`)
