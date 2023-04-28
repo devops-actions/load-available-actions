@@ -457,9 +457,9 @@ async function executeCodeSearch(
     checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for code: [${searchQuery}]`)
 
-    const searchResult = await paginateSearchQuery(client, searchQuery)
+    const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer)
 
-    core.debug(`Found [${searchResult.total_count}] code search results`)
+    core.debug(`Found [${searchResult.length}] code search results`)
     return searchResult
   } catch (error) {
     core.info(`executeCodeSearch: catch! Error is: ${error} with message ${(error as Error).message}` )
@@ -468,8 +468,8 @@ async function executeCodeSearch(
         || 
       (error as Error).message.includes('API rate limit exceeded for')
     ) {
-      checkRateLimits(client, isEnterpriseServer, true)
-      return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
+      //checkRateLimits(client, isEnterpriseServer, true)
+      //return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
     } else {
       core.info(`Error executing code search: ${error}`)
       throw error
@@ -477,16 +477,27 @@ async function executeCodeSearch(
   }
 }
 
-async function callSearchQueryWithBackoff(client: Octokit, searchQuery: string, page: number){
+async function callSearchQueryWithBackoff
+(
+  client: Octokit,
+  searchQuery: string, 
+  page: number, 
+  isEnterpriseServer: boolean
+): Promise<any>
+{
   try {
     core.debug(`Calling the search API with query [${searchQuery}] and page [${page}] `)
     var results = await client.rest.search.code({q: searchQuery, per_page: 100, page})
     return results.data
   }
   catch (error) {
+    // log the error
+    core.info(`Error calling the search API with query [${searchQuery}] and page [${page}] `)
     // check if we hit the rate limit
     if ((error as Error).message.includes('API rate limit exceeded for')) {
       // todo: backoff and retry
+      checkRateLimits(client, isEnterpriseServer, true)
+      return callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer)
     }
     
     if ((error as Error).message.includes('Cannot access beyond the first 1000 results')) {
@@ -498,7 +509,7 @@ async function callSearchQueryWithBackoff(client: Octokit, searchQuery: string, 
   }
 }
 
-async function paginateSearchQuery(client: Octokit, searchQuery: string) {
+async function paginateSearchQuery(client: Octokit, searchQuery: string, isEnterpriseServer: boolean) {
   // return await client.paginate(client.rest.search.code, {
   //   q: searchQuery
   // })
@@ -506,7 +517,7 @@ async function paginateSearchQuery(client: Octokit, searchQuery: string) {
   var total_count = 0
   var items: any[] = []
   do {
-    var response = await callSearchQueryWithBackoff(client, searchQuery, page)
+    var response = await callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer)
     if (response) {
       total_count = response.total_count
       items = items.concat(response.items)

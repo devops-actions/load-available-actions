@@ -32922,14 +32922,12 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     try {
       checkRateLimits(client, isEnterpriseServer);
       core3.debug(`searchQuery for code: [${searchQuery}]`);
-      const searchResult = yield paginateSearchQuery(client, searchQuery);
-      core3.debug(`Found [${searchResult.total_count}] code search results`);
+      const searchResult = yield paginateSearchQuery(client, searchQuery, isEnterpriseServer);
+      core3.debug(`Found [${searchResult.length}] code search results`);
       return searchResult;
     } catch (error2) {
       core3.info(`executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`);
       if (error2.message.includes("SecondaryRateLimit detected for request") || error2.message.includes("API rate limit exceeded for")) {
-        checkRateLimits(client, isEnterpriseServer, true);
-        return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
         core3.info(`Error executing code search: ${error2}`);
         throw error2;
@@ -32937,14 +32935,17 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     }
   });
 }
-function callSearchQueryWithBackoff(client, searchQuery, page) {
+function callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer) {
   return __async(this, null, function* () {
     try {
       core3.debug(`Calling the search API with query [${searchQuery}] and page [${page}] `);
       var results = yield client.rest.search.code({ q: searchQuery, per_page: 100, page });
       return results.data;
     } catch (error2) {
+      core3.info(`Error calling the search API with query [${searchQuery}] and page [${page}] `);
       if (error2.message.includes("API rate limit exceeded for")) {
+        checkRateLimits(client, isEnterpriseServer, true);
+        return callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer);
       }
       if (error2.message.includes("Cannot access beyond the first 1000 results")) {
         return null;
@@ -32953,13 +32954,13 @@ function callSearchQueryWithBackoff(client, searchQuery, page) {
     }
   });
 }
-function paginateSearchQuery(client, searchQuery) {
+function paginateSearchQuery(client, searchQuery, isEnterpriseServer) {
   return __async(this, null, function* () {
     var page = 1;
     var total_count = 0;
     var items = [];
     do {
-      var response = yield callSearchQueryWithBackoff(client, searchQuery, page);
+      var response = yield callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer);
       if (response) {
         total_count = response.total_count;
         items = items.concat(response.items);
