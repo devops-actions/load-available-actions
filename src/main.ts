@@ -506,6 +506,7 @@ async function paginateSearchQuery(client: Octokit, searchQuery: string) {
     if (response) {
       total_count = response.total_count
       items = items.concat(response.items)
+      core.debug(`Found [${items.length}] results so far`)
       if (items.length >= 1000) {
         // API will return: 'Cannot access beyond the first 1000 results'
         core.warning(`Found [${items.length}] results, API does not give more results, stopping search and returning the first 1000 results`)

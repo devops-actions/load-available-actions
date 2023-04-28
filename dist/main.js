@@ -32961,6 +32961,7 @@ function paginateSearchQuery(client, searchQuery) {
       if (response) {
         total_count = response.total_count;
         items = items.concat(response.items);
+        core3.debug(`Found [${items.length}] results so far`);
         if (items.length >= 1e3) {
           core3.warning(`Found [${items.length}] results, API does not give more results, stopping search and returning the first 1000 results`);
           return items;
