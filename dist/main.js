@@ -32937,19 +32937,32 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     }
   });
 }
+function callSearchQueryWithBackoff(client, searchQuery, page) {
+  return __async(this, null, function* () {
+    try {
+      var results = yield client.rest.search.code({ q: searchQuery, per_page: 100, page });
+      return results.data;
+    } catch (error2) {
+      if (error2.message.includes("API rate limit exceeded for")) {
+      } else {
+        throw error2;
+      }
+    }
+  });
+}
 function paginateSearchQuery(client, searchQuery) {
   return __async(this, null, function* () {
-    var results = client.rest.search.code({ q: searchQuery, per_page: 100, page: 1 });
     var page = 1;
     var total_count = 0;
     var items = [];
     do {
-      var response = yield results;
-      total_count = response.data.total_count;
-      items = items.concat(response.data.items);
-      page++;
-      results = client.rest.search.code({ q: searchQuery, per_page: 100, page });
-      yield new Promise((r) => setTimeout(r, 6e3));
+      var response = yield callSearchQueryWithBackoff(client, searchQuery, page);
+      if (response) {
+        total_count = response.total_count;
+        items = items.concat(response.items);
+        page++;
+        yield new Promise((r) => setTimeout(r, 6e3));
+      }
     } while (items.length < total_count);
   });
 }

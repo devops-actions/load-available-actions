@@ -477,24 +477,38 @@ async function executeCodeSearch(
   }
 }
 
+async function callSearchQueryWithBackoff(client: Octokit, searchQuery: string, page: number){
+  try {
+    var results = await client.rest.search.code({q: searchQuery, per_page: 100, page})
+    return results.data
+  }
+  catch (error) {
+    // check if we hit the rate limit
+    if ((error as Error).message.includes('API rate limit exceeded for')) {
+      // backoff and retry
+    }
+    else {
+      throw error
+    }
+  }
+}
+
 async function paginateSearchQuery(client: Octokit, searchQuery: string) {
   // return await client.paginate(client.rest.search.code, {
   //   q: searchQuery
   // })
-
-  var results = client.rest.search.code({q: searchQuery, per_page: 100, page: 1})
-  // handle pagination
   var page = 1
   var total_count = 0
   var items: any[] = []
   do {
-    var response = await results
-    total_count = response.data.total_count
-    items = items.concat(response.data.items)
-    page++
-    results = client.rest.search.code({q: searchQuery, per_page: 100, page: page})
-    // code endpoint has a ratelimit of 10 calls a minute, so wait 6 seconds between calls
-    await new Promise(r => setTimeout(r, 6000))
+    var response = await callSearchQueryWithBackoff(client, searchQuery, page)
+    if (response) {
+      total_count = response.total_count
+      items = items.concat(response.items)
+      page++
+      // code endpoint has a ratelimit of 10 calls a minute, so wait 6 seconds between calls
+      await new Promise(r => setTimeout(r, 6000))
+    }
   } while (items.length < total_count)
 }
 
