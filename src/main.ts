@@ -465,6 +465,12 @@ async function executeRepoSearch(
   retryCount: number
 ): Promise<any> {
   if (retryCount > 0) {
+    if (retryCount === 10) {
+      // stop running after maximum number of retries
+      core.info(`executeRepoSearch: stopping after 10 retries`)
+      return []
+    }
+
     const backoffTime = Math.pow(2, retryCount) * 1000
     core.info(`Retrying code search [${retryCount}] more times`)
     core.info(
@@ -484,9 +490,9 @@ async function executeRepoSearch(
   } catch (error) {
     core.info(`executeRepoSearch: catch!`)
     if (
-      (error as Error).message.includes(
-        'SecondaryRateLimit detected for request'
-      )
+      (error as Error).message.includes('SecondaryRateLimit detected for request')
+       ||
+      (error as Error).message.includes(`API rate limit exceeded for`)
     ) {
       return executeRepoSearch(
         client,
@@ -495,8 +501,8 @@ async function executeRepoSearch(
         retryCount + 1
       )
     } else {
-      core.info(`Error executing repo search: ${error}`)
-      throw error
+      core.error(`Error executing repo search: ${error}`)
+      return []
     }
   }
 }
