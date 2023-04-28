@@ -4,7 +4,7 @@ on:
   push:
     paths: 
     - .github/workflows/test-big-organization.yml
-    - /src/main.ts
+    - src/main.ts
 
   workflow_dispatch:
 
