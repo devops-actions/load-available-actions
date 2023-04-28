@@ -174,19 +174,9 @@ const getSearchResult = async (
   }
   let searchResult
   if (searchQuery.includes('fork')) {
-    searchResult = await executeRepoSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer,
-      0
-    )
+    searchResult = await executeRepoSearch(client, searchQuery, isEnterpriseServer)
   } else {
-    searchResult = await executeCodeSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer,
-      0
-    )
+    searchResult = await executeCodeSearch(client, searchQuery, isEnterpriseServer)
   }
   return searchResult
 }
@@ -250,18 +240,9 @@ async function getAllNormalActions(
   organization: string,
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
-  let actions = await getAllActionsUsingSearch(
-    client,
-    username,
-    organization,
-    isEnterpriseServer
-  )
-  let forkedActions = await getAllActionsFromForkedRepos(
-    client,
-    username,
-    organization,
-    isEnterpriseServer
-  )
+
+  let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer)
+  let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer)
 
   actions = actions.concat(forkedActions)
   core.debug(`Found [${actions.length}] actions in total`)
@@ -286,13 +267,7 @@ async function getActionableDockerFiles(
 ): Promise<Content[]> {
   let dockerActions: DockerActionFiles[] | undefined = []
   let actions: Content[] = []
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+fork:true'
-  )
+  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:true')
 
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
@@ -394,13 +369,7 @@ async function getAllActionsFromForkedRepos(
       // Get "Forked from" info for the repo
       const parentInfo = await getForkParent(client, repoOwner, repoName)
       // get the action info
-      const action = await getActionInfo(
-        client,
-        repoOwner,
-        repoName,
-        actionFile,
-        parentInfo
-      )
+      const action = await getActionInfo(client, repoOwner, repoName, actionFile, parentInfo)
       actions.push(action)
     }
   }
@@ -439,22 +408,9 @@ async function executeCodeSearch(
   client: Octokit,
   searchQuery: string,
   isEnterpriseServer: boolean,
-  retryCount: number
 ): Promise<any> {
-  if (retryCount > 0) {
-    if (retryCount == 10) {
-      core.info(`executeCodeSearch: retryCount is 10, returning`)
-      return []
-    }
-    const backoffTime = Math.pow(2, retryCount) * 5000
-    core.info(`Retrying code search [${retryCount}] more times`)
-    core.info(
-      `Waiting [${backoffTime / 1000}] seconds before retrying code search`
-    )
-    await new Promise(r => setTimeout(r, backoffTime))
-  }
+
   try {
-    checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for code: [${searchQuery}]`)
 
     const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer, false)
@@ -468,8 +424,6 @@ async function executeCodeSearch(
         || 
       (error as Error).message.includes('API rate limit exceeded for')
     ) {
-      //checkRateLimits(client, isEnterpriseServer, true)
-      //return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
     } else {
       core.info(`Error executing code search: ${error}`)
       throw error
@@ -546,25 +500,9 @@ async function paginateSearchQuery(client: Octokit, searchQuery: string, isEnter
 async function executeRepoSearch(
   client: Octokit,
   searchQuery: string,
-  isEnterpriseServer: boolean,
-  retryCount: number
+  isEnterpriseServer: boolean
 ): Promise<any> {
   
-  checkRateLimits(client, isEnterpriseServer)
-  if (retryCount > 0) {
-    if (retryCount === 10) {
-      // stop running after maximum number of retries
-      core.info(`executeRepoSearch: stopping after 10 retries`)
-      return []
-    }
-
-    const backoffTime = Math.pow(2, retryCount) * 1000
-    core.info(`Retrying code search for the [${retryCount}] time`)
-    core.info(
-      `Waiting [${backoffTime / 1000}] seconds before retrying code search`
-    )
-    await new Promise(r => setTimeout(r, backoffTime))
-  }
   try {
     core.debug(`searchQuery for repos: [${searchQuery}]`)
     const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer, true)
@@ -578,13 +516,7 @@ async function executeRepoSearch(
       (error as Error).message.includes(`API rate limit exceeded for`)
       ||
       (error as Error).message.includes(`You have exceeded a secondary rate limit`)
-    ) {
-      // return executeRepoSearch(
-      //   client,
-      //   searchQuery,
-      //   isEnterpriseServer,
-      //   retryCount + 1
-      // )
+    ) {      
       return []
     } else {
       core.error(`Error executing repo search: ${error} with message ${(error as Error).message}`)

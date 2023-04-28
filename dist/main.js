@@ -32698,19 +32698,9 @@ var getSearchResult = (client, username, organization, isEnterpriseServer, searc
   }
   let searchResult;
   if (searchQuery.includes("fork")) {
-    searchResult = yield executeRepoSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer,
-      0
-    );
+    searchResult = yield executeRepoSearch(client, searchQuery, isEnterpriseServer);
   } else {
-    searchResult = yield executeCodeSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer,
-      0
-    );
+    searchResult = yield executeCodeSearch(client, searchQuery, isEnterpriseServer);
   }
   return searchResult;
 });
@@ -32905,22 +32895,9 @@ function cloneRepo(repo, owner) {
     return "";
   }
 }
-function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) {
+function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
   return __async(this, null, function* () {
-    if (retryCount > 0) {
-      if (retryCount == 10) {
-        core3.info(`executeCodeSearch: retryCount is 10, returning`);
-        return [];
-      }
-      const backoffTime = Math.pow(2, retryCount) * 5e3;
-      core3.info(`Retrying code search [${retryCount}] more times`);
-      core3.info(
-        `Waiting [${backoffTime / 1e3}] seconds before retrying code search`
-      );
-      yield new Promise((r) => setTimeout(r, backoffTime));
-    }
     try {
-      checkRateLimits(client, isEnterpriseServer);
       core3.debug(`searchQuery for code: [${searchQuery}]`);
       const searchResult = yield paginateSearchQuery(client, searchQuery, isEnterpriseServer, false);
       core3.debug(`Found [${searchResult.length}] code search results`);
@@ -32983,21 +32960,8 @@ function paginateSearchQuery(client, searchQuery, isEnterpriseServer, searchRepo
     return items;
   });
 }
-function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
+function executeRepoSearch(client, searchQuery, isEnterpriseServer) {
   return __async(this, null, function* () {
-    checkRateLimits(client, isEnterpriseServer);
-    if (retryCount > 0) {
-      if (retryCount === 10) {
-        core3.info(`executeRepoSearch: stopping after 10 retries`);
-        return [];
-      }
-      const backoffTime = Math.pow(2, retryCount) * 1e3;
-      core3.info(`Retrying code search for the [${retryCount}] time`);
-      core3.info(
-        `Waiting [${backoffTime / 1e3}] seconds before retrying code search`
-      );
-      yield new Promise((r) => setTimeout(r, backoffTime));
-    }
     try {
       core3.debug(`searchQuery for repos: [${searchQuery}]`);
       const searchResult = yield paginateSearchQuery(client, searchQuery, isEnterpriseServer, true);
