@@ -211,6 +211,7 @@ async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean, lim
   }
 
   if (ratelimit) {
+    core.debug(`Rate limit info: ${JSON.stringify(ratelimit.data.resources)}`)
     // show the reset time
     let resetTime
     if (limitToSearch && ratelimit.data.resources.search.remaining <= 2) {
@@ -441,6 +442,10 @@ async function executeCodeSearch(
   retryCount: number
 ): Promise<any> {
   if (retryCount > 0) {
+    if (retryCount == 10) {
+      core.info(`executeCodeSearch: retryCount is 10, returning`)
+      return []
+    }
     const backoffTime = Math.pow(2, retryCount) * 5000
     core.info(`Retrying code search [${retryCount}] more times`)
     core.info(
@@ -459,8 +464,12 @@ async function executeCodeSearch(
     core.debug(`Found [${searchResult.total_count}] code search results`)
     return searchResult
   } catch (error) {
-    core.info(`executeCodeSearch: catch! Error is: ${error}`)
-    if ((error as Error).message.includes('SecondaryRateLimit detected for request')) {
+    core.info(`executeCodeSearch: catch! Error is: ${error} with message ${(error as Error).message}` )
+    if (
+      (error as Error).message.includes('SecondaryRateLimit detected for request')
+        || 
+      (error as Error).message.includes('API rate limit exceeded for')
+    ) {
       checkRateLimits(client, isEnterpriseServer)
       return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1)
     } else {

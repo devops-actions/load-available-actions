@@ -32730,6 +32730,7 @@ function checkRateLimits(client, isEnterpriseServer, limitToSearch = false) {
       ratelimit = yield client.rest.rateLimit.get();
     }
     if (ratelimit) {
+      core3.debug(`Rate limit info: ${JSON.stringify(ratelimit.data.resources)}`);
       let resetTime;
       if (limitToSearch && ratelimit.data.resources.search.remaining <= 2) {
         resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
@@ -32907,6 +32908,10 @@ function cloneRepo(repo, owner) {
 function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) {
   return __async(this, null, function* () {
     if (retryCount > 0) {
+      if (retryCount == 10) {
+        core3.info(`executeCodeSearch: retryCount is 10, returning`);
+        return [];
+      }
       const backoffTime = Math.pow(2, retryCount) * 5e3;
       core3.info(`Retrying code search [${retryCount}] more times`);
       core3.info(
@@ -32923,8 +32928,8 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
       core3.debug(`Found [${searchResult.total_count}] code search results`);
       return searchResult;
     } catch (error2) {
-      core3.info(`executeCodeSearch: catch! Error is: ${error2}`);
-      if (error2.message.includes("SecondaryRateLimit detected for request")) {
+      core3.info(`executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`);
+      if (error2.message.includes("SecondaryRateLimit detected for request") || error2.message.includes("API rate limit exceeded for")) {
         checkRateLimits(client, isEnterpriseServer);
         return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
