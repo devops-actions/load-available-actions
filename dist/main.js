@@ -32714,7 +32714,7 @@ var getSearchResult = (client, username, organization, isEnterpriseServer, searc
   }
   return searchResult;
 });
-function checkRateLimits(client, isEnterpriseServer) {
+function checkRateLimits(client, isEnterpriseServer, limitToSearch = false) {
   return __async(this, null, function* () {
     var ratelimit;
     if (isEnterpriseServer) {
@@ -32729,8 +32729,17 @@ function checkRateLimits(client, isEnterpriseServer) {
     } else {
       ratelimit = yield client.rest.rateLimit.get();
     }
-    if (ratelimit && ratelimit.data.resources.search.remaining <= 2) {
-      var resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+    if (ratelimit) {
+      let resetTime;
+      if (limitToSearch && ratelimit.data.resources.search.remaining <= 2) {
+        resetTime = new Date(ratelimit.data.resources.search.reset * 1e3);
+      } else {
+        if (ratelimit.data.resources.core.remaining <= 2) {
+          resetTime = new Date(ratelimit.data.resources.core.reset * 1e3);
+        } else {
+          return;
+        }
+      }
       core3.debug(`Search API reset time: ${resetTime}, backing off untill then`);
       core3.debug(`Search ratelimit info: ${JSON.stringify(ratelimit.data.resources.search)}`);
       var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
@@ -32927,6 +32936,7 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
 }
 function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
   return __async(this, null, function* () {
+    checkRateLimits(client, isEnterpriseServer);
     if (retryCount > 0) {
       if (retryCount === 10) {
         core3.info(`executeRepoSearch: stopping after 10 retries`);
@@ -32940,7 +32950,6 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) 
       yield new Promise((r) => setTimeout(r, backoffTime));
     }
     try {
-      checkRateLimits(client, isEnterpriseServer);
       core3.debug(`searchQuery for repos: [${searchQuery}]`);
       const searchResult = yield client.paginate(client.rest.search.repos, {
         q: searchQuery

@@ -190,7 +190,7 @@ const getSearchResult = async (
   }
   return searchResult
 }
-async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
+async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean, limitToSearch: boolean = false) {
   // ratelimiting can be enabled on GHES as well, but is off by default
   // we load it from an api call and see if it is enabled, wrapped with try .. catch to handle the error
   var ratelimit
@@ -210,9 +210,21 @@ async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean) {
     ratelimit = await client.rest.rateLimit.get()
   }
 
-  if (ratelimit && ratelimit.data.resources.search.remaining <= 2) {
+  if (ratelimit) {
     // show the reset time
-    var resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+    let resetTime
+    if (limitToSearch && ratelimit.data.resources.search.remaining <= 2) {
+      resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
+    }
+    else {
+      if (ratelimit.data.resources.core.remaining <= 2) {
+        resetTime = new Date(ratelimit.data.resources.core.reset * 1000)
+      }
+      else {
+        // no need to wait
+        return
+      }
+    }
     core.debug(`Search API reset time: ${resetTime}, backing off untill then`)
     core.debug(`Search ratelimit info: ${JSON.stringify(ratelimit.data.resources.search)}`)
     // wait until the reset time
@@ -464,6 +476,8 @@ async function executeRepoSearch(
   isEnterpriseServer: boolean,
   retryCount: number
 ): Promise<any> {
+  
+  checkRateLimits(client, isEnterpriseServer)
   if (retryCount > 0) {
     if (retryCount === 10) {
       // stop running after maximum number of retries
@@ -479,7 +493,6 @@ async function executeRepoSearch(
     await new Promise(r => setTimeout(r, backoffTime))
   }
   try {
-    checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for repos: [${searchQuery}]`)
     const searchResult = await client.paginate(client.rest.search.repos, {
       q: searchQuery
