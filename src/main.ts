@@ -479,6 +479,7 @@ async function executeCodeSearch(
 
 async function callSearchQueryWithBackoff(client: Octokit, searchQuery: string, page: number){
   try {
+    core.debug(`Calling the search API with query [${searchQuery}] and page [${page}] `)
     var results = await client.rest.search.code({q: searchQuery, per_page: 100, page})
     return results.data
   }

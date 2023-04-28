@@ -32940,6 +32940,7 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
 function callSearchQueryWithBackoff(client, searchQuery, page) {
   return __async(this, null, function* () {
     try {
+      core3.debug(`Calling the search API with query [${searchQuery}] and page [${page}] `);
       var results = yield client.rest.search.code({ q: searchQuery, per_page: 100, page });
       return results.data;
     } catch (error2) {
