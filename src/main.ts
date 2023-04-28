@@ -457,9 +457,7 @@ async function executeCodeSearch(
     checkRateLimits(client, isEnterpriseServer)
     core.debug(`searchQuery for code: [${searchQuery}]`)
 
-    const searchResult = await client.paginate(client.rest.search.code, {
-      q: searchQuery
-    })
+    const searchResult = await paginateSearchQuery(client, searchQuery)
 
     core.debug(`Found [${searchResult.total_count}] code search results`)
     return searchResult
@@ -477,6 +475,27 @@ async function executeCodeSearch(
       throw error
     }
   }
+}
+
+async function paginateSearchQuery(client: Octokit, searchQuery: string) {
+  // return await client.paginate(client.rest.search.code, {
+  //   q: searchQuery
+  // })
+
+  var results = client.rest.search.code({q: searchQuery, per_page: 100, page: 1})
+  // handle pagination
+  var page = 1
+  var total_count = 0
+  var items: any[] = []
+  do {
+    var response = await results
+    total_count = response.data.total_count
+    items = items.concat(response.data.items)
+    page++
+    results = client.rest.search.code({q: searchQuery, per_page: 100, page: page})
+    // code endpoint has a ratelimit of 10 calls a minute, so wait 6 seconds between calls
+    await new Promise(r => setTimeout(r, 6000))
+  } while (items.length < total_count)
 }
 
 async function executeRepoSearch(

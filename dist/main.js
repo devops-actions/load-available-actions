@@ -32922,21 +32922,35 @@ function executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount) 
     try {
       checkRateLimits(client, isEnterpriseServer);
       core3.debug(`searchQuery for code: [${searchQuery}]`);
-      const searchResult = yield client.paginate(client.rest.search.code, {
-        q: searchQuery
-      });
+      const searchResult = yield paginateSearchQuery(client, searchQuery);
       core3.debug(`Found [${searchResult.total_count}] code search results`);
       return searchResult;
     } catch (error2) {
       core3.info(`executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`);
       if (error2.message.includes("SecondaryRateLimit detected for request") || error2.message.includes("API rate limit exceeded for")) {
-        checkRateLimits(client, isEnterpriseServer);
+        checkRateLimits(client, isEnterpriseServer, true);
         return executeCodeSearch(client, searchQuery, isEnterpriseServer, retryCount + 1);
       } else {
         core3.info(`Error executing code search: ${error2}`);
         throw error2;
       }
     }
+  });
+}
+function paginateSearchQuery(client, searchQuery) {
+  return __async(this, null, function* () {
+    var results = client.rest.search.code({ q: searchQuery, per_page: 100, page: 1 });
+    var page = 1;
+    var total_count = 0;
+    var items = [];
+    do {
+      var response = yield results;
+      total_count = response.data.total_count;
+      items = items.concat(response.data.items);
+      page++;
+      results = client.rest.search.code({ q: searchQuery, per_page: 100, page });
+      yield new Promise((r) => setTimeout(r, 6e3));
+    } while (items.length < total_count);
   });
 }
 function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
