@@ -505,11 +505,17 @@ async function paginateSearchQuery(client: Octokit, searchQuery: string) {
     if (response) {
       total_count = response.total_count
       items = items.concat(response.items)
+      if (items.length >= 1000) {
+        // API will return: 'Cannot access beyond the first 1000 results'
+        core.warning(`Found [${items.length}] results, API does not give more results, stopping search and returning the first 1000 results`)
+        return items
+      }
       page++
       // code endpoint has a ratelimit of 10 calls a minute, so wait 6 seconds between calls
       await new Promise(r => setTimeout(r, 6000))
     }
   } while (items.length < total_count)
+  return items
 }
 
 async function executeRepoSearch(

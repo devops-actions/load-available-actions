@@ -2147,10 +2147,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       command_1.issueCommand("error", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error2;
-    function warning2(message, properties = {}) {
+    function warning3(message, properties = {}) {
       command_1.issueCommand("warning", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning2;
+    exports.warning = warning3;
     function notice(message, properties = {}) {
       command_1.issueCommand("notice", utils_1.toCommandProperties(properties), message instanceof Error ? message.toString() : message);
     }
@@ -26775,12 +26775,12 @@ var require_log = __commonJS({
       if (logLevel === "debug")
         console.log(...messages);
     }
-    function warn(logLevel, warning2) {
+    function warn(logLevel, warning3) {
       if (logLevel === "debug" || logLevel === "warn") {
         if (typeof process !== "undefined" && process.emitWarning)
-          process.emitWarning(warning2);
+          process.emitWarning(warning3);
         else
-          console.warn(warning2);
+          console.warn(warning3);
       }
     }
     exports.debug = debug3;
@@ -30179,9 +30179,9 @@ var require_composer = __commonJS({
         this.prelude = [];
         this.errors = [];
         this.warnings = [];
-        this.onError = (source, code, message, warning2) => {
+        this.onError = (source, code, message, warning3) => {
           const pos = getErrorPos(source);
-          if (warning2)
+          if (warning3)
             this.warnings.push(new errors.YAMLWarning(pos, code, message));
           else
             this.errors.push(new errors.YAMLParseError(pos, code, message));
@@ -30252,10 +30252,10 @@ ${cb}` : comment;
           console.dir(token, { depth: null });
         switch (token.type) {
           case "directive":
-            this.directives.add(token.source, (offset, message, warning2) => {
+            this.directives.add(token.source, (offset, message, warning3) => {
               const pos = getErrorPos(token);
               pos[0] += offset;
-              this.onError(pos, "BAD_DIRECTIVE", message, warning2);
+              this.onError(pos, "BAD_DIRECTIVE", message, warning3);
             });
             this.prelude.push(token.source);
             this.atDirectives = true;
@@ -32246,7 +32246,7 @@ var require_public_api2 = __commonJS({
       const doc = parseDocument(src, options);
       if (!doc)
         return null;
-      doc.warnings.forEach((warning2) => log.warn(doc.options.logLevel, warning2));
+      doc.warnings.forEach((warning3) => log.warn(doc.options.logLevel, warning3));
       if (doc.errors.length > 0) {
         if (doc.options.logLevel !== "silent")
           throw doc.errors[0];
@@ -32960,10 +32960,15 @@ function paginateSearchQuery(client, searchQuery) {
       if (response) {
         total_count = response.total_count;
         items = items.concat(response.items);
+        if (items.length >= 1e3) {
+          core3.warning(`Found [${items.length}] results, API does not give more results, stopping search and returning the first 1000 results`);
+          return items;
+        }
         page++;
         yield new Promise((r) => setTimeout(r, 6e3));
       }
     } while (items.length < total_count);
+    return items;
   });
 }
 function executeRepoSearch(client, searchQuery, isEnterpriseServer, retryCount) {
