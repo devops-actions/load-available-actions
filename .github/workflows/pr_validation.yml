@@ -1,4 +1,4 @@
-name: Testing the action
+name: PR-Testing the action
 
 on: 
   push:
@@ -12,7 +12,7 @@ permissions: read-all
     
 jobs:
   test-load-from-user: # test the action for the user space
-    name: User space
+    name: PR - User space
     runs-on: ubuntu-latest
     env:
       user: ${{ vars.USER }}
@@ -110,7 +110,7 @@ jobs:
     needs: test-load-from-user
     runs-on: ubuntu-latest
     concurrency: single-run
-    name: Org with forks
+    name: PR - Org with forks
     env:
       organization: ${{ vars.ORGANIZATION }}
     steps: 
@@ -155,7 +155,7 @@ jobs:
           path: ${{ steps.load-actions.outputs.actions-file-path }}
     
   test-load-from-organization: # test the action for the organization space
-    name: Org without forks
+    name: PR - Org without forks
     runs-on: ubuntu-latest
     concurrency: single-run
     env:
