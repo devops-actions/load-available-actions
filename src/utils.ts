@@ -18,6 +18,7 @@ export function parseYAML(
   let name = defaultValue
   let author = defaultValue
   let description = defaultValue
+  let using = description
 
   try {
     const parsed = YAML.parse(content)
@@ -26,6 +27,10 @@ export function parseYAML(
     description = parsed.description
       ? sanitize(parsed.description)
       : defaultValue
+
+    if (parsed.runs) {
+      using = parsed.runs.using ? sanitize(parsed.runs.using) : defaultValue
+    }
   } catch (error) {
     // this happens in https://github.com/gaurav-nelson/github-action-markdown-link-check/blob/9de9db77de3b29b650d2e2e99f0ee290f435214b/action.yml#L9
     // because of invalid yaml
@@ -38,7 +43,7 @@ export function parseYAML(
       `The parsing error is informational, seaching for actions has continued`
     )
   }
-  return {name, author, description}
+  return {name, author, description, using}
 }
 
 export function sanitize(value: string) {

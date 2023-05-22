@@ -97,6 +97,7 @@ export class Content {
   description: string | undefined
   forkedfrom: string | undefined
   readme: string | undefined
+  using: string | undefined
 }
 
 async function getAllActions(
@@ -130,7 +131,7 @@ async function enrichActionFiles(
       const {data: content} = await client.request({url: action.downloadUrl})
 
       // try to parse the yaml
-      const {name, author, description} = parseYAML(
+      const {name, author, description, using} = parseYAML(
         action.downloadUrl,
         action.repo,
         content
@@ -138,6 +139,7 @@ async function enrichActionFiles(
       action.name = name
       action.author = author
       action.description = description
+      action.using = using
     }
   }
   return actionFiles
@@ -296,6 +298,7 @@ async function getActionableDockerFiles(
     actions[index].downloadUrl = value.downloadUrl
     actions[index].author = value.author
     actions[index].description = value.description
+    actions[index].using = 'docker'
   })
   return actions
 }

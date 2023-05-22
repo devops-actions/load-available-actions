@@ -32508,11 +32508,15 @@ function parseYAML(filePath, repo, content) {
   let name = defaultValue;
   let author = defaultValue;
   let description = defaultValue;
+  let using = description;
   try {
     const parsed = import_yaml.default.parse(content);
     name = parsed.name ? sanitize(parsed.name) : defaultValue;
     author = parsed.author ? sanitize(parsed.author) : defaultValue;
     description = parsed.description ? sanitize(parsed.description) : defaultValue;
+    if (parsed.runs) {
+      using = parsed.runs.using ? sanitize(parsed.runs.using) : defaultValue;
+    }
   } catch (error2) {
     core.warning(
       `Error parsing action file [${filePath}] in repo [${repo}] with error: ${error2}`
@@ -32521,7 +32525,7 @@ function parseYAML(filePath, repo, content) {
       `The parsing error is informational, seaching for actions has continued`
     );
   }
-  return { name, author, description };
+  return { name, author, description, using };
 }
 function sanitize(value) {
   return import_string_sanitizer.default.sanitize.keepSpace(value);
@@ -32660,7 +32664,7 @@ function enrichActionFiles(client, actionFiles) {
       core3.debug(`Enrich action information from file: [${action.downloadUrl}]`);
       if (action.downloadUrl) {
         const { data: content } = yield client.request({ url: action.downloadUrl });
-        const { name, author, description } = parseYAML(
+        const { name, author, description, using } = parseYAML(
           action.downloadUrl,
           action.repo,
           content
@@ -32668,6 +32672,7 @@ function enrichActionFiles(client, actionFiles) {
         action.name = name;
         action.author = author;
         action.description = description;
+        action.using = using;
       }
     }
     return actionFiles;
@@ -32785,6 +32790,7 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
       actions[index].downloadUrl = value.downloadUrl;
       actions[index].author = value.author;
       actions[index].description = value.description;
+      actions[index].using = "docker";
     });
     return actions;
   });
