@@ -15,26 +15,32 @@ test(`check parseYAML with normal strings`, () => {
     const content = `
   name: 'test-name'
   author: 'test-author'
-  description: 'testing'`
+  description: 'testing'
+  runs:\n    using: 'test'`
     const filePath = 'test'
     const result = parseYAML(filePath, 'test', content)
   
     expect(result.name).toBe('testname')
     expect(result.author).toBe('testauthor')
     expect(result.description).toBe('testing')
+    expect(result.using).toBe('test')
   })
   
 test(`check parseYAML with quoted strings`, () => {
     const content = `
   name: 'test "name"'
   author: 'test "author"'
-  description: 'testing "with quotes"'`
+  description: 'testing "with quotes"'
+  runs:\n    using: 'testwithquote"'
+  `
+
     const filePath = 'test'
     const result = parseYAML(filePath, 'test', content)
   
     expect(result.name).toBe('test name')
     expect(result.author).toBe('test author')
     expect(result.description).toBe('testing with quotes')
+    expect(result.using).toBe('testwithquote')
   })
 
 test(`Check sanitization`, () => {
