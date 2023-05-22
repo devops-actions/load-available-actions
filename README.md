@@ -43,6 +43,7 @@ Repo permissions needed for the access token:
           "downloadUrl": "<raw url>?token=***",
           "author": "actions author",
           "description": "actions description",
+          "using": "what is used to execute the action (node16, Docker, composite)",
           "readme": "base64 encoded readme"    #optional
         }
     ]
