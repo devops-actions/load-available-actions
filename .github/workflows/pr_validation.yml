@@ -2,6 +2,8 @@ name: Testing the action
 
 on: 
   push:
+  
+  pull_request:
 
   workflow_dispatch:
 
@@ -26,7 +28,7 @@ jobs:
       - uses: ./
         name: Load available actions
         with: 
-          PAT: ${{ secrets.PAT }} 
+          PAT: ${{ secrets.GITHUB_TOKEN }} 
           user: ${{ env.user }}
         id: load-actions 
 
@@ -74,7 +76,7 @@ jobs:
       - uses: ./
         name: Load available actions
         with: 
-          PAT: ${{ secrets.PAT }} 
+          PAT: ${{ secrets.GITHUB_TOKEN }} 
           user: ${{ vars.USER }}
           outputFilename: actions-second-run.json
         id: load-actions-second-run
@@ -123,7 +125,7 @@ jobs:
       - uses: ./
         name: Load available actions
         with: 
-          PAT: ${{ secrets.PAT }}
+          PAT: ${{ secrets.GITHUB_TOKEN }}
           organization: ${{ env.organization }}
         id: load-actions
 
@@ -170,7 +172,7 @@ jobs:
       - uses: ./
         name: Load available actions
         with: 
-          PAT: ${{ secrets.PAT }}
+          PAT: ${{ secrets.GITHUB_TOKEN }}
           organization: ${{ env.organization }}
         id: load-actions
 
