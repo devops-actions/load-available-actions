@@ -222,6 +222,15 @@ jobs:
           if [ ! -d "actions-organization-with-forks" ]; then
             echo "actions-organization-with-forks directory does not exist"
           fi
+
+          # check if the file contains archived repos: 
+          archiveActionsUserSpace=$(jq -s '.[].isArchived==true' "./actions-user/actions.json")
+          archiveActionsActionsSpace=$(jq -s '.[].isArchived==true' "./actions-organization/actions.json")
+          archiveActionsOrgWithForksSpace=$(jq -s '.[].isArchived==true' "./actions-organization-with-forks/actions.json")
+          
+          echo "Found [$archiveActionsUserSpace] archived actions in the user space" | tee "$GITHUB_STEP_SUMMARY"
+          echo "Found [$archiveActionsActionsSpace] archived actions in the 'actions' organization space" | tee "$GITHUB_STEP_SUMMARY"
+          echo "Found [$archiveActionsOrgWithForksSpace] archived actions in the org with forks space" | tee "$GITHUB_STEP_SUMMARY"          
           
           # load the actions from the user
           userActionsLength=$(jq -s '.[]' "./actions-user/actions.json")
