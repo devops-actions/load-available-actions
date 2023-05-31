@@ -98,6 +98,7 @@ export class Content {
   forkedfrom: string | undefined
   readme: string | undefined
   using: string | undefined
+  isArchived: boolean | undefined
 }
 
 async function getAllActions(
@@ -321,6 +322,7 @@ async function getAllActionsFromForkedRepos(
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
+    const isArchived = repo.archived
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
@@ -348,7 +350,7 @@ async function getAllActionsFromForkedRepos(
       // Get "Forked from" info for the repo
       const parentInfo = await getForkParent(client, repoOwner, repoName)
       // get the action info
-      const action = await getActionInfo(client, repoOwner, repoName, actionFile, parentInfo)
+      const action = await getActionInfo(client, repoOwner, repoName, actionFile, parentInfo, isArchived)
       actions.push(action)
     }
   }
@@ -526,6 +528,7 @@ async function getAllActionsUsingSearch(
     const filePath = searchResult[index].path
     const repoName = searchResult[index].repository.name
     const repoOwner = searchResult[index].repository.owner.login
+    const isArchived = searchResult[index].repository.archived
 
     // Push file to action list if filename matches action.yaml or action.yml
     if (fileName == 'action.yaml' || fileName == 'action.yml') {
@@ -542,7 +545,8 @@ async function getAllActionsUsingSearch(
         repoOwner,
         repoName,
         filePath,
-        parentInfo
+        parentInfo,
+        isArchived
       )
       actions.push(result)
     }
@@ -573,7 +577,8 @@ async function getActionInfo(
   owner: string,
   repo: string,
   path: string,
-  forkedFrom: string
+  forkedFrom: string,
+  isArchived: boolean = false
 ): Promise<Content> {
   // Get File content
   const {data: yaml} = await client.rest.repos.getContent({
@@ -587,6 +592,7 @@ async function getActionInfo(
     result.name = yaml.name
     result.repo = repo
     result.forkedfrom = forkedFrom
+    result.isArchived = isArchived
     if (yaml.download_url !== null) {
       result.downloadUrl = removeTokenSetting
         ? yaml.download_url.replace(/\?(.*)/, '')

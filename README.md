@@ -6,7 +6,7 @@ Load all actions stored in the current organization, by calling the REST API wit
 
 The output is stored in a file with the name `actions`, which can be retrieved in another action with `${{ steps.<step id>.outputs.outputFilename }}`.
 
-We use the search api to find the following files in your repositories:
+We use the search API to find the following files in your repositories:
 - action.yml
 - action.yaml
 - Dockerfile
@@ -45,6 +45,7 @@ Repo permissions needed for the access token:
           "description": "actions description",
           "using": "what is used to execute the action (node16, Docker, composite)",
           "readme": "base64 encoded readme"    #optional
+          "isArchived": "true / false indicating if the repo is archived or not"
         }
     ]
 }
