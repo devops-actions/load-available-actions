@@ -32807,6 +32807,7 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       }
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
+      const isArchived = repo.archived;
       core3.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
       if (!repoPath) {
@@ -32824,7 +32825,7 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
         const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
         core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
         const parentInfo = yield getForkParent(client, repoOwner, repoName);
-        const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo);
+        const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo, isArchived);
         actions.push(action);
       }
     }
@@ -32952,6 +32953,7 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
       const filePath = searchResult[index].path;
       const repoName = searchResult[index].repository.name;
       const repoOwner = searchResult[index].repository.owner.login;
+      const isArchived = searchResult[index].repository.archived;
       if (fileName == "action.yaml" || fileName == "action.yml") {
         core3.info(`Found action in ${repoName}/${filePath}`);
         let parentInfo = "";
@@ -32963,7 +32965,8 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
           repoOwner,
           repoName,
           filePath,
-          parentInfo
+          parentInfo,
+          isArchived
         );
         actions.push(result);
       }
@@ -32985,7 +32988,7 @@ function getForkParent(client, owner, repo) {
     return parentInfo;
   });
 }
-function getActionInfo(client, owner, repo, path2, forkedFrom) {
+function getActionInfo(client, owner, repo, path2, forkedFrom, isArchived = false) {
   return __async(this, null, function* () {
     const { data: yaml } = yield client.rest.repos.getContent({
       owner,
@@ -32997,6 +33000,7 @@ function getActionInfo(client, owner, repo, path2, forkedFrom) {
       result.name = yaml.name;
       result.repo = repo;
       result.forkedfrom = forkedFrom;
+      result.isArchived = isArchived;
       if (yaml.download_url !== null) {
         result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
       }
