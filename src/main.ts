@@ -532,7 +532,6 @@ async function getRepoDetails(
     return repoDetails
 }
 
-
 async function getAllActionsUsingSearch(
   client: Octokit,
   username: string,
@@ -589,8 +588,6 @@ async function getAllActionsUsingSearch(
   return actions
 }
 
-
-
 async function getForkParent(
   repoDetails: any,
 ): Promise<string> {
@@ -602,24 +599,6 @@ async function getForkParent(
 
   return parentInfo
 }
-
-// async function getForkParent(
-//   client: Octokit,
-//   owner: string,
-//   repo: string
-// ): Promise<string> {
-//   const {data: repoInfo} = await client.rest.repos.get({
-//     owner: owner,
-//     repo: repo
-//   })
-
-//   let parentInfo = ''
-//   if (repoInfo.parent?.full_name) {
-//     parentInfo = repoInfo.parent.full_name
-//   }
-
-//   return parentInfo
-// }
 
 async function getActionInfo(
   client: Octokit,
