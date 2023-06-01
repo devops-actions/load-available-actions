@@ -32591,7 +32591,7 @@ function getReadmeContent(client, repo, owner) {
 // src/main.ts
 var import_child_process2 = require("child_process");
 import_dotenv.default.config();
-var getInputOrEnv = (input) => core3.getInput(input) || process.env.input || "";
+var getInputOrEnv = (input) => core3.getInput(input) || process.env[input] || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 var hostname = "github.com";
@@ -32807,7 +32807,6 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       }
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
-      const isArchived = repo.archived;
       core3.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
       if (!repoPath) {
@@ -32824,7 +32823,9 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
         core3.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
         const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
         core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
-        const parentInfo = yield getForkParent(client, repoOwner, repoName);
+        const repoDetail = yield getRepoDetails(client, repoOwner, repoName);
+        const isArchived = repoDetail.archived;
+        const parentInfo = yield getForkParent(repoDetail);
         const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo, isArchived);
         actions.push(action);
       }
@@ -32937,6 +32938,15 @@ function executeRepoSearch(client, searchQuery, isEnterpriseServer) {
     }
   });
 }
+function getRepoDetails(client, owner, repo) {
+  return __async(this, null, function* () {
+    const { data: repoDetails } = yield client.rest.repos.get({
+      owner,
+      repo
+    });
+    return repoDetails;
+  });
+}
 function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
@@ -32953,12 +32963,13 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
       const filePath = searchResult[index].path;
       const repoName = searchResult[index].repository.name;
       const repoOwner = searchResult[index].repository.owner.login;
-      const isArchived = searchResult[index].repository.archived;
       if (fileName == "action.yaml" || fileName == "action.yml") {
         core3.info(`Found action in ${repoName}/${filePath}`);
+        const repoDetail = yield getRepoDetails(client, repoOwner, repoName);
+        const isArchived = repoDetail.archived;
         let parentInfo = "";
         if (searchResult[index].repository.fork) {
-          parentInfo = yield getForkParent(client, repoOwner, repoName);
+          parentInfo = yield getForkParent(repoDetail);
         }
         const result = yield getActionInfo(
           client,
@@ -32974,16 +32985,12 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
     return actions;
   });
 }
-function getForkParent(client, owner, repo) {
+function getForkParent(repoDetails) {
   return __async(this, null, function* () {
     var _a;
-    const { data: repoInfo } = yield client.rest.repos.get({
-      owner,
-      repo
-    });
     let parentInfo = "";
-    if ((_a = repoInfo.parent) == null ? void 0 : _a.full_name) {
-      parentInfo = repoInfo.parent.full_name;
+    if ((_a = repoDetails.parent) == null ? void 0 : _a.full_name) {
+      parentInfo = repoDetails.parent.full_name;
     }
     return parentInfo;
   });
