@@ -32807,6 +32807,7 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
       }
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
+      const isArchived = repo.archived;
       core3.debug(`Checking repo [${repoName}] for action files`);
       const repoPath = cloneRepo(repoName, repoOwner);
       if (!repoPath) {
@@ -32823,9 +32824,7 @@ function getAllActionsFromForkedRepos(client, username, organization, isEnterpri
         core3.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
         const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
         core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
-        const repoDetail = yield getRepoDetails(client, repoOwner, repoName);
-        const isArchived = repoDetail.archived;
-        const parentInfo = yield getForkParent(repoDetail);
+        const parentInfo = yield getForkParent(repo);
         const action = yield getActionInfo(client, repoOwner, repoName, actionFile, parentInfo, isArchived);
         actions.push(action);
       }
@@ -32963,6 +32962,9 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
       const filePath = searchResult[index].path;
       const repoName = searchResult[index].repository.name;
       const repoOwner = searchResult[index].repository.owner.login;
+      console.log(">-==============================================");
+      console.log(searchResult[index]);
+      console.log("<-==============================================");
       if (fileName == "action.yaml" || fileName == "action.yml") {
         core3.info(`Found action in ${repoName}/${filePath}`);
         const repoDetail = yield getRepoDetails(client, repoOwner, repoName);
