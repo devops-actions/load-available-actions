@@ -1,0 +1,24 @@
+on:
+  issues:
+    types: [opened, edited]
+  pull_request:
+    types: [opened, edited]
+
+  push:
+    paths:
+      - .github/workflows/issue-pr-create.yml
+  
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      pull-requests: write
+    steps:
+        - uses: devops-actions/issue-comment-tag@24b5a5d089cb326e6fafabd161f7b9189418dc00 # v0.1.7
+          with:
+            team: ${{ vars.tag_team }}
+            issue: ${{ github.event.issue.number }}
+            owner: ${{ github.repository_owner }}
+            repo: ${{ github.repository }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
