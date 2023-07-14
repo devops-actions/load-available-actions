@@ -263,11 +263,19 @@ async function getActionableDockerFiles(
 ): Promise<Content[]> {
   let dockerActions: DockerActionFiles[] | undefined = []
   let actions: Content[] = []
-  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:true')
+  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:only')
 
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
+
+
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
+
+    if (!repo.fork) {
+      // we only want forked repos
+      continue
+    }
+
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
@@ -314,7 +322,7 @@ async function getAllActionsFromForkedRepos(
   isEnterpriseServer: boolean
 ): Promise<Content[]> {
   const actions: Content[] = []
-  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:true')
+  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:only')
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
@@ -328,6 +336,9 @@ async function getAllActionsFromForkedRepos(
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
     const isArchived = repo.archived
+
+
+
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
