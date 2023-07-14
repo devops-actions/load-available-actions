@@ -32760,10 +32760,13 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
   return __async(this, null, function* () {
     let dockerActions = [];
     let actions = [];
-    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:true");
+    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:only");
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
+      if (!repo.fork) {
+        continue;
+      }
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
       core3.debug(`Checking repo [${repoName}] for action files`);
@@ -32798,7 +32801,7 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
 function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
-    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:true");
+    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:only");
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
@@ -32962,9 +32965,6 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
       const filePath = searchResult[index].path;
       const repoName = searchResult[index].repository.name;
       const repoOwner = searchResult[index].repository.owner.login;
-      console.log(">-==============================================");
-      console.log(searchResult[index]);
-      console.log("<-==============================================");
       if (fileName == "action.yaml" || fileName == "action.yml") {
         core3.info(`Found action in ${repoName}/${filePath}`);
         const repoDetail = yield getRepoDetails(client, repoOwner, repoName);
