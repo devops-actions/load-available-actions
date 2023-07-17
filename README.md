@@ -16,7 +16,7 @@ We use the search API to find the following files in your repositories:
 
 For the Dockerfiles we search for the required labels to identify them as actions.
 
-For the reusable workflow a search is done of the a workflow file contains '`workflow_call:`'
+For the reusable workflow a search is done if the workflow file contains '`workflow_call:`'
 
 Note that the search API only supports up to a maximum of 1000 results, so we cannot return more actions than that at the moment.
 
