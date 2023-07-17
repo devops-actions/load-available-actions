@@ -2,20 +2,26 @@
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions/badge)](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions) [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/6813/badge)](https://bestpractices.coreinfrastructure.org/projects/6813)
 
-Load all actions stored in the current organization, by calling the REST API with an  Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
+Load all actions and reusable workflows stored in the current organization, by calling the REST API with an  Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
 
 The output is stored in a file with the name `actions`, which can be retrieved in another action with `${{ steps.<step id>.outputs.outputFilename }}`.
 
 We use the search API to find the following files in your repositories:
+
 - action.yml
 - action.yaml
 - Dockerfile
 - dockerfile
+- .github/workflows/<workflow file>.yml
+
 For the Dockerfiles we search for the required labels to identify them as actions.
+
+For the reusable workflow a search is done of the a workflow file contains '`workflow_call:`'
 
 Note that the search API only supports up to a maximum of 1000 results, so we cannot return more actions than that at the moment.
 
 ## Inputs
+
 |Name|Description|
 |---|---|
 |user|The user to load actions from.|
@@ -26,14 +32,18 @@ Note that the search API only supports up to a maximum of 1000 results, so we ca
 |outputFilename (optional)|The name of the output file. Defaults to `actions.json`|
 
 ### Scopes needed for the access token
+
 Repo permissions needed for the access token:
+
 - Actions: Read
 - Administration: Read
 - Contents: Read
 
 ## Outputs
+
 - actions-file-path: path to the file containing a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
-``` 
+
+```language:json
 {
     "lastUpdated": "20210818_1534",
     "actions": [
@@ -47,9 +57,18 @@ Repo permissions needed for the access token:
           "readme": "base64 encoded readme"    #optional
           "isArchived": "true / false indicating if the repo is archived or not"
         }
+    ],
+    "workflows": [
+      {
+        "name": "The name from the workflow",
+        "repo": "The name of the repo hosting the workflow",
+        "isArchived": false,
+        "downloadUrl": "<raw url>/.github/workflows/<workflow file>.yml"
+      }
     ]
 }
 ```
+
 Properties:
 |Name|Description|
 |----|-----------|
@@ -57,6 +76,7 @@ Properties:
 |actions|The list of actions available in the workflows in the organization.|
 
 ## Example usage
+
 Minimal uses expression to use this action:
 
 ``` yaml
@@ -68,6 +88,7 @@ with:
 Note: the default GITHUB_TOKEN might only has **read** access to the current repository, depending on the setup. Create a new token with `repo` scope to have full read-only access to the organization and use that as a parameter.
 
 ## Full example
+
 This example shows how to use the action to get a json file with all the available actions in an organization. The json file is uploaded as an artefact in the third step.
 
 |#|Name|Description|
