@@ -121,11 +121,6 @@ export class WorkflowContent {
   isArchived: boolean | undefined
 }
 
-
-
-
-
-
 async function getAllActions(
   client: Octokit, 
   user: string,
