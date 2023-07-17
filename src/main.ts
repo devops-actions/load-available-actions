@@ -291,8 +291,15 @@ async function getActionableDockerFiles(
   const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:only')
 
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
+
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
+
+    if (!repo.fork) {
+      // we only want forked repos
+      continue
+    }
+
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''

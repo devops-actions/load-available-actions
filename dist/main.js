@@ -32771,6 +32771,9 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
+      if (!repo.fork) {
+        continue;
+      }
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
       core3.debug(`Checking repo [${repoName}] for action files`);
