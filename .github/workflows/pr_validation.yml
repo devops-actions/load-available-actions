@@ -185,6 +185,7 @@ jobs:
           fi
 
           echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
+          echo "Found [$(jq '.workflows| length' "${{ steps.load-actions.outputs.workflows-file-path }}")] workflows in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
 
       - name: Check if the result file has actions in it
         run: |
