@@ -74,7 +74,7 @@ Properties:
 |----|-----------|
 |lastUpdated|The date and time this action list was created. Format = YYYYMMDD_HHmm|
 |actions|The list of actions available in the workflows in the organization.|
-
+|workflows|The list of reusable workflows availabe in the repositories in the organization.|
 ## Example usage
 
 Minimal uses expression to use this action:
