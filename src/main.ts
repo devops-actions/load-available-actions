@@ -757,7 +757,7 @@ async function getWorkflowInfo(
 
   result.repo = repo
   result.isArchived = isArchived
-  result.visability = visability
+  result.visibility = visibility
   
   if (yaml.download_url !== null) {
     result.downloadUrl = removeTokenSetting
