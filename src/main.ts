@@ -120,7 +120,7 @@ export class WorkflowContent {
   description: string | undefined
   forkedfrom: string | undefined
   isArchived: boolean | undefined
-  visability: string | undefined
+  visibility: string | undefined
 }
 
 async function getAllActions(
