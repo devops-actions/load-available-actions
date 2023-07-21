@@ -63,8 +63,7 @@ async function run(): Promise<void> {
       return
     }
 
-    let actionFiles: ActionContent[] = []
-    //let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
+    let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
     let workflows = await getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer)
 
     // output the json we want to output
