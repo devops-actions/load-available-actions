@@ -701,7 +701,7 @@ async function getAllReusableWorkflowsUsingSearch(
     const visibility = repoDetail.visibility
 
     // Skip workflow if it is a private repo
-    if ( includePrivateWorkflows === 'false' && visability === 'private') {
+    if ( includePrivateWorkflows === 'false' && visibility === 'private') {
       continue
     }
 
