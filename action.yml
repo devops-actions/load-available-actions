@@ -24,6 +24,14 @@ inputs:
   outputFilename:
     description: 'Define the name of the output file'
     required: false
+  scanForReusableWorkflows:
+    description: 'Scan repositories for reusable workflows'
+    default: 'true'
+    required: false   
+  includePrivateWorkflows:
+    description: 'Include Workflows from private repositories'
+    default: 'false'
+    required: false    
 outputs:
   actions-file-path:
     description: 'Path to the file that contains a list of all actions available in the organization or user space'  
