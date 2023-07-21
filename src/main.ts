@@ -63,8 +63,8 @@ async function run(): Promise<void> {
       return
     }
 
-    //let actionFiles: ActionContent[] = []
-    let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
+    let actionFiles: ActionContent[] = []
+    //let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
     let workflows = await getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer)
 
     // output the json we want to output
@@ -693,12 +693,16 @@ async function getAllReusableWorkflowsUsingSearch(
     const repoName = searchResult[index].repository.name
     const repoOwner = searchResult[index].repository.owner.login
 
-    // Push workflow to the list
-    core.info(`Found workflow ${fileName } in ${repoName}/${filePath}`)
-
     // Get the Repository Details
     const repoDetail = await getRepoDetails(client, repoOwner, repoName)
     const isArchived = repoDetail.archived
+
+    // Skip workflow if it is a private repo
+    if ( repoDetail.visibility === 'private') {
+      continue
+    }
+
+    core.info(`Found workflow ${fileName } in ${repoName}/${filePath}`)
 
     const result = await getWorkflowInfo(
       client,
