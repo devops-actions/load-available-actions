@@ -713,7 +713,7 @@ async function getAllReusableWorkflowsUsingSearch(
       repoName,
       filePath,
       isArchived,
-      visability
+      visibility
     )
 
     workflows.push(result)
