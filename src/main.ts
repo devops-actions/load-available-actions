@@ -731,7 +731,7 @@ async function getWorkflowInfo(
   repo: string,
   path: string,
   isArchived: boolean = false,
-  visability: string
+  visibility: string
 ): Promise<WorkflowContent> {
   
   // Get File content
