@@ -65,198 +65,198 @@ jobs:
             exit 1
           fi
 
-      # upload the second result file as an artefact 
-      - name: Upload result file as artefact
-        if: always()
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
-        with: 
-          name: actions-user
-          path: ${{ steps.load-actions.outputs.actions-file-path }}
+      # # upload the first result file as an artefact 
+      # - name: Upload result file as artefact
+      #   if: always()
+      #   uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+      #   with: 
+      #     name: actions-user
+      #     path: ${{ steps.load-actions.outputs.actions-file-path }}
 
-      # run the test with a different filename
-      - uses: ./
-        name: Load available actions
-        with: 
-          PAT: ${{ secrets.PAT }} 
-          user: ${{ vars.USER }}
-          outputFilename: actions-second-run.json
-        id: load-actions-second-run
+      # # run the test with a different filename
+      # - uses: ./
+      #   name: Load available actions
+      #   with: 
+      #     PAT: ${{ secrets.PAT }} 
+      #     user: ${{ vars.USER }}
+      #     outputFilename: actions-second-run.json
+      #   id: load-actions-second-run
 
-      # check if the second result file is not empty
-      - name: Check if the second result file is not empty
-        run: | 
-          if [ ! -s '${{ steps.load-actions-second-run.outputs.actions-file-path }}' ]; then
-            echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
+      # # check if the second result file is not empty
+      # - name: Check if the second result file is not empty
+      #   run: | 
+      #     if [ ! -s '${{ steps.load-actions-second-run.outputs.actions-file-path }}' ]; then
+      #       echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
+      #       exit 1
+      #     fi
 
-      # upload the second result file as an artefact
-      - name: Upload result file as artefact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
-        with: 
-          name: actions-user
-          path: ${{ steps.load-actions-second-run.outputs.actions-file-path }}
+      # # upload the second result file as an artefact
+      # - name: Upload result file as artefact
+      #   uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+      #   with: 
+      #     name: actions-user
+      #     path: ${{ steps.load-actions-second-run.outputs.actions-file-path }}
       
-      # validate that the two files have different names
-      - name: Validate that the two files have different names
-        run: | 
-          if [ ${{ steps.load-actions.outputs.actions-file-path }} == ${{ steps.load-actions-second-run.outputs.actions-file-path }} ]; then
-            echo ":warning: The two files have the same name, this is not good" | tee "$GITHUB_STEP_SUMMARY"
-            exit 1
-          else
-            echo "The two files have different names, this is good" | tee "$GITHUB_STEP_SUMMARY"
-          fi
+      # # validate that the two files have different names
+      # - name: Validate that the two files have different names
+      #   run: | 
+      #     if [ ${{ steps.load-actions.outputs.actions-file-path }} == ${{ steps.load-actions-second-run.outputs.actions-file-path }} ]; then
+      #       echo ":warning: The two files have the same name, this is not good" | tee "$GITHUB_STEP_SUMMARY"
+      #       exit 1
+      #     else
+      #       echo "The two files have different names, this is good" | tee "$GITHUB_STEP_SUMMARY"
+      #     fi
   
-  test-load-from-organization-with-forks: # test the action for the organization space
-    needs: test-load-from-user
-    runs-on: ubuntu-latest
-    concurrency:
-      group: single-run
-      cancel-in-progress: false
-    name: Org with forks
-    env:
-      organization: ${{ vars.ORGANIZATION }}
-    steps: 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
-      # make sure we have a new build, in case the dist folder was not updated
-      - name: Compile with NPM
-        run: | 
-          npm ci
-          npm run all
+  # test-load-from-organization-with-forks: # test the action for the organization space
+  #   needs: test-load-from-user
+  #   runs-on: ubuntu-latest
+  #   concurrency:
+  #     group: single-run
+  #     cancel-in-progress: false
+  #   name: Org with forks
+  #   env:
+  #     organization: ${{ vars.ORGANIZATION }}
+  #   steps: 
+  #     - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+  #     # make sure we have a new build, in case the dist folder was not updated
+  #     - name: Compile with NPM
+  #       run: | 
+  #         npm ci
+  #         npm run all
 
-      # run the test
-      - uses: ./
-        name: Load available actions
-        with: 
-          PAT: ${{ secrets.PAT }}
-          organization: ${{ env.organization }}
-        id: load-actions
+  #     # run the test
+  #     - uses: ./
+  #       name: Load available actions
+  #       with: 
+  #         PAT: ${{ secrets.PAT }}
+  #         organization: ${{ env.organization }}
+  #       id: load-actions
 
-      # check if the result file is not empty
-      - name: Check if the result file is not empty
-        run: | 
-          if [ ! -s "${{ steps.load-actions.outputs.actions-file-path }}" ]; then
-            echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
+  #     # check if the result file is not empty
+  #     - name: Check if the result file is not empty
+  #       run: | 
+  #         if [ ! -s "${{ steps.load-actions.outputs.actions-file-path }}" ]; then
+  #           echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
+  #           exit 1
+  #         fi
 
-          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
+  #         echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
 
-      - name: Check if the result file has actions in it        
-        run: | 
-          # check if the file has actions in it 
-          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
-            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
+  #     - name: Check if the result file has actions in it        
+  #       run: | 
+  #         # check if the file has actions in it 
+  #         if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
+  #           echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+  #           exit 1
+  #         fi
             
-      - name: Upload result file as artefact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
-        if: always()
-        with: 
-          name: actions-organization-with-forks
-          path: ${{ steps.load-actions.outputs.actions-file-path }}
+  #     - name: Upload result file as artefact
+  #       uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+  #       if: always()
+  #       with: 
+  #         name: actions-organization-with-forks
+  #         path: ${{ steps.load-actions.outputs.actions-file-path }}
     
-  test-load-from-organization: # test the action for the organization space
-    name: Org without forks
-    needs: test-load-from-organization-with-forks
-    runs-on: ubuntu-latest
-    concurrency: 
-      group: single-run
-      cancel-in-progress: false
-    env:
-      organization: actions # load from github.com/actions
-    if: always()
-    steps: 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
-      # make sure we have a new build, in case the dist folder was not updated
-      - name: Compile with NPM
-        run: | 
-          npm ci
-          npm run all
-      # run the test
-      - uses: ./
-        name: Load available actions
-        with: 
-          PAT: ${{ secrets.PAT }}
-          organization: ${{ env.organization }}
-        id: load-actions
+  # test-load-from-organization: # test the action for the organization space
+  #   name: Org without forks
+  #   needs: test-load-from-organization-with-forks
+  #   runs-on: ubuntu-latest
+  #   concurrency: 
+  #     group: single-run
+  #     cancel-in-progress: false
+  #   env:
+  #     organization: actions # load from github.com/actions
+  #   if: always()
+  #   steps: 
+  #     - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+  #     # make sure we have a new build, in case the dist folder was not updated
+  #     - name: Compile with NPM
+  #       run: | 
+  #         npm ci
+  #         npm run all
+  #     # run the test
+  #     - uses: ./
+  #       name: Load available actions
+  #       with: 
+  #         PAT: ${{ secrets.PAT }}
+  #         organization: ${{ env.organization }}
+  #       id: load-actions
 
-      # check if the result file is not empty
-      - name: Check if the result file is not empty
-        run: | 
-          if [ ! -s '${{ steps.load-actions.outputs.actions-file-path }}' ]; then
-            echo "The result file is empty"
-            exit 1
-          fi
+  #     # check if the result file is not empty
+  #     - name: Check if the result file is not empty
+  #       run: | 
+  #         if [ ! -s '${{ steps.load-actions.outputs.actions-file-path }}' ]; then
+  #           echo "The result file is empty"
+  #           exit 1
+  #         fi
 
-          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
+  #         echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
 
-      - name: Check if the result file has actions in it
-        run: |
-          # check if the file has actions in it 
-          if [ "$(jq ".actions | length" "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
-            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
+  #     - name: Check if the result file has actions in it
+  #       run: |
+  #         # check if the file has actions in it 
+  #         if [ "$(jq ".actions | length" "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
+  #           echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
+  #           exit 1
+  #         fi
             
-      - name: Upload result file as artefact
-        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
-        with: 
-          name: actions-organization
-          path: ${{ steps.load-actions.outputs.actions-file-path }}
+  #     - name: Upload result file as artefact
+  #       uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+  #       with: 
+  #         name: actions-organization
+  #         path: ${{ steps.load-actions.outputs.actions-file-path }}
 
-  Consolidate:
-    runs-on: ubuntu-latest
-    needs: 
-      - test-load-from-user
-      - test-load-from-organization
-      - test-load-from-organization-with-forks
-    steps:
-      - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+  # Consolidate:
+  #   runs-on: ubuntu-latest
+  #   needs: 
+  #     - test-load-from-user
+  #     - test-load-from-organization
+  #     - test-load-from-organization-with-forks
+  #   steps:
+  #     - uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
         
-      - run: |
-          ls -la
+  #     - run: |
+  #         ls -la
 
-          # make sure the three expected directories exists
-          if [ ! -d "actions-user" ]; then
-            echo "actions-user directory does not exist"
-          fi
+  #         # make sure the three expected directories exists
+  #         if [ ! -d "actions-user" ]; then
+  #           echo "actions-user directory does not exist"
+  #         fi
 
-          if [ ! -d "actions-organization" ]; then
-            echo "actions-organization directory does not exist"
-          fi
+  #         if [ ! -d "actions-organization" ]; then
+  #           echo "actions-organization directory does not exist"
+  #         fi
 
-          if [ ! -d "actions-organization-with-forks" ]; then
-            echo "actions-organization-with-forks directory does not exist"
-          fi
+  #         if [ ! -d "actions-organization-with-forks" ]; then
+  #           echo "actions-organization-with-forks directory does not exist"
+  #         fi
 
-          # check if the file contains archived repos: 
-          archiveActionsUserSpace=$(jq -s '.[].isArchived==true' "./actions-user/actions.json")
-          archiveActionsActionsSpace=$(jq -s '.[].isArchived==true' "./actions-organization/actions.json")
-          archiveActionsOrgWithForksSpace=$(jq -s '.[].isArchived==true' "./actions-organization-with-forks/actions.json")
+  #         # check if the file contains archived repos: 
+  #         archiveActionsUserSpace=$(jq -s '.[].isArchived==true' "./actions-user/actions.json")
+  #         archiveActionsActionsSpace=$(jq -s '.[].isArchived==true' "./actions-organization/actions.json")
+  #         archiveActionsOrgWithForksSpace=$(jq -s '.[].isArchived==true' "./actions-organization-with-forks/actions.json")
           
-          echo "Found [$archiveActionsUserSpace] archived actions in the user space" | tee "$GITHUB_STEP_SUMMARY"
-          echo "Found [$archiveActionsActionsSpace] archived actions in the 'actions' organization space" | tee "$GITHUB_STEP_SUMMARY"
-          echo "Found [$archiveActionsOrgWithForksSpace] archived actions in the org with forks space" | tee "$GITHUB_STEP_SUMMARY"          
+  #         echo "Found [$archiveActionsUserSpace] archived actions in the user space" | tee "$GITHUB_STEP_SUMMARY"
+  #         echo "Found [$archiveActionsActionsSpace] archived actions in the 'actions' organization space" | tee "$GITHUB_STEP_SUMMARY"
+  #         echo "Found [$archiveActionsOrgWithForksSpace] archived actions in the org with forks space" | tee "$GITHUB_STEP_SUMMARY"          
           
-          # load the actions from the user
-          userActionsLength=$(jq -s '.[]' "./actions-user/actions.json")
-          organizationActionsLength=$(jq -s '.[]' "./actions-organization/actions.json")
-          organizationWithForksActionsLength=$(jq -s '.[]' "./actions-organization-with-forks/actions.json")
+  #         # load the actions from the user
+  #         userActionsLength=$(jq -s '.[]' "./actions-user/actions.json")
+  #         organizationActionsLength=$(jq -s '.[]' "./actions-organization/actions.json")
+  #         organizationWithForksActionsLength=$(jq -s '.[]' "./actions-organization-with-forks/actions.json")
 
-          # test if the lenghts are all different
-          if ((userActionsLength == organizationActionsLength)); then
-            echo "The user actions and the organization actions are the same length, which should not be the case"
-            exit 1
-          fi
+  #         # test if the lenghts are all different
+  #         if ((userActionsLength == organizationActionsLength)); then
+  #           echo "The user actions and the organization actions are the same length, which should not be the case"
+  #           exit 1
+  #         fi
 
-          if ((organizationWithForksActionsLength == organizationActionsLength)); then
-            echo "The organization with forks actions and the organization actions are the same length, which should not be the case"
-            exit 1
-          fi
+  #         if ((organizationWithForksActionsLength == organizationActionsLength)); then
+  #           echo "The organization with forks actions and the organization actions are the same length, which should not be the case"
+  #           exit 1
+  #         fi
 
-          if ((userActionsLength == organizationWithForksActionsLength)); then
-            echo "The user actions and the organization with forks actions are the same length, which should not be the case"
-            exit 1
-          fi
+  #         if ((userActionsLength == organizationWithForksActionsLength)); then
+  #           echo "The user actions and the organization with forks actions are the same length, which should not be the case"
+  #           exit 1
+  #         fi
