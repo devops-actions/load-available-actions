@@ -270,7 +270,6 @@ async function getAllNormalActions(
         t => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`
       )
   )
-  actions.forEach((item)=>console.log(item))
   core.debug(`After dedupliation we have [${actions.length}] actions in total`)
   return actions
 }
