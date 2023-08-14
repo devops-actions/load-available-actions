@@ -24,8 +24,8 @@ export function parseYAML(
     const parsed = YAML.parse(content)
     console.log(`parsed name : ${parsed.name}`)
     name = removeGreaterLessThan(parsed.name) || defaultValue
-    author = removeGreaterLessThan(parsed.name) || defaultValue
-    description = parsed.description ||  defaultValue
+    author = removeGreaterLessThan(parsed.author) || defaultValue
+    description = removeGreaterLessThan(parsed.description) ||  defaultValue
 
     if (parsed.runs) {
       using = parsed.runs.using ? sanitize(parsed.runs.using) : defaultValue
