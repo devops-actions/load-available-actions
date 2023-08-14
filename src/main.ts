@@ -157,7 +157,6 @@ async function enrichActionFiles(
         content
       )
       action.name = name
-      // console.log(`Name: ${name}`) no hyphens
       action.author = author
       action.description = description
       action.using = using
@@ -577,7 +576,6 @@ async function getAllActionsUsingSearch(
     const filePath = searchResult[index].path
     const repoName = searchResult[index].repository.name
     const repoOwner = searchResult[index].repository.owner.login
-    console.log([repoName,repoOwner])
     // Push file to action list if filename matches action.yaml or action.yml
     if (fileName == 'action.yaml' || fileName == 'action.yml') {
       core.info(`Found action in ${repoName}/${filePath}`)
