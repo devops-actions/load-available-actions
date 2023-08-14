@@ -65,13 +65,13 @@ jobs:
             exit 1
           fi
 
-      # # upload the first result file as an artefact 
-      # - name: Upload result file as artefact
-      #   if: always()
-      #   uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
-      #   with: 
-      #     name: actions-user
-      #     path: ${{ steps.load-actions.outputs.actions-file-path }}
+      # upload the first result file as an artefact 
+      - name: Upload result file as artefact
+        if: always()
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with: 
+          name: actions-user
+          path: ${{ steps.load-actions.outputs.actions-file-path }}
 
       # # run the test with a different filename
       # - uses: ./
