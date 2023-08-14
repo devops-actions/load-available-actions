@@ -157,7 +157,7 @@ async function enrichActionFiles(
         content
       )
       action.name = name
-      console.log(`Name: ${name}`)
+      // console.log(`Name: ${name}`) no hyphens
       action.author = author
       action.description = description
       action.using = using
@@ -270,6 +270,7 @@ async function getAllNormalActions(
         t => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`
       )
   )
+  actions.forEach((item)=>console.log(item))
   core.debug(`After dedupliation we have [${actions.length}] actions in total`)
   return actions
 }
