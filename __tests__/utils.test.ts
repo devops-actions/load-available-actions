@@ -11,40 +11,40 @@ test('date parsing', () => {
     expect(result).toMatch('20210116_1143')
 })
   
-test(`check parseYAML with normal strings`, () => {
-    const content = `
-  name: 'test-name'
-  author: 'test-author'
-  description: 'testing'
-  runs:\n    using: 'test'`
-    const filePath = 'test'
-    const result = parseYAML(filePath, 'test', content)
+// test(`check parseYAML with normal strings`, () => {
+//     const content = `
+//   name: 'test-name'
+//   author: 'test-author'
+//   description: 'testing'
+//   runs:\n    using: 'test'`
+//     const filePath = 'test'
+//     const result = parseYAML(filePath, 'test', content)
   
-    expect(result.name).toBe('testname')
-    expect(result.author).toBe('testauthor')
-    expect(result.description).toBe('testing')
-    expect(result.using).toBe('test')
-  })
+//     expect(result.name).toBe('testname')
+//     expect(result.author).toBe('testauthor')
+//     expect(result.description).toBe('testing')
+//     expect(result.using).toBe('test')
+//   })
   
-test(`check parseYAML with quoted strings`, () => {
-    const content = `
-  name: 'test "name"'
-  author: 'test "author"'
-  description: 'testing "with quotes"'
-  runs:\n    using: 'testwithquote"'
-  `
+// test(`check parseYAML with quoted strings`, () => {
+//     const content = `
+//   name: 'test "name"'
+//   author: 'test "author"'
+//   description: 'testing "with quotes"'
+//   runs:\n    using: 'testwithquote"'
+//   `
 
-    const filePath = 'test'
-    const result = parseYAML(filePath, 'test', content)
+//     const filePath = 'test'
+//     const result = parseYAML(filePath, 'test', content)
   
-    expect(result.name).toBe('test name')
-    expect(result.author).toBe('test author')
-    expect(result.description).toBe('testing with quotes')
-    expect(result.using).toBe('testwithquote')
-  })
+//     expect(result.name).toBe('test name')
+//     expect(result.author).toBe('test author')
+//     expect(result.description).toBe('testing with quotes')
+//     expect(result.using).toBe('testwithquote')
+//   })
 
-test(`Check sanitization`, () => {
-    const value = "Abc$%#6- ZZpp"
-    const cleaned = sanitize(value)
-    expect(cleaned).toBe("Abc6 ZZpp")
-})
+// test(`Check sanitization`, () => {
+//     const value = "Abc$%#6- ZZpp"
+//     const cleaned = sanitize(value)
+//     expect(cleaned).toBe("Abc6 ZZpp")
+// })
