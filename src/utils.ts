@@ -43,7 +43,7 @@ export function parseYAML(
   }
   return {name, author, description, using}
 }
-const removeGreaterLessThan = (item:string) => item.replace('>','&#62;').replace('<','&#60;')
+const removeGreaterLessThan = (item:string) => item.replace(/\>/g,'&#62;').replace(/\</g,'&#60;')
 
 export function sanitize(value: string) {
   return string.sanitize.keepSpace(value)
