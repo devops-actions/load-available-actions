@@ -23,10 +23,10 @@ export function parseYAML(
   try {
     const parsed = YAML.parse(content)
     console.log(`parsed name : ${parsed.name}`)
-    name = parsed.name ? sanitize(parsed.name) : defaultValue
-    author = parsed.author ? sanitize(parsed.author) : defaultValue
+    name = parsed.name ? parsed.name : defaultValue
+    author = parsed.author ? parsed.author : defaultValue
     description = parsed.description
-      ? sanitize(parsed.description)
+      ? parsed.description
       : defaultValue
 
     if (parsed.runs) {
