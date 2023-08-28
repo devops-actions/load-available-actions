@@ -17,7 +17,7 @@ jobs:
     env:
       user: ${{ vars.USER }}
     steps: 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -114,7 +114,7 @@ jobs:
     env:
       organization: ${{ vars.ORGANIZATION }}
     steps: 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -162,7 +162,7 @@ jobs:
       organization: actions # load from github.com/actions
     if: always()
     steps: 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -184,7 +184,7 @@ jobs:
             exit 1
           fi
 
-          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
+          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the organization [${{ env.organization }}]<br>Found [$(jq '.workflows| length' "${{ steps.load-actions.outputs.actions-file-path }}")] workflows in the organization [${{ env.organization }}]" | tee "$GITHUB_STEP_SUMMARY"
 
       - name: Check if the result file has actions in it
         run: |
@@ -193,7 +193,15 @@ jobs:
             echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
             exit 1
           fi
-            
+
+      - name: Check if the result file has workflows in it
+        run: |
+          # check if the file has workflows in it 
+          if [ "$(jq ".workflows | length" "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
+            echo ":warning: The result file does not contain any workflows" | tee "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
       - name: Upload result file as artefact
         uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
         with: 
