@@ -11,6 +11,8 @@ import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
+import {Buffer} from "buffer"
+import YAML from 'yaml'
 
 dotenv.config()
 
@@ -20,6 +22,8 @@ const getInputOrEnv = (input: string) =>
 const removeTokenSetting = getInputOrEnv('removeToken')
 const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
 const hostname = 'github.com' // todo: support GHES
+const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
+const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 
 async function run(): Promise<void> {
   core.info('Starting')
@@ -62,16 +66,23 @@ async function run(): Promise<void> {
     }
 
     let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
+    let workflows: WorkflowContent[] = []
+    
+    if (scanForReusableWorkflows === 'true') {
+      workflows = await getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer)
+    }
 
     // output the json we want to output
     const output: {
       lastUpdated: string
       organization: string
       user: string
-      actions: Content[]
+      actions: ActionContent[]
+      workflows: WorkflowContent[]
     } = {
       lastUpdated: GetDateFormatted(new Date()),
       actions: actionFiles,
+      workflows: workflows,
       organization,
       user
     }
@@ -88,7 +99,8 @@ async function run(): Promise<void> {
     core.setFailed(`Error running action: : ${error.message}`)
   }
 }
-export class Content {
+
+export class ActionContent {
   name: string | undefined
   owner: string | undefined
   repo: string | undefined
@@ -101,11 +113,21 @@ export class Content {
   isArchived: boolean | undefined
 }
 
+export class WorkflowContent {
+  name: string | undefined
+  repo: string | undefined
+  downloadUrl: string | undefined
+  description: string | undefined
+  forkedfrom: string | undefined
+  isArchived: boolean | undefined
+  visibility: string | undefined
+}
+
 async function getAllActions(
   client: Octokit, 
   user: string,
   organization: string,
-  isEnterpriseServer: boolean) : Promise<Content[]> {
+  isEnterpriseServer: boolean) : Promise<ActionContent[]> {
 
   // get all action files (action.yml and action.yaml) from the user or organization
   let actionFiles = await getAllNormalActions(client, user, organization, isEnterpriseServer)
@@ -124,8 +146,8 @@ async function getAllActions(
 
 async function enrichActionFiles(
   client: Octokit,
-  actionFiles: Content[]
-): Promise<Content[]> {
+  actionFiles: ActionContent[]
+): Promise<ActionContent[]> {
   for (const action of actionFiles) {
     core.debug(`Enrich action information from file: [${action.downloadUrl}]`)
     // download the file in it and parse it
@@ -235,7 +257,7 @@ async function getAllNormalActions(
   username: string,
   organization: string,
   isEnterpriseServer: boolean
-): Promise<Content[]> {
+): Promise<ActionContent[]> {
   let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer)
   // search does not work on forked repos, so we need to loop over all forks manually
   let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer)
@@ -260,14 +282,21 @@ async function getActionableDockerFiles(
   username: string,
   organization: string,
   isEnterpriseServer: boolean
-): Promise<Content[]> {
+): Promise<ActionContent[]> {
   let dockerActions: DockerActionFiles[] | undefined = []
-  let actions: Content[] = []
-  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:true')
+  let actions: ActionContent[] = []
+  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:only')
 
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
+
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
+
+    if (!repo.fork) {
+      // we only want forked repos
+      continue
+    }
+
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
@@ -295,7 +324,7 @@ async function getActionableDockerFiles(
   }
 
   dockerActions?.forEach((value, index) => {
-    actions[index] = new Content()
+    actions[index] = new ActionContent()
     actions[index].name = value.name
     actions[index].repo = value.repo
     actions[index].forkedfrom = ''
@@ -312,9 +341,9 @@ async function getAllActionsFromForkedRepos(
   username: string,
   organization: string,
   isEnterpriseServer: boolean
-): Promise<Content[]> {
-  const actions: Content[] = []
-  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:true')
+): Promise<ActionContent[]> {
+  const actions: ActionContent[] = []
+  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:only')
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
@@ -533,8 +562,8 @@ async function getAllActionsUsingSearch(
   username: string,
   organization: string,
   isEnterpriseServer: boolean
-): Promise<Content[]> {
-  const actions: Content[] = []
+): Promise<ActionContent[]> {
+  const actions: ActionContent[] = []
   
   const searchResult = await getSearchResult(
     client,
@@ -600,7 +629,7 @@ async function getActionInfo(
   path: string,
   forkedFrom: string,
   isArchived: boolean = false
-): Promise<Content> {
+): Promise<ActionContent> {
   
   // Get File content
   const {data: yaml} = await client.rest.repos.getContent({
@@ -609,7 +638,7 @@ async function getActionInfo(
     path
   })
 
-  const result = new Content()
+  const result = new ActionContent()
   if ('name' in yaml && 'download_url' in yaml) {
     result.name = yaml.name
     result.repo = repo
@@ -631,5 +660,114 @@ async function getActionInfo(
 
   return result
 }
+
+
+/*
+  Workflows
+*/
+
+
+
+/*
+ Search for Reusable workflows and return a array with workflow details
+*/
+async function getAllReusableWorkflowsUsingSearch(
+  client: Octokit,
+  username: string,
+  organization: string,
+  isEnterpriseServer: boolean
+): Promise<WorkflowContent[]> {
+  const workflows: WorkflowContent[] = []
+  
+  const searchResult = await getSearchResult(
+    client,
+    username,
+    organization,
+    isEnterpriseServer,
+    '+path:.github/workflows+extension:yml+workflow_call in:file'
+  )
+
+  for (let index = 0; index < searchResult.length; index++) {
+    checkRateLimits(client, isEnterpriseServer)
+
+    const fileName = searchResult[index].name
+    const filePath = searchResult[index].path
+    const repoName = searchResult[index].repository.name
+    const repoOwner = searchResult[index].repository.owner.login
+
+    // Get the Repository Details
+    const repoDetail = await getRepoDetails(client, repoOwner, repoName)
+    const isArchived = repoDetail.archived
+    const visibility = repoDetail.visibility
+
+    // Skip workflow if it is a private repo
+    if ( includePrivateWorkflows === 'false' && visibility === 'private') {
+      continue
+    }
+
+    core.info(`Found workflow ${fileName } in ${repoName}/${filePath}`)
+
+    const result = await getWorkflowInfo(
+      client,
+      repoOwner,
+      repoName,
+      filePath,
+      isArchived,
+      visibility
+    )
+
+    workflows.push(result)
+  }
+
+  return workflows
+}
+
+/*
+ Read the workflow file and return some details 
+*/
+async function getWorkflowInfo(
+  client: Octokit,
+  owner: string,
+  repo: string,
+  path: string,
+  isArchived: boolean = false,
+  visibility: string
+): Promise<WorkflowContent> {
+  
+  // Get File content
+  const {data: yaml} = await client.rest.repos.getContent({
+    owner,
+    repo,
+    path
+  })
+
+  // Decode the content (workflow)
+  const decodeContent = (str: string):string => Buffer.from(str, 'base64').toString('binary');
+  const content = decodeContent(yaml.content)
+  const workflowYaml = YAML.parse(content)
+  
+  // Set the Results
+  const result = new WorkflowContent()
+
+  if(workflowYaml.name) {
+    result.name = workflowYaml.name
+  }else {
+    result.name = yaml.name.replace('.yml', '')
+  }
+
+  result.repo = repo
+  result.isArchived = isArchived
+  result.visibility = visibility
+  
+  if (yaml.download_url !== null) {
+    result.downloadUrl = removeTokenSetting
+      ? yaml.download_url.replace(/\?(.*)/, '')
+      : yaml.download_url
+  }
+
+  return result
+}
+
+
 
 run()
