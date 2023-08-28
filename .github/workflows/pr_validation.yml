@@ -109,7 +109,7 @@ jobs:
   test-load-from-organization-with-forks: # test the action for the organization space
     needs: test-load-from-user
     runs-on: ubuntu-latest
-    concurrency: single-run
+    concurrency: single-run-${{ github.EVENT_NAME }}-${{ github.REF }}
     name: PR - Org with forks
     env:
       organization: ${{ vars.ORGANIZATION }}
@@ -157,7 +157,7 @@ jobs:
   test-load-from-organization: # test the action for the organization space
     name: PR - Org without forks
     runs-on: ubuntu-latest
-    concurrency: single-run
+    concurrency: single-run-${{ github.EVENT_NAME }}-${{ github.REF }}
     env:
       organization: actions # load from github.com/actions
     if: always()
