@@ -9829,33 +9829,33 @@ var require_TokenExpiredError = __commonJS({
 var require_safe_buffer = __commonJS({
   "node_modules/safe-buffer/index.js"(exports, module2) {
     var buffer = require("buffer");
-    var Buffer2 = buffer.Buffer;
+    var Buffer3 = buffer.Buffer;
     function copyProps(src, dst) {
       for (var key in src) {
         dst[key] = src[key];
       }
     }
-    if (Buffer2.from && Buffer2.alloc && Buffer2.allocUnsafe && Buffer2.allocUnsafeSlow) {
+    if (Buffer3.from && Buffer3.alloc && Buffer3.allocUnsafe && Buffer3.allocUnsafeSlow) {
       module2.exports = buffer;
     } else {
       copyProps(buffer, exports);
       exports.Buffer = SafeBuffer;
     }
     function SafeBuffer(arg, encodingOrOffset, length) {
-      return Buffer2(arg, encodingOrOffset, length);
+      return Buffer3(arg, encodingOrOffset, length);
     }
-    copyProps(Buffer2, SafeBuffer);
+    copyProps(Buffer3, SafeBuffer);
     SafeBuffer.from = function(arg, encodingOrOffset, length) {
       if (typeof arg === "number") {
         throw new TypeError("Argument must not be a number");
       }
-      return Buffer2(arg, encodingOrOffset, length);
+      return Buffer3(arg, encodingOrOffset, length);
     };
     SafeBuffer.alloc = function(size, fill, encoding) {
       if (typeof size !== "number") {
         throw new TypeError("Argument must be a number");
       }
-      var buf = Buffer2(size);
+      var buf = Buffer3(size);
       if (fill !== void 0) {
         if (typeof encoding === "string") {
           buf.fill(fill, encoding);
@@ -9871,7 +9871,7 @@ var require_safe_buffer = __commonJS({
       if (typeof size !== "number") {
         throw new TypeError("Argument must be a number");
       }
-      return Buffer2(size);
+      return Buffer3(size);
     };
     SafeBuffer.allocUnsafeSlow = function(size) {
       if (typeof size !== "number") {
@@ -9885,7 +9885,7 @@ var require_safe_buffer = __commonJS({
 // node_modules/jws/lib/data-stream.js
 var require_data_stream = __commonJS({
   "node_modules/jws/lib/data-stream.js"(exports, module2) {
-    var Buffer2 = require_safe_buffer().Buffer;
+    var Buffer3 = require_safe_buffer().Buffer;
     var Stream = require("stream");
     var util = require("util");
     function DataStream(data) {
@@ -9893,11 +9893,11 @@ var require_data_stream = __commonJS({
       this.writable = true;
       this.readable = true;
       if (!data) {
-        this.buffer = Buffer2.alloc(0);
+        this.buffer = Buffer3.alloc(0);
         return this;
       }
       if (typeof data.pipe === "function") {
-        this.buffer = Buffer2.alloc(0);
+        this.buffer = Buffer3.alloc(0);
         data.pipe(this);
         return this;
       }
@@ -9915,7 +9915,7 @@ var require_data_stream = __commonJS({
     }
     util.inherits(DataStream, Stream);
     DataStream.prototype.write = function write(data) {
-      this.buffer = Buffer2.concat([this.buffer, Buffer2.from(data)]);
+      this.buffer = Buffer3.concat([this.buffer, Buffer3.from(data)]);
       this.emit("data", data);
     };
     DataStream.prototype.end = function end(data) {
@@ -9934,11 +9934,11 @@ var require_data_stream = __commonJS({
 var require_buffer_equal_constant_time = __commonJS({
   "node_modules/buffer-equal-constant-time/index.js"(exports, module2) {
     "use strict";
-    var Buffer2 = require("buffer").Buffer;
+    var Buffer3 = require("buffer").Buffer;
     var SlowBuffer = require("buffer").SlowBuffer;
     module2.exports = bufferEq;
     function bufferEq(a, b) {
-      if (!Buffer2.isBuffer(a) || !Buffer2.isBuffer(b)) {
+      if (!Buffer3.isBuffer(a) || !Buffer3.isBuffer(b)) {
         return false;
       }
       if (a.length !== b.length) {
@@ -9951,14 +9951,14 @@ var require_buffer_equal_constant_time = __commonJS({
       return c === 0;
     }
     bufferEq.install = function() {
-      Buffer2.prototype.equal = SlowBuffer.prototype.equal = function equal(that) {
+      Buffer3.prototype.equal = SlowBuffer.prototype.equal = function equal(that) {
         return bufferEq(this, that);
       };
     };
-    var origBufEqual = Buffer2.prototype.equal;
+    var origBufEqual = Buffer3.prototype.equal;
     var origSlowBufEqual = SlowBuffer.prototype.equal;
     bufferEq.restore = function() {
-      Buffer2.prototype.equal = origBufEqual;
+      Buffer3.prototype.equal = origBufEqual;
       SlowBuffer.prototype.equal = origSlowBufEqual;
     };
   }
@@ -9992,7 +9992,7 @@ var require_param_bytes_for_alg = __commonJS({
 var require_ecdsa_sig_formatter = __commonJS({
   "node_modules/ecdsa-sig-formatter/src/ecdsa-sig-formatter.js"(exports, module2) {
     "use strict";
-    var Buffer2 = require_safe_buffer().Buffer;
+    var Buffer3 = require_safe_buffer().Buffer;
     var getParamBytesForAlg = require_param_bytes_for_alg();
     var MAX_OCTET = 128;
     var CLASS_UNIVERSAL = 0;
@@ -10005,10 +10005,10 @@ var require_ecdsa_sig_formatter = __commonJS({
       return base64.replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
     }
     function signatureAsBuffer(signature) {
-      if (Buffer2.isBuffer(signature)) {
+      if (Buffer3.isBuffer(signature)) {
         return signature;
       } else if ("string" === typeof signature) {
-        return Buffer2.from(signature, "base64");
+        return Buffer3.from(signature, "base64");
       }
       throw new TypeError("ECDSA signature must be a Base64 string or a Buffer");
     }
@@ -10056,7 +10056,7 @@ var require_ecdsa_sig_formatter = __commonJS({
         throw new Error('Expected to consume entire buffer, but "' + (inputLength - offset) + '" bytes remain');
       }
       var rPadding = paramBytes - rLength, sPadding = paramBytes - sLength;
-      var dst = Buffer2.allocUnsafe(rPadding + rLength + sPadding + sLength);
+      var dst = Buffer3.allocUnsafe(rPadding + rLength + sPadding + sLength);
       for (offset = 0; offset < rPadding; ++offset) {
         dst[offset] = 0;
       }
@@ -10094,7 +10094,7 @@ var require_ecdsa_sig_formatter = __commonJS({
       var sLength = paramBytes - sPadding;
       var rsBytes = 1 + 1 + rLength + 1 + 1 + sLength;
       var shortLength = rsBytes < MAX_OCTET;
-      var dst = Buffer2.allocUnsafe((shortLength ? 2 : 3) + rsBytes);
+      var dst = Buffer3.allocUnsafe((shortLength ? 2 : 3) + rsBytes);
       var offset = 0;
       dst[offset++] = ENCODED_TAG_SEQ;
       if (shortLength) {
@@ -10132,7 +10132,7 @@ var require_ecdsa_sig_formatter = __commonJS({
 var require_jwa = __commonJS({
   "node_modules/jwa/index.js"(exports, module2) {
     var bufferEqual = require_buffer_equal_constant_time();
-    var Buffer2 = require_safe_buffer().Buffer;
+    var Buffer3 = require_safe_buffer().Buffer;
     var crypto4 = require("crypto");
     var formatEcdsa = require_ecdsa_sig_formatter();
     var util = require("util");
@@ -10146,7 +10146,7 @@ var require_jwa = __commonJS({
       MSG_INVALID_SECRET += "or a KeyObject";
     }
     function checkIsPublicKey(key) {
-      if (Buffer2.isBuffer(key)) {
+      if (Buffer3.isBuffer(key)) {
         return;
       }
       if (typeof key === "string") {
@@ -10169,7 +10169,7 @@ var require_jwa = __commonJS({
       }
     }
     function checkIsPrivateKey(key) {
-      if (Buffer2.isBuffer(key)) {
+      if (Buffer3.isBuffer(key)) {
         return;
       }
       if (typeof key === "string") {
@@ -10181,7 +10181,7 @@ var require_jwa = __commonJS({
       throw typeError(MSG_INVALID_SIGNER_KEY);
     }
     function checkIsSecretKey(key) {
-      if (Buffer2.isBuffer(key)) {
+      if (Buffer3.isBuffer(key)) {
         return;
       }
       if (typeof key === "string") {
@@ -10219,7 +10219,7 @@ var require_jwa = __commonJS({
       return new TypeError(errMsg);
     }
     function bufferOrString(obj) {
-      return Buffer2.isBuffer(obj) || typeof obj === "string";
+      return Buffer3.isBuffer(obj) || typeof obj === "string";
     }
     function normalizeInput(thing) {
       if (!bufferOrString(thing))
@@ -10238,7 +10238,7 @@ var require_jwa = __commonJS({
     function createHmacVerifier(bits) {
       return function verify(thing, signature, secret) {
         var computedSig = createHmacSigner(bits)(thing, secret);
-        return bufferEqual(Buffer2.from(signature), Buffer2.from(computedSig));
+        return bufferEqual(Buffer3.from(signature), Buffer3.from(computedSig));
       };
     }
     function createKeySigner(bits) {
@@ -10344,11 +10344,11 @@ var require_jwa = __commonJS({
 // node_modules/jws/lib/tostring.js
 var require_tostring = __commonJS({
   "node_modules/jws/lib/tostring.js"(exports, module2) {
-    var Buffer2 = require("buffer").Buffer;
+    var Buffer3 = require("buffer").Buffer;
     module2.exports = function toString(obj) {
       if (typeof obj === "string")
         return obj;
-      if (typeof obj === "number" || Buffer2.isBuffer(obj))
+      if (typeof obj === "number" || Buffer3.isBuffer(obj))
         return obj.toString();
       return JSON.stringify(obj);
     };
@@ -10358,14 +10358,14 @@ var require_tostring = __commonJS({
 // node_modules/jws/lib/sign-stream.js
 var require_sign_stream = __commonJS({
   "node_modules/jws/lib/sign-stream.js"(exports, module2) {
-    var Buffer2 = require_safe_buffer().Buffer;
+    var Buffer3 = require_safe_buffer().Buffer;
     var DataStream = require_data_stream();
     var jwa = require_jwa();
     var Stream = require("stream");
     var toString = require_tostring();
     var util = require("util");
     function base64url(string2, encoding) {
-      return Buffer2.from(string2, encoding).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
+      return Buffer3.from(string2, encoding).toString("base64").replace(/=/g, "").replace(/\+/g, "-").replace(/\//g, "_");
     }
     function jwsSecuredInput(header, payload, encoding) {
       encoding = encoding || "utf8";
@@ -10428,7 +10428,7 @@ var require_sign_stream = __commonJS({
 // node_modules/jws/lib/verify-stream.js
 var require_verify_stream = __commonJS({
   "node_modules/jws/lib/verify-stream.js"(exports, module2) {
-    var Buffer2 = require_safe_buffer().Buffer;
+    var Buffer3 = require_safe_buffer().Buffer;
     var DataStream = require_data_stream();
     var jwa = require_jwa();
     var Stream = require("stream");
@@ -10449,7 +10449,7 @@ var require_verify_stream = __commonJS({
     }
     function headerFromJWS(jwsSig) {
       var encodedHeader = jwsSig.split(".", 1)[0];
-      return safeJsonParse(Buffer2.from(encodedHeader, "base64").toString("binary"));
+      return safeJsonParse(Buffer3.from(encodedHeader, "base64").toString("binary"));
     }
     function securedInputFromJWS(jwsSig) {
       return jwsSig.split(".", 2).join(".");
@@ -10460,7 +10460,7 @@ var require_verify_stream = __commonJS({
     function payloadFromJWS(jwsSig, encoding) {
       encoding = encoding || "utf8";
       var payload = jwsSig.split(".")[1];
-      return Buffer2.from(payload, "base64").toString(encoding);
+      return Buffer3.from(payload, "base64").toString(encoding);
     }
     function isValidJws(string2) {
       return JWS_REGEX.test(string2) && !!headerFromJWS(string2);
@@ -14101,7 +14101,7 @@ var require_lodash = __commonJS({
         var reIsNative = RegExp2(
           "^" + funcToString.call(hasOwnProperty).replace(reRegExpChar, "\\$&").replace(/hasOwnProperty|(function).*?(?=\\\()| for .+?(?=\\\])/g, "$1.*?") + "$"
         );
-        var Buffer2 = moduleExports ? context.Buffer : undefined2, Symbol2 = context.Symbol, Uint8Array2 = context.Uint8Array, allocUnsafe = Buffer2 ? Buffer2.allocUnsafe : undefined2, getPrototype = overArg(Object2.getPrototypeOf, Object2), objectCreate = Object2.create, propertyIsEnumerable = objectProto.propertyIsEnumerable, splice = arrayProto.splice, spreadableSymbol = Symbol2 ? Symbol2.isConcatSpreadable : undefined2, symIterator = Symbol2 ? Symbol2.iterator : undefined2, symToStringTag = Symbol2 ? Symbol2.toStringTag : undefined2;
+        var Buffer3 = moduleExports ? context.Buffer : undefined2, Symbol2 = context.Symbol, Uint8Array2 = context.Uint8Array, allocUnsafe = Buffer3 ? Buffer3.allocUnsafe : undefined2, getPrototype = overArg(Object2.getPrototypeOf, Object2), objectCreate = Object2.create, propertyIsEnumerable = objectProto.propertyIsEnumerable, splice = arrayProto.splice, spreadableSymbol = Symbol2 ? Symbol2.isConcatSpreadable : undefined2, symIterator = Symbol2 ? Symbol2.iterator : undefined2, symToStringTag = Symbol2 ? Symbol2.toStringTag : undefined2;
         var defineProperty = function() {
           try {
             var func = getNative(Object2, "defineProperty");
@@ -14111,7 +14111,7 @@ var require_lodash = __commonJS({
           }
         }();
         var ctxClearTimeout = context.clearTimeout !== root.clearTimeout && context.clearTimeout, ctxNow = Date2 && Date2.now !== root.Date.now && Date2.now, ctxSetTimeout = context.setTimeout !== root.setTimeout && context.setTimeout;
-        var nativeCeil = Math2.ceil, nativeFloor = Math2.floor, nativeGetSymbols = Object2.getOwnPropertySymbols, nativeIsBuffer = Buffer2 ? Buffer2.isBuffer : undefined2, nativeIsFinite = context.isFinite, nativeJoin = arrayProto.join, nativeKeys = overArg(Object2.keys, Object2), nativeMax = Math2.max, nativeMin = Math2.min, nativeNow = Date2.now, nativeParseInt = context.parseInt, nativeRandom = Math2.random, nativeReverse = arrayProto.reverse;
+        var nativeCeil = Math2.ceil, nativeFloor = Math2.floor, nativeGetSymbols = Object2.getOwnPropertySymbols, nativeIsBuffer = Buffer3 ? Buffer3.isBuffer : undefined2, nativeIsFinite = context.isFinite, nativeJoin = arrayProto.join, nativeKeys = overArg(Object2.keys, Object2), nativeMax = Math2.max, nativeMin = Math2.min, nativeNow = Date2.now, nativeParseInt = context.parseInt, nativeRandom = Math2.random, nativeReverse = arrayProto.reverse;
         var DataView = getNative(context, "DataView"), Map2 = getNative(context, "Map"), Promise2 = getNative(context, "Promise"), Set2 = getNative(context, "Set"), WeakMap = getNative(context, "WeakMap"), nativeCreate = getNative(Object2, "create");
         var metaMap = WeakMap && new WeakMap();
         var realNames = {};
@@ -32486,7 +32486,8 @@ var require_main = __commonJS({
 // src/main.ts
 var main_exports = {};
 __export(main_exports, {
-  Content: () => Content
+  ActionContent: () => ActionContent,
+  WorkflowContent: () => WorkflowContent
 });
 module.exports = __toCommonJS(main_exports);
 var core3 = __toESM(require_core());
@@ -32590,11 +32591,15 @@ function getReadmeContent(client, repo, owner) {
 
 // src/main.ts
 var import_child_process2 = require("child_process");
+var import_buffer = require("buffer");
+var import_yaml2 = __toESM(require_dist());
 import_dotenv.default.config();
 var getInputOrEnv = (input) => core3.getInput(input) || process.env[input] || "";
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 var hostname = "github.com";
+var scanForReusableWorkflows = getInputOrEnv("scanForReusableWorkflows");
+var includePrivateWorkflows = getInputOrEnv("includePrivateWorkflows");
 function run() {
   return __async(this, null, function* () {
     core3.info("Starting");
@@ -32629,9 +32634,14 @@ function run() {
         return;
       }
       let actionFiles = yield getAllActions(octokit, user, organization, isEnterpriseServer);
+      let workflows = [];
+      if (scanForReusableWorkflows === "true") {
+        workflows = yield getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer);
+      }
       const output = {
         lastUpdated: GetDateFormatted(/* @__PURE__ */ new Date()),
         actions: actionFiles,
+        workflows,
         organization,
         user
       };
@@ -32646,7 +32656,9 @@ function run() {
     }
   });
 }
-var Content = class {
+var ActionContent = class {
+};
+var WorkflowContent = class {
 };
 function getAllActions(client, user, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
@@ -32760,10 +32772,13 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
   return __async(this, null, function* () {
     let dockerActions = [];
     let actions = [];
-    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:true");
+    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:only");
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
+      if (!repo.fork) {
+        continue;
+      }
       const repoName = repo.name;
       const repoOwner = repo.owner ? repo.owner.login : "";
       core3.debug(`Checking repo [${repoName}] for action files`);
@@ -32783,7 +32798,7 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
       }
     }
     dockerActions == null ? void 0 : dockerActions.forEach((value, index) => {
-      actions[index] = new Content();
+      actions[index] = new ActionContent();
       actions[index].name = value.name;
       actions[index].repo = value.repo;
       actions[index].forkedfrom = "";
@@ -32798,7 +32813,7 @@ function getActionableDockerFiles(client, username, organization, isEnterpriseSe
 function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
   return __async(this, null, function* () {
     const actions = [];
-    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:true");
+    const searchResult = yield getSearchResult(client, username, organization, isEnterpriseServer, "+fork:only");
     core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
     for (let index = 0; index < searchResult.length; index++) {
       const repo = searchResult[index];
@@ -32962,9 +32977,6 @@ function getAllActionsUsingSearch(client, username, organization, isEnterpriseSe
       const filePath = searchResult[index].path;
       const repoName = searchResult[index].repository.name;
       const repoOwner = searchResult[index].repository.owner.login;
-      console.log(">-==============================================");
-      console.log(searchResult[index]);
-      console.log("<-==============================================");
       if (fileName == "action.yaml" || fileName == "action.yml") {
         core3.info(`Found action in ${repoName}/${filePath}`);
         const repoDetail = yield getRepoDetails(client, repoOwner, repoName);
@@ -33004,7 +33016,7 @@ function getActionInfo(client, owner, repo, path2, forkedFrom, isArchived = fals
       repo,
       path: path2
     });
-    const result = new Content();
+    const result = new ActionContent();
     if ("name" in yaml && "download_url" in yaml) {
       result.name = yaml.name;
       result.repo = repo;
@@ -33023,10 +33035,72 @@ function getActionInfo(client, owner, repo, path2, forkedFrom, isArchived = fals
     return result;
   });
 }
+function getAllReusableWorkflowsUsingSearch(client, username, organization, isEnterpriseServer) {
+  return __async(this, null, function* () {
+    const workflows = [];
+    const searchResult = yield getSearchResult(
+      client,
+      username,
+      organization,
+      isEnterpriseServer,
+      "+path:.github/workflows+extension:yml+workflow_call in:file"
+    );
+    for (let index = 0; index < searchResult.length; index++) {
+      checkRateLimits(client, isEnterpriseServer);
+      const fileName = searchResult[index].name;
+      const filePath = searchResult[index].path;
+      const repoName = searchResult[index].repository.name;
+      const repoOwner = searchResult[index].repository.owner.login;
+      const repoDetail = yield getRepoDetails(client, repoOwner, repoName);
+      const isArchived = repoDetail.archived;
+      const visability = repoDetail.visibility;
+      if (includePrivateWorkflows === "false" && visability === "private") {
+        continue;
+      }
+      core3.info(`Found workflow ${fileName} in ${repoName}/${filePath}`);
+      const result = yield getWorkflowInfo(
+        client,
+        repoOwner,
+        repoName,
+        filePath,
+        isArchived,
+        visability
+      );
+      workflows.push(result);
+    }
+    return workflows;
+  });
+}
+function getWorkflowInfo(client, owner, repo, path2, isArchived = false, visability) {
+  return __async(this, null, function* () {
+    const { data: yaml } = yield client.rest.repos.getContent({
+      owner,
+      repo,
+      path: path2
+    });
+    const decodeContent = (str) => import_buffer.Buffer.from(str, "base64").toString("binary");
+    const content = decodeContent(yaml.content);
+    const workflowYaml = import_yaml2.default.parse(content);
+    const result = new WorkflowContent();
+    if (workflowYaml.name) {
+      result.name = workflowYaml.name;
+    } else {
+      result.name = yaml.name.replace(".yml", "");
+    }
+    result.repo = repo;
+    result.isArchived = isArchived;
+    result.visability = visability;
+    if (yaml.download_url !== null) {
+      result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
+    }
+    return result;
+  });
+}
 run();
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  Content
+  ActionContent,
+  WorkflowContent
 });
 /*! Bundled license information:
 
