@@ -1,8 +1,6 @@
 name: PR-Testing the action
 
-on: 
-  push:
-  
+on:   
   pull_request:
 
   workflow_dispatch:
@@ -17,7 +15,7 @@ jobs:
     env:
       user: ${{ vars.USER }}
     steps: 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -109,12 +107,12 @@ jobs:
   test-load-from-organization-with-forks: # test the action for the organization space
     needs: test-load-from-user
     runs-on: ubuntu-latest
-    concurrency: single-run
+    concurrency: single-run-${{ github.EVENT_NAME }}-${{ github.REF }}
     name: PR - Org with forks
     env:
       organization: ${{ vars.ORGANIZATION }}
     steps: 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -157,12 +155,12 @@ jobs:
   test-load-from-organization: # test the action for the organization space
     name: PR - Org without forks
     runs-on: ubuntu-latest
-    concurrency: single-run
+    concurrency: single-run-${{ github.EVENT_NAME }}-${{ github.REF }}
     env:
       organization: actions # load from github.com/actions
     if: always()
     steps: 
-      - uses: actions/checkout@8e5e7e5ab8b370d6c329ec480221332ada57f0ab # v3.5.2
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 

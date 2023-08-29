@@ -32598,6 +32598,8 @@ var getInputOrEnv = (input) => core3.getInput(input) || process.env[input] || ""
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 var hostname = "github.com";
+var scanForReusableWorkflows = getInputOrEnv("scanForReusableWorkflows");
+var includePrivateWorkflows = getInputOrEnv("includePrivateWorkflows");
 function run() {
   return __async(this, null, function* () {
     core3.info("Starting");
@@ -32632,7 +32634,10 @@ function run() {
         return;
       }
       let actionFiles = yield getAllActions(octokit, user, organization, isEnterpriseServer);
-      let workflows = yield getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer);
+      let workflows = [];
+      if (scanForReusableWorkflows === "true") {
+        workflows = yield getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer);
+      }
       const output = {
         lastUpdated: GetDateFormatted(/* @__PURE__ */ new Date()),
         actions: actionFiles,
@@ -33046,22 +33051,27 @@ function getAllReusableWorkflowsUsingSearch(client, username, organization, isEn
       const filePath = searchResult[index].path;
       const repoName = searchResult[index].repository.name;
       const repoOwner = searchResult[index].repository.owner.login;
-      core3.info(`Found workflow ${fileName} in ${repoName}/${filePath}`);
       const repoDetail = yield getRepoDetails(client, repoOwner, repoName);
       const isArchived = repoDetail.archived;
+      const visability = repoDetail.visibility;
+      if (includePrivateWorkflows === "false" && visability === "private") {
+        continue;
+      }
+      core3.info(`Found workflow ${fileName} in ${repoName}/${filePath}`);
       const result = yield getWorkflowInfo(
         client,
         repoOwner,
         repoName,
         filePath,
-        isArchived
+        isArchived,
+        visability
       );
       workflows.push(result);
     }
     return workflows;
   });
 }
-function getWorkflowInfo(client, owner, repo, path2, isArchived = false) {
+function getWorkflowInfo(client, owner, repo, path2, isArchived = false, visability) {
   return __async(this, null, function* () {
     const { data: yaml } = yield client.rest.repos.getContent({
       owner,
@@ -33079,6 +33089,7 @@ function getWorkflowInfo(client, owner, repo, path2, isArchived = false) {
     }
     result.repo = repo;
     result.isArchived = isArchived;
+    result.visability = visability;
     if (yaml.download_url !== null) {
       result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
     }

@@ -22,6 +22,8 @@ const getInputOrEnv = (input: string) =>
 const removeTokenSetting = getInputOrEnv('removeToken')
 const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
 const hostname = 'github.com' // todo: support GHES
+const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
+const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 
 async function run(): Promise<void> {
   core.info('Starting')
@@ -63,9 +65,12 @@ async function run(): Promise<void> {
       return
     }
 
-    //let actionFiles: ActionContent[] = []
     let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
-    let workflows = await getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer)
+    let workflows: WorkflowContent[] = []
+    
+    if (scanForReusableWorkflows === 'true') {
+      workflows = await getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer)
+    }
 
     // output the json we want to output
     const output: {
@@ -110,15 +115,12 @@ export class ActionContent {
 
 export class WorkflowContent {
   name: string | undefined
-  //owner: string | undefined
   repo: string | undefined
   downloadUrl: string | undefined
-  //author: string | undefined
   description: string | undefined
   forkedfrom: string | undefined
-  //readme: string | undefined
-  //using: string | undefined
   isArchived: boolean | undefined
+  visibility: string | undefined
 }
 
 async function getAllActions(
@@ -693,19 +695,25 @@ async function getAllReusableWorkflowsUsingSearch(
     const repoName = searchResult[index].repository.name
     const repoOwner = searchResult[index].repository.owner.login
 
-    // Push workflow to the list
-    core.info(`Found workflow ${fileName } in ${repoName}/${filePath}`)
-
     // Get the Repository Details
     const repoDetail = await getRepoDetails(client, repoOwner, repoName)
     const isArchived = repoDetail.archived
+    const visibility = repoDetail.visibility
+
+    // Skip workflow if it is a private repo
+    if ( includePrivateWorkflows === 'false' && visibility === 'private') {
+      continue
+    }
+
+    core.info(`Found workflow ${fileName } in ${repoName}/${filePath}`)
 
     const result = await getWorkflowInfo(
       client,
       repoOwner,
       repoName,
       filePath,
-      isArchived
+      isArchived,
+      visibility
     )
 
     workflows.push(result)
@@ -722,7 +730,8 @@ async function getWorkflowInfo(
   owner: string,
   repo: string,
   path: string,
-  isArchived: boolean = false
+  isArchived: boolean = false,
+  visibility: string
 ): Promise<WorkflowContent> {
   
   // Get File content
@@ -746,9 +755,9 @@ async function getWorkflowInfo(
     result.name = yaml.name.replace('.yml', '')
   }
 
-  //result.name = workflowYaml.name
   result.repo = repo
   result.isArchived = isArchived
+  result.visibility = visibility
   
   if (yaml.download_url !== null) {
     result.downloadUrl = removeTokenSetting
