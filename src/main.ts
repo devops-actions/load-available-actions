@@ -18,10 +18,16 @@ dotenv.config()
 
 const getInputOrEnv = (input: string) =>
   core.getInput(input) || process.env[input] || ''
+
+function getHostName(): string {
+  const hostName = process.env['GITHUB_SERVER_URL'] || 'github.com'
+  return hostName
+}
+
 //Optional values
 const removeTokenSetting = getInputOrEnv('removeToken')
 const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
-const hostname = 'github.com' // todo: support GHES
+const hostname = getHostName()
 const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 
@@ -397,7 +403,7 @@ async function getAllActionsFromForkedRepos(
 
 function cloneRepo(repo: string, owner: string): string {
   try {
-    const repolink = `https://${hostname}/${owner}/${repo}.git` // todo: support GHES
+    const repolink = `https://${hostname}/${owner}/${repo}.git`
     // create a temp directory
     const repoPath = 'actions'
     if (fs.existsSync(repoPath)) {
