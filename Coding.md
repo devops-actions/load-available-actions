@@ -1,10 +1,9 @@
 Before starting VsCode with this repo, don't forget to load the default values for local testing
 
-
 Set these before starting VsCode:
 ``` shell    
-    process.env.PAT = ''
-    process.env.GITHUB_USER = 'rajbos'
+    process.env.PAT='you PAT'
+    process.env.GITHUB_USER='rajbos'
 ```
 
 # Publishing
