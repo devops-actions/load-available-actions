@@ -15,7 +15,7 @@ jobs:
     env:
       user: ${{ vars.USER }}
     steps: 
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -112,7 +112,7 @@ jobs:
     env:
       organization: ${{ vars.ORGANIZATION }}
     steps: 
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -160,7 +160,7 @@ jobs:
       organization: actions # load from github.com/actions
     if: always()
     steps: 
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
+      - uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
