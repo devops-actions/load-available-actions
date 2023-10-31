@@ -1595,7 +1595,7 @@ var require_oidc_utils = __commonJS({
  
         Error Code : ${error2.statusCode}
  
-        Error Message: ${error2.result.message}`);
+        Error Message: ${error2.message}`);
           });
           const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
           if (!id_token) {
@@ -33149,16 +33149,17 @@ async function getForkParent(repoDetails) {
   }
   return parentInfo;
 }
-async function getActionInfo(client, owner, repo, path2, forkedFrom, isArchived = false) {
+async function getActionInfo(client, owner, repo, actionFilePath, forkedFrom, isArchived = false) {
   const { data: yaml } = await client.rest.repos.getContent({
     owner,
     repo,
-    path: path2
+    path: actionFilePath
   });
   const result = new ActionContent();
   if ("name" in yaml && "download_url" in yaml) {
     result.name = yaml.name;
     result.repo = repo;
+    result.path = actionFilePath.includes("/") ? import_path.default.dirname(actionFilePath) : "";
     result.forkedfrom = forkedFrom;
     result.isArchived = isArchived;
     if (yaml.download_url !== null) {
