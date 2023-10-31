@@ -110,6 +110,7 @@ export class ActionContent {
   name: string | undefined
   owner: string | undefined
   repo: string | undefined
+  path: string | undefined
   downloadUrl: string | undefined
   author: string | undefined
   description: string | undefined
@@ -632,7 +633,7 @@ async function getActionInfo(
   client: Octokit,
   owner: string,
   repo: string,
-  path: string,
+  actionFilePath: string,
   forkedFrom: string,
   isArchived: boolean = false
 ): Promise<ActionContent> {
@@ -641,13 +642,15 @@ async function getActionInfo(
   const {data: yaml} = await client.rest.repos.getContent({
     owner,
     repo,
-    path
+    path: actionFilePath,
   })
+
 
   const result = new ActionContent()
   if ('name' in yaml && 'download_url' in yaml) {
     result.name = yaml.name
     result.repo = repo
+    result.path = actionFilePath.includes("/") ? path.dirname(actionFilePath) : ""
     result.forkedfrom = forkedFrom
     result.isArchived = isArchived
     if (yaml.download_url !== null) {
