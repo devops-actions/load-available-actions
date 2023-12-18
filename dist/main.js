@@ -33341,7 +33341,7 @@ async function getAllActionsFromForkedRepos(client, username, organization, isEn
 }
 function cloneRepo(repo, owner) {
   try {
-    const repolink = `https://${hostname}/${owner}/${repo}.git`;
+    const repolink = `${hostname}/${owner}/${repo}.git`;
     const repoPath = "actions";
     if (import_fs2.default.existsSync(repoPath)) {
       core3.debug("folder already exists, deleting");
@@ -33564,6 +33564,7 @@ async function getWorkflowInfo(client, owner, repo, path2, isArchived = false, v
   result.repo = repo;
   result.isArchived = isArchived;
   result.visibility = visibility;
+  result.owner = owner;
   if (yaml.download_url !== null) {
     result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
   }
