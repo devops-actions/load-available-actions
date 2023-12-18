@@ -122,6 +122,7 @@ export class ActionContent {
 
 export class WorkflowContent {
   name: string | undefined
+  owner: string | undefined
   repo: string | undefined
   downloadUrl: string | undefined
   description: string | undefined
@@ -671,13 +672,6 @@ async function getActionInfo(
   return result
 }
 
-
-/*
-  Workflows
-*/
-
-
-
 /*
  Search for Reusable workflows and return a array with workflow details
 */
@@ -768,6 +762,7 @@ async function getWorkflowInfo(
   result.repo = repo
   result.isArchived = isArchived
   result.visibility = visibility
+  result.owner = owner
   
   if (yaml.download_url !== null) {
     result.downloadUrl = removeTokenSetting
@@ -777,7 +772,5 @@ async function getWorkflowInfo(
 
   return result
 }
-
-
 
 run()
