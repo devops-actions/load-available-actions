@@ -405,7 +405,7 @@ async function getAllActionsFromForkedRepos(
 
 function cloneRepo(repo: string, owner: string): string {
   try {
-    const repolink = `https://${hostname}/${owner}/${repo}.git`
+    const repolink = `${hostname}/${owner}/${repo}.git`
     // create a temp directory
     const repoPath = 'actions'
     if (fs.existsSync(repoPath)) {
