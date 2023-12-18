@@ -13,6 +13,7 @@ import {parseYAML} from './utils'
 import {execSync} from 'child_process'
 import {Buffer} from "buffer"
 import YAML from 'yaml'
+import fetch from "node-fetch"
 
 dotenv.config()
 
@@ -57,7 +58,10 @@ async function run(): Promise<void> {
 
     const octokit = new Octokit({
       auth: PAT,
-      baseUrl: baseUrl
+      baseUrl: baseUrl,
+      request: {
+        fetch: fetch
+      }
     })
 
     try {
