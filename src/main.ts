@@ -122,6 +122,7 @@ export class ActionContent {
 
 export class WorkflowContent {
   name: string | undefined
+  owner: string | undefined
   repo: string | undefined
   downloadUrl: string | undefined
   description: string | undefined
@@ -404,7 +405,7 @@ async function getAllActionsFromForkedRepos(
 
 function cloneRepo(repo: string, owner: string): string {
   try {
-    const repolink = `https://${hostname}/${owner}/${repo}.git`
+    const repolink = `${hostname}/${owner}/${repo}.git`
     // create a temp directory
     const repoPath = 'actions'
     if (fs.existsSync(repoPath)) {
@@ -649,6 +650,7 @@ async function getActionInfo(
   const result = new ActionContent()
   if ('name' in yaml && 'download_url' in yaml) {
     result.name = yaml.name
+    result.owner = owner
     result.repo = repo
     result.path = actionFilePath.includes("/") ? path.dirname(actionFilePath) : ""
     result.forkedfrom = forkedFrom
@@ -669,13 +671,6 @@ async function getActionInfo(
 
   return result
 }
-
-
-/*
-  Workflows
-*/
-
-
 
 /*
  Search for Reusable workflows and return a array with workflow details
@@ -767,6 +762,7 @@ async function getWorkflowInfo(
   result.repo = repo
   result.isArchived = isArchived
   result.visibility = visibility
+  result.owner = owner
   
   if (yaml.download_url !== null) {
     result.downloadUrl = removeTokenSetting
@@ -776,7 +772,5 @@ async function getWorkflowInfo(
 
   return result
 }
-
-
 
 run()
