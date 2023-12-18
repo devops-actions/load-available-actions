@@ -105,28 +105,23 @@ async function run(): Promise<void> {
     core.setFailed(`Error running action: : ${error.message}`)
   }
 }
-
-export class ActionContent {
+class ContentBase{
   name: string | undefined
-  owner: string | undefined
   repo: string | undefined
   path: string | undefined
   downloadUrl: string | undefined
-  author: string | undefined
   description: string | undefined
   forkedfrom: string | undefined
-  readme: string | undefined
-  using: string | undefined
   isArchived: boolean | undefined
 }
+export class ActionContent extends ContentBase{
+  owner: string | undefined
+  author: string | undefined
+  readme: string | undefined
+  using: string | undefined
+}
 
-export class WorkflowContent {
-  name: string | undefined
-  repo: string | undefined
-  downloadUrl: string | undefined
-  description: string | undefined
-  forkedfrom: string | undefined
-  isArchived: boolean | undefined
+export class WorkflowContent extends ContentBase{
   visibility: string | undefined
 }
 
@@ -138,6 +133,7 @@ async function getAllActions(
 
   // get all action files (action.yml and action.yaml) from the user or organization
   let actionFiles = await getAllNormalActions(client, user, organization, isEnterpriseServer)
+
   // load the information inside of the action definition files
   actionFiles = await enrichActionFiles(client, actionFiles)
 
@@ -587,7 +583,6 @@ async function getAllActionsUsingSearch(
     const filePath = searchResult[index].path
     const repoName = searchResult[index].repository.name
     const repoOwner = searchResult[index].repository.owner.login
-
     // Push file to action list if filename matches action.yaml or action.yml
     if (fileName == 'action.yaml' || fileName == 'action.yml') {
       core.info(`Found action in ${repoName}/${filePath}`)

@@ -22,11 +22,9 @@ export function parseYAML(
 
   try {
     const parsed = YAML.parse(content)
-    name = parsed.name ? sanitize(parsed.name) : defaultValue
-    author = parsed.author ? sanitize(parsed.author) : defaultValue
-    description = parsed.description
-      ? sanitize(parsed.description)
-      : defaultValue
+    name = removeGreaterLessThan(parsed.name) || defaultValue
+    author = removeGreaterLessThan(parsed.author) || defaultValue
+    description = removeGreaterLessThan(parsed.description) ||  defaultValue
 
     if (parsed.runs) {
       using = parsed.runs.using ? sanitize(parsed.runs.using) : defaultValue
@@ -45,6 +43,7 @@ export function parseYAML(
   }
   return {name, author, description, using}
 }
+const removeGreaterLessThan = (item:string) => item.replace(/\>/g,'&#62;').replace(/\</g,'&#60;')
 
 export function sanitize(value: string) {
   return string.sanitize.keepSpace(value)
