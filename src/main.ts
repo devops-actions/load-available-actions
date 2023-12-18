@@ -649,6 +649,7 @@ async function getActionInfo(
   const result = new ActionContent()
   if ('name' in yaml && 'download_url' in yaml) {
     result.name = yaml.name
+    result.owner = owner
     result.repo = repo
     result.path = actionFilePath.includes("/") ? path.dirname(actionFilePath) : ""
     result.forkedfrom = forkedFrom
