@@ -18,7 +18,7 @@ jobs:
     env:
       user: ${{ vars.USER }}
     steps: 
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -68,7 +68,7 @@ jobs:
       # upload the second result file as an artefact 
       - name: Upload result file as artefact
         if: always()
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with: 
           name: actions-user
           path: ${{ steps.load-actions.outputs.actions-file-path }}
@@ -92,7 +92,7 @@ jobs:
 
       # upload the second result file as an artefact
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with: 
           name: actions-user-second-run
           path: ${{ steps.load-actions-second-run.outputs.actions-file-path }}
@@ -117,7 +117,7 @@ jobs:
     env:
       organization: ${{ vars.ORGANIZATION }}
     steps: 
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -151,7 +151,7 @@ jobs:
           fi
             
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         if: always()
         with: 
           name: actions-organization-with-forks
@@ -168,7 +168,7 @@ jobs:
       organization: actions # load from github.com/actions
     if: always()
     steps: 
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -201,7 +201,7 @@ jobs:
           fi
             
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
+        uses: actions/upload-artifact@65462800fd760344b1a7b4382951275a0abb4808 # v4.3.3
         with: 
           name: actions-organization
           path: ${{ steps.load-actions.outputs.actions-file-path }}
@@ -213,7 +213,7 @@ jobs:
       - test-load-from-organization
       - test-load-from-organization-with-forks
     steps:
-      - uses: actions/download-artifact@87c55149d96e628cc2ef7e6fc2aab372015aec85 # v4.1.3
+      - uses: actions/download-artifact@65a9edc5881444af0b9093a5e628f2fe47ea3b2e # v4.1.7
         
       - run: |
           ls -la
