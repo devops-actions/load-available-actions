@@ -33,7 +33,7 @@
     "yaml": "^2.5.0"
   },
   "devDependencies": {
-    "@types/node": "^20.14.9",
+    "@types/node": "^22.0.2",
     "@typescript-eslint/parser": "^8.0.0",
     "@vercel/ncc": "^0.38.1",
     "ansi-regex": ">=5.0.1",
