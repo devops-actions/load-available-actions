@@ -30,7 +30,7 @@
     "node-fetch": "^3.3.2",
     "octokit": "^4.0.2",
     "string-sanitizer": "^2.0.2",
-    "yaml": "^2.5.0"
+    "yaml": "^2.5.1"
   },
   "devDependencies": {
     "@types/node": "^22.5.2",
