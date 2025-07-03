@@ -1,6 +1,5 @@
 import {wait} from '../src/wait'
 import {expect, test} from '@jest/globals'
-import {parseYAML} from '../src/utils'
 
 test('throws invalid number', async () => {
   const input = parseInt('foo', 10)
