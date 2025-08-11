@@ -13,8 +13,17 @@ permissions: read-all
     
 jobs:
   test-load-from-user: # test the action for the user space
-    name: Organization with lots of actions # testing the timeout / GitHub ratelimiting
-    runs-on: ubuntu-latest
+    name: Organization with lots of actions (${{ matrix.arch }}) # testing the timeout / GitHub ratelimiting
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            arch: x64
+            artifact-name: actions-user-x64
+          - os: ubuntu-22.04-arm64
+            arch: arm64
+            artifact-name: actions-user-arm64
     env:
       organization: actions-marketplace-validations
     steps: 
@@ -70,66 +79,5 @@ jobs:
         if: ${{ steps.load-actions.conclusion == 'success' }}}
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with: 
-          name: actions-user-x64
-          path: ${{ steps.load-actions.outputs.actions-file-path }}
-
-  test-load-from-user-arm64: # test the action for the user space on ARM64
-    name: Organization with lots of actions (ARM64) # testing the timeout / GitHub ratelimiting on ARM64
-    runs-on: ubuntu-22.04-arm64
-    env:
-      organization: actions-marketplace-validations
-    steps: 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      # make sure we have a new build, in case the dist folder was not updated
-      - name: Compile with NPM
-        run: | 
-          npm ci
-          npm run all
-
-      # run the test
-      - uses: ./
-        name: Load available actions
-        with: 
-          PAT: ${{ secrets.PAT }} 
-          organization: ${{ env.organization }}
-        id: load-actions 
-
-      # check if the result file is not empty
-      - name: Check if the result file is not empty
-        run: | 
-          if [ ! -s "${{ steps.load-actions.outputs.actions-file-path }}" ]; then
-            echo "The result file is empty" | tee "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-
-          echo "Found [$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")] actions in the user space of [${{ env.user }}]" | tee "$GITHUB_STEP_SUMMARY"
-
-      - name: Check if the result file has actions in it
-        run: |
-          # check if the file has actions in it 
-          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -eq 0 ]; then
-            echo ":warning: The result file does not contain any actions" | tee "$GITHUB_STEP_SUMMARY"
-            exit 1
-          fi
-
-      - name: Check if the results file has duplicate actions
-        run: |
-          # check if the file has actions in it 
-          # this is WIP, it seems like there where duplicates of the actions results since we picked up the normal repos in the forks search as well (was fixed)
-          echo "Actions array length = $(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
-          echo "Unique actions by name = $(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
-          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
-            echo "The result file contains duplicate actions" | tee "$GITHUB_STEP_SUMMARY"
-            # group the actions to find the duplicates
-            jq '.actions | group_by({name, repo}) | map(select(length > 1))' "${{ steps.load-actions.outputs.actions-file-path }}"
-            
-            exit 1
-          fi
-
-      # upload the second result file as an artefact 
-      - name: Upload result file as artefact
-        if: ${{ steps.load-actions.conclusion == 'success' }}}
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with: 
-          name: actions-user-arm64
+          name: ${{ matrix.artifact-name }}
           path: ${{ steps.load-actions.outputs.actions-file-path }}
