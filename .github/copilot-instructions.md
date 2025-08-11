@@ -7,9 +7,20 @@ GitHub Action to load all available actions and reusable workflows from a GitHub
 ## Working Effectively
 
 ### Initial Setup and Dependencies
-- Install dependencies: `npm ci` -- takes 1-2 minutes. NEVER CANCEL. Set timeout to 5+ minutes.
+- Install dependencies: `npm ci` -- takes 6 seconds. NEVER CANCEL. Set timeout to 5+ minutes.
 - Build the action: `npm run build` or `npm run esbuild` -- takes < 1 second
-- Run all build and test steps: `npm run all` -- takes 5-6 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
+- Run all build and test steps: `npm run all` -- takes 5 seconds. NEVER CANCEL. Set timeout to 2+ minutes.
+
+### Important Dependencies
+- **@actions/core**: GitHub Actions toolkit for inputs/outputs
+- **octokit**: GitHub REST API client
+- **esbuild**: Fast TypeScript bundler (replaces webpack/rollup)
+- **jest**: Testing framework
+- **prettier**: Code formatting
+- **eslint**: Code linting (currently misconfigured)
+- **typescript**: TypeScript compiler
+- **node-fetch**: HTTP client for API calls
+- **yaml**: YAML parsing for action.yml files
 
 ### Build Commands  
 - `npm run esbuild` -- Bundles TypeScript to dist/main.js using esbuild (< 1 second)
@@ -44,10 +55,64 @@ GitHub Action to load all available actions and reusable workflows from a GitHub
 - Verify the output JSON file contains both actions and workflows when testing against organizations like `actions`
 - Check that duplicate actions are properly filtered (test validates this)
 
+### Expected Output Structure
+When the action runs successfully, it creates a JSON file with this structure:
+```json
+{
+  "lastUpdated": "20240811_2130", 
+  "actions": [
+    {
+      "name": "Action Name",
+      "repo": "repository-name", 
+      "downloadUrl": "https://raw.githubusercontent.com/...",
+      "author": "action author",
+      "description": "action description",
+      "using": "node16|docker|composite",
+      "isArchived": false
+    }
+  ],
+  "workflows": [
+    {
+      "name": "Workflow Name",
+      "repo": "repository-name",
+      "isArchived": false, 
+      "downloadUrl": "https://raw.githubusercontent.com/.../.github/workflows/workflow.yml"
+    }
+  ]
+}
+```
+
+### Test Scenarios After Changes
+1. **Unit Tests**: `npm test` should pass with all 6 tests
+2. **Build Validation**: `npm run all` should complete in ~5 seconds
+3. **Code Style**: `npm run format-check` should pass
+4. **Manual Functionality Test**: 
+   ```bash
+   # Test with a public user/org (requires real PAT)
+   PAT=<your_token> user=actions node dist/main.js
+   # Verify output file exists and has content
+   test -f actions.json && jq '.actions | length' actions.json
+   ```
+5. **Error Handling Test**:
+   ```bash
+   # Should fail with proper error message
+   node dist/main.js  # Missing PAT
+   PAT=invalid user=nonexistent node dist/main.js  # Invalid token
+   ```
+
 ### CI Requirements
-- The build must pass all steps in `.github/workflows/build check.yml`
-- PR validation runs against test organizations to ensure functionality
+- The build must pass all steps in `.github/workflows/build check.yml` 
+- PR validation runs in `.github/workflows/pr_validation.yml` against test organizations
 - All changes must maintain the existing test coverage
+- **Critical**: The `dist/` folder must be kept in sync with source changes - CI will update it automatically
+- Linting is currently skipped in CI due to ESLint v9 configuration issues
+
+### GitHub Actions Context
+This codebase IS a GitHub Action itself, designed to run within GitHub Actions workflows. Key considerations:
+- The action uses `@actions/core` for GitHub Actions integration (inputs, outputs, logging)
+- Built TypeScript is bundled into `dist/main.js` for distribution
+- The `action.yml` file defines the action's interface and specifies `dist/main.js` as entry point
+- Environment variables are used for local testing, GitHub Action inputs for production use
 
 ## Common Tasks
 
@@ -88,26 +153,75 @@ GitHub Action to load all available actions and reusable workflows from a GitHub
 ### Common Validation Commands
 ```bash
 # Full development cycle
-npm ci                    # Install dependencies (1-2 min)
-npm run all              # Build and test (5-6 sec)
+npm ci                    # Install dependencies (6 sec). NEVER CANCEL. Timeout: 5+ min
+npm run all              # Build and test (5 sec). NEVER CANCEL. Timeout: 2+ min
 npm run format           # Format code (< 1 sec)
 
-# Manual testing (requires PAT)
-PAT=<token> user=actions node dist/main.js
+# Individual commands
+npm run build            # Build only (< 1 sec)
+npm test                 # Test only (5 sec). NEVER CANCEL. Timeout: 2+ min
+npm run format-check     # Check formatting (< 1 sec)
 
-# Check output
-cat actions.json | jq '.actions | length'    # Count actions found
-cat actions.json | jq '.workflows | length'  # Count workflows found
+# Manual testing (requires valid GitHub PAT)
+PAT=<token> user=actions node dist/main.js
+PAT=<token> organization=microsoft node dist/main.js
+
+# Validate output
+cat actions.json | jq '.actions | length'              # Count actions found
+cat actions.json | jq '.workflows | length'            # Count workflows found  
+cat actions.json | jq '.lastUpdated'                   # Check timestamp
+cat actions.json | jq '.actions[0] | keys'             # Inspect action structure
+
+# Check for common issues
+cat actions.json | jq '.actions | unique_by({name, repo}) | length'  # Verify no duplicates
+```
+
+### File Watching During Development
+```bash
+# Monitor builds during development
+npm run esbuild  # Manual rebuild after changes
+# Or use a file watcher for automatic builds (not built into this project)
 ```
 
 ### Troubleshooting
-- **ESLint fails**: Known issue with v9 configuration. Skip linting for now.
-- **Tests fail**: Usually indicates breaking changes to utility functions
-- **Action fails without PAT**: Requires valid GitHub token with appropriate permissions
-- **Empty output**: Check token permissions and target user/organization exists
-- **Build artifacts missing**: Run `npm run build` to regenerate dist/main.js
+- **ESLint fails**: Known issue with v9 configuration. The `.eslintrc.json` contains `eslint.validate` property which is invalid in v9. Skip linting for now or migrate to flat config format.
+- **Tests fail**: Usually indicates breaking changes to utility functions in `src/utils.ts`
+- **Action fails without PAT**: Requires valid GitHub token with permissions: Actions (Read), Administration (Read), Contents (Read)
+- **Action fails with PAT**: Check token scopes, ensure target user/organization exists and is accessible
+- **Empty output file**: Verify token permissions, check that target has repositories with actions/workflows
+- **Build artifacts missing**: Run `npm run build` to regenerate `dist/main.js`
+- **Npm ci fails**: Clear `node_modules` and `package-lock.json`, then retry
+- **Format issues**: Run `npm run format` to auto-fix, or `npm run format-check` to identify issues
+
+### Action Input Parameters
+Required:
+- `PAT`: GitHub Personal Access Token with repo permissions
+- `user` OR `organization`: Target GitHub user or organization to scan
+
+Optional:
+- `outputFilename`: Custom output filename (default: `actions.json`)
+- `removeToken`: Remove hardcoded tokens from URLs (default: false)
+- `fetchReadmes`: Include base64-encoded READMEs (default: false)
+- `scanForReusableWorkflows`: Scan for reusable workflows (default: true)
+- `includePrivateWorkflows`: Include private workflows (default: false)
 
 ### Publishing
 - New versions are published via Git tags: `git tag -a v1.0.0 -m "Version 1.0.0"`
 - Push tags to trigger publishing workflow: `git push --tags`
 - Follow semantic versioning for Action Marketplace compatibility
+
+### Example Usage in Workflows
+```yaml
+# Basic usage
+- uses: devops-actions/load-available-actions@v2.0.0
+  with:
+    PAT: ${{ secrets.GITHUB_TOKEN }}
+    organization: myorg
+  id: load-actions
+
+# Access outputs
+- name: Show results
+  run: |
+    echo "Actions file: ${{ steps.load-actions.outputs.actions-file-path }}"
+    jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}"
+```
