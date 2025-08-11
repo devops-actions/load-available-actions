@@ -11,9 +11,9 @@ import path from 'path'
 import {getReadmeContent} from './optionalActions'
 import {parseYAML} from './utils'
 import {execSync} from 'child_process'
-import {Buffer} from 'buffer'
+import {Buffer} from "buffer"
 import YAML from 'yaml'
-import fetch from 'node-fetch'
+import fetch from "node-fetch"
 
 dotenv.config()
 
@@ -75,21 +75,11 @@ async function run(): Promise<void> {
       return
     }
 
-    let actionFiles = await getAllActions(
-      octokit,
-      user,
-      organization,
-      isEnterpriseServer
-    )
+    let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer)
     let workflows: WorkflowContent[] = []
-
+    
     if (scanForReusableWorkflows === 'true') {
-      workflows = await getAllReusableWorkflowsUsingSearch(
-        octokit,
-        user,
-        organization,
-        isEnterpriseServer
-      )
+      workflows = await getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer)
     }
 
     // output the json we want to output
@@ -146,31 +136,19 @@ export class WorkflowContent {
 }
 
 async function getAllActions(
-  client: Octokit,
+  client: Octokit, 
   user: string,
   organization: string,
-  isEnterpriseServer: boolean
-): Promise<ActionContent[]> {
+  isEnterpriseServer: boolean) : Promise<ActionContent[]> {
+
   // get all action files (action.yml and action.yaml) from the user or organization
-  let actionFiles = await getAllNormalActions(
-    client,
-    user,
-    organization,
-    isEnterpriseServer
-  )
+  let actionFiles = await getAllNormalActions(client, user, organization, isEnterpriseServer)
   // load the information inside of the action definition files
   actionFiles = await enrichActionFiles(client, actionFiles)
 
   // get all docker action definition (Dockerfile / dockerfile) from the user or organization
-  const allActionableDockerFiles = await getActionableDockerFiles(
-    client,
-    user,
-    organization,
-    isEnterpriseServer
-  )
-  core.info(
-    `Found [${allActionableDockerFiles.length}] docker files with action definitions`
-  )
+  const allActionableDockerFiles = await getActionableDockerFiles(client, user, organization, isEnterpriseServer )
+  core.info(`Found [${allActionableDockerFiles.length}] docker files with action definitions`)
 
   // concat the arrays before we return them in one go
   const actionFilesToReturn = actionFiles.concat(allActionableDockerFiles)
@@ -225,26 +203,14 @@ const getSearchResult = async (
   }
   let searchResult
   if (searchQuery.includes('fork')) {
-    searchResult = await executeRepoSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer
-    )
+    searchResult = await executeRepoSearch(client, searchQuery, isEnterpriseServer)
   } else {
-    searchResult = await executeCodeSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer
-    )
+    searchResult = await executeCodeSearch(client, searchQuery, isEnterpriseServer)
   }
   return searchResult
 }
 
-async function checkRateLimits(
-  client: Octokit,
-  isEnterpriseServer: boolean,
-  limitToSearch: boolean = false
-) {
+async function checkRateLimits(client: Octokit, isEnterpriseServer: boolean, limitToSearch: boolean = false) {
   // ratelimiting can be enabled on GHES as well, but is off by default
   // we load it from an api call and see if it is enabled, wrapped with try .. catch to handle the error
   var ratelimit
@@ -255,9 +221,7 @@ async function checkRateLimits(
     } catch (error) {
       // handle the 404
       if ((error as Error).message === 'Not Found') {
-        core.info(
-          'Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.'
-        )
+        core.info('Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.')
         return
       }
     }
@@ -272,18 +236,18 @@ async function checkRateLimits(
     let resetTime
     if (limitToSearch && ratelimit.data.resources.search.remaining <= 2) {
       resetTime = new Date(ratelimit.data.resources.search.reset * 1000)
-    } else {
+    }
+    else {
       if (ratelimit.data.resources.core.remaining <= 2) {
         resetTime = new Date(ratelimit.data.resources.core.reset * 1000)
-      } else {
+      }
+      else {
         // no need to wait
         return
       }
     }
     core.debug(`Search API reset time: ${resetTime}, backing off untill then`)
-    core.debug(
-      `Search ratelimit info: ${JSON.stringify(ratelimit.data.resources.search)}`
-    )
+    core.debug(`Search ratelimit info: ${JSON.stringify(ratelimit.data.resources.search)}`)
     // wait until the reset time
     var waitTime = resetTime.getTime() - new Date().getTime()
     if (waitTime < 0) {
@@ -306,19 +270,9 @@ async function getAllNormalActions(
   organization: string,
   isEnterpriseServer: boolean
 ): Promise<ActionContent[]> {
-  let actions = await getAllActionsUsingSearch(
-    client,
-    username,
-    organization,
-    isEnterpriseServer
-  )
+  let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer)
   // search does not work on forked repos, so we need to loop over all forks manually
-  let forkedActions = await getAllActionsFromForkedRepos(
-    client,
-    username,
-    organization,
-    isEnterpriseServer
-  )
+  let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer)
 
   actions = actions.concat(forkedActions)
   core.debug(`Found [${actions.length}] actions in total`)
@@ -343,13 +297,7 @@ async function getActionableDockerFiles(
 ): Promise<ActionContent[]> {
   let dockerActions: DockerActionFiles[] | undefined = []
   let actions: ActionContent[] = []
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+fork:only'
-  )
+  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:only')
 
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
 
@@ -372,9 +320,9 @@ async function getActionableDockerFiles(
       // error cloning the repo, skip it
       continue
     }
+    
+    const actionableDockerFiles = await getActionableDockerFilesFromDisk(repoPath)
 
-    const actionableDockerFiles =
-      await getActionableDockerFilesFromDisk(repoPath)
 
     if (JSON.stringify(actionableDockerFiles) !== '[]') {
       core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
@@ -407,22 +355,16 @@ async function getAllActionsFromForkedRepos(
   isEnterpriseServer: boolean
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+fork:only'
-  )
+  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, '+fork:only')
   core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
-
+    
     if (!repo.fork) {
       // we only want forked repos
       continue
     }
-
+    
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
@@ -447,28 +389,17 @@ async function getAllActionsFromForkedRepos(
     )
 
     for (let index = 0; index < actionFiles.length - 1; index++) {
-      core.debug(
-        `Found action file [${actionFiles[index]}] in repo [${repoName}]`
-      )
+      core.debug(`Found action file [${actionFiles[index]}] in repo [${repoName}]`)
 
       // remove the actions/$repopath
-      const actionFile = actionFiles[index].substring(
-        `actions/${repoName}/`.length
-      )
+      const actionFile = actionFiles[index].substring(`actions/${repoName}/`.length)
       core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
 
       // Get "Forked from" info for the repo
       const parentInfo = await getForkParent(repo)
 
       // get the action info
-      const action = await getActionInfo(
-        client,
-        repoOwner,
-        repoName,
-        actionFile,
-        parentInfo,
-        isArchived
-      )
+      const action = await getActionInfo(client, repoOwner, repoName, actionFile, parentInfo, isArchived)
       actions.push(action)
     }
   }
@@ -506,28 +437,21 @@ function cloneRepo(repo: string, owner: string): string {
 async function executeCodeSearch(
   client: Octokit,
   searchQuery: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
 ): Promise<any> {
+
   try {
     core.debug(`searchQuery for code: [${searchQuery}]`)
 
-    const searchResult = await paginateSearchQuery(
-      client,
-      searchQuery,
-      isEnterpriseServer,
-      false
-    )
+    const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer, false)
 
     core.debug(`Found [${searchResult.length}] code search results`)
     return searchResult
   } catch (error) {
-    core.info(
-      `executeCodeSearch: catch! Error is: ${error} with message ${(error as Error).message}`
-    )
+    core.info(`executeCodeSearch: catch! Error is: ${error} with message ${(error as Error).message}` )
     if (
-      (error as Error).message.includes(
-        'SecondaryRateLimit detected for request'
-      ) ||
+      (error as Error).message.includes('SecondaryRateLimit detected for request')
+        || 
       (error as Error).message.includes('API rate limit exceeded for')
     ) {
     } else {
@@ -537,95 +461,65 @@ async function executeCodeSearch(
   }
 }
 
-async function callSearchQueryWithBackoff(
+async function callSearchQueryWithBackoff
+(
   client: Octokit,
-  searchQuery: string,
-  page: number,
+  searchQuery: string, 
+  page: number, 
   isEnterpriseServer: boolean,
   searchRepos: boolean
-): Promise<any> {
+): Promise<any>
+{
   try {
-    core.debug(
-      `Calling the search API with query [${searchQuery}] and page [${page}] `
-    )
+    core.debug(`Calling the search API with query [${searchQuery}] and page [${page}] `)
     let results
     if (searchRepos) {
-      results = await client.rest.search.repos({
-        q: searchQuery,
-        per_page: 100,
-        page
-      })
-    } else {
-      results = await client.rest.search.code({
-        q: searchQuery,
-        per_page: 100,
-        page
-      })
+      results = await client.rest.search.repos({q: searchQuery, per_page: 100, page})
+    }
+    else {      
+      results = await client.rest.search.code({q: searchQuery, per_page: 100, page})
     }
     return results.data
-  } catch (error) {
+  }
+  catch (error) {
     // log the error
-    core.info(
-      `Error calling the search API with query [${searchQuery}] and page [${page}] `
-    )
+    core.info(`Error calling the search API with query [${searchQuery}] and page [${page}] `)
     // check if we hit the rate limit
     if ((error as Error).message.includes('API rate limit exceeded for')) {
       // todo: backoff and retry
       checkRateLimits(client, isEnterpriseServer, true)
-      return callSearchQueryWithBackoff(
-        client,
-        searchQuery,
-        page,
-        isEnterpriseServer,
-        searchRepos
-      )
+      return callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos)
     }
-
-    if (
-      (error as Error).message.includes(
-        'Cannot access beyond the first 1000 results'
-      )
-    ) {
+    
+    if ((error as Error).message.includes('Cannot access beyond the first 1000 results')) {
       return null
     }
 
     // if we get to here:
-    throw error
+    throw error    
   }
 }
 
-async function paginateSearchQuery(
-  client: Octokit,
-  searchQuery: string,
-  isEnterpriseServer: boolean,
-  searchRepos: boolean
-) {
+async function paginateSearchQuery(client: Octokit, searchQuery: string, isEnterpriseServer: boolean, searchRepos: boolean) {
   var page = 1
   var total_count = 0
   var items: any[] = []
   do {
-    var response = await callSearchQueryWithBackoff(
-      client,
-      searchQuery,
-      page,
-      isEnterpriseServer,
-      searchRepos
-    )
+    var response = await callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos)
     if (response) {
       total_count = response.total_count
       items = items.concat(response.items)
       core.debug(`Found [${items.length}] results so far`)
       if (items.length >= 1000) {
         // API will return: 'Cannot access beyond the first 1000 results'
-        core.warning(
-          `Found [${items.length}] results, API does not give more results, stopping search and returning the first 1000 results`
-        )
+        core.warning(`Found [${items.length}] results, API does not give more results, stopping search and returning the first 1000 results`)
         return items
       }
       page++
       // code endpoint has a ratelimit of 10 calls a minute, so wait 6 seconds between calls
       await new Promise(r => setTimeout(r, 6000))
-    } else {
+    }
+    else {
       // no more results
       return items
     }
@@ -638,32 +532,24 @@ async function executeRepoSearch(
   searchQuery: string,
   isEnterpriseServer: boolean
 ): Promise<any> {
+  
   try {
     core.debug(`searchQuery for repos: [${searchQuery}]`)
-    const searchResult = await paginateSearchQuery(
-      client,
-      searchQuery,
-      isEnterpriseServer,
-      true
-    )
+    const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer, true)
     core.debug(`Found [${searchResult.length}] repo search results`)
     return searchResult
   } catch (error) {
     core.info(`executeRepoSearch: catch!`)
     if (
-      (error as Error).message.includes(
-        'SecondaryRateLimit detected for request'
-      ) ||
-      (error as Error).message.includes(`API rate limit exceeded for`) ||
-      (error as Error).message.includes(
-        `You have exceeded a secondary rate limit`
-      )
-    ) {
+      (error as Error).message.includes('SecondaryRateLimit detected for request')
+       ||
+      (error as Error).message.includes(`API rate limit exceeded for`)
+      ||
+      (error as Error).message.includes(`You have exceeded a secondary rate limit`)
+    ) {      
       return []
     } else {
-      core.error(
-        `Error executing repo search: ${error} with message ${(error as Error).message}`
-      )
+      core.error(`Error executing repo search: ${error} with message ${(error as Error).message}`)
       return []
     }
   }
@@ -675,12 +561,12 @@ async function getRepoDetails(
   owner: string,
   repo: string
 ): Promise<any> {
-  const {data: repoDetails} = await client.rest.repos.get({
-    owner,
-    repo
-  })
+    const {data: repoDetails} = await client.rest.repos.get({
+      owner,
+      repo,
+    });
 
-  return repoDetails
+    return repoDetails
 }
 
 async function getAllActionsUsingSearch(
@@ -690,7 +576,7 @@ async function getAllActionsUsingSearch(
   isEnterpriseServer: boolean
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
-
+  
   const searchResult = await getSearchResult(
     client,
     username,
@@ -736,7 +622,10 @@ async function getAllActionsUsingSearch(
   return actions
 }
 
-async function getForkParent(repoDetails: any): Promise<string> {
+async function getForkParent(
+  repoDetails: any,
+): Promise<string> {
+
   let parentInfo = ''
   if (repoDetails.parent?.full_name) {
     parentInfo = repoDetails.parent.full_name
@@ -753,21 +642,21 @@ async function getActionInfo(
   forkedFrom: string,
   isArchived: boolean = false
 ): Promise<ActionContent> {
+  
   // Get File content
   const {data: yaml} = await client.rest.repos.getContent({
     owner,
     repo,
-    path: actionFilePath
+    path: actionFilePath,
   })
+
 
   const result = new ActionContent()
   if ('name' in yaml && 'download_url' in yaml) {
     result.name = yaml.name
     result.owner = owner
     result.repo = repo
-    result.path = actionFilePath.includes('/')
-      ? path.dirname(actionFilePath)
-      : ''
+    result.path = actionFilePath.includes("/") ? path.dirname(actionFilePath) : ""
     result.forkedfrom = forkedFrom
     result.isArchived = isArchived
     if (yaml.download_url !== null) {
@@ -797,7 +686,7 @@ async function getAllReusableWorkflowsUsingSearch(
   isEnterpriseServer: boolean
 ): Promise<WorkflowContent[]> {
   const workflows: WorkflowContent[] = []
-
+  
   const searchResult = await getSearchResult(
     client,
     username,
@@ -820,11 +709,11 @@ async function getAllReusableWorkflowsUsingSearch(
     const visibility = repoDetail.visibility
 
     // Skip workflow if it is a private repo
-    if (includePrivateWorkflows === 'false' && visibility === 'private') {
+    if ( includePrivateWorkflows === 'false' && visibility === 'private') {
       continue
     }
 
-    core.info(`Found workflow ${fileName} in ${repoName}/${filePath}`)
+    core.info(`Found workflow ${fileName } in ${repoName}/${filePath}`)
 
     const result = await getWorkflowInfo(
       client,
@@ -852,6 +741,7 @@ async function getWorkflowInfo(
   isArchived: boolean = false,
   visibility: string
 ): Promise<WorkflowContent> {
+  
   // Get File content
   const {data: yaml} = await client.rest.repos.getContent({
     owner,
@@ -860,17 +750,16 @@ async function getWorkflowInfo(
   })
 
   // Decode the content (workflow)
-  const decodeContent = (str: string): string =>
-    Buffer.from(str, 'base64').toString('binary')
+  const decodeContent = (str: string):string => Buffer.from(str, 'base64').toString('binary');
   const content = decodeContent(yaml.content)
   const workflowYaml = YAML.parse(content)
-
+  
   // Set the Results
   const result = new WorkflowContent()
 
-  if (workflowYaml.name) {
+  if(workflowYaml.name) {
     result.name = workflowYaml.name
-  } else {
+  }else {
     result.name = yaml.name.replace('.yml', '')
   }
 
@@ -878,7 +767,7 @@ async function getWorkflowInfo(
   result.isArchived = isArchived
   result.visibility = visibility
   result.owner = owner
-
+  
   if (yaml.download_url !== null) {
     result.downloadUrl = removeTokenSetting
       ? yaml.download_url.replace(/\?(.*)/, '')

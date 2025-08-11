@@ -2,6 +2,8 @@
 
 Always reference these instructions first and fallback to search or bash commands only when you encounter unexpected information that does not match the info here.
 
+**CRITICAL: Only modify files that are directly related to the feature or issue you are implementing. Do not make unnecessary changes to existing working code, formatting, or files that are not part of your specific task scope.**
+
 GitHub Action to load all available actions and reusable workflows from a GitHub organization or user account. Built with TypeScript and Node.js, uses GitHub REST API via Octokit to scan repositories for action.yml/yaml files, Dockerfiles with action labels, and reusable workflows.
 
 ## Working Effectively
