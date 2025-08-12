@@ -67,7 +67,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with: 
-          name: actions-user
+          name: actions-user-1
           path: ${{ steps.load-actions.outputs.actions-file-path }}
 
       # run the test with a different filename
@@ -91,7 +91,7 @@ jobs:
       - name: Upload result file as artefact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with: 
-          name: actions-user
+          name: actions-user-2
           path: ${{ steps.load-actions-second-run.outputs.actions-file-path }}
       
       # validate that the two files have different names
