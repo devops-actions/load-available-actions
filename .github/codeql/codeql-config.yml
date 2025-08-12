@@ -2,6 +2,8 @@ paths:
   - src
   - packages.json
   - package-lock.json
+paths-ignore:
+  - dist
 queries:
   - uses: security-and-quality
   - uses: security-extended
