@@ -65,7 +65,7 @@ jobs:
       # upload the second result file as an artefact 
       - name: Upload result file as artefact
         if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with: 
           name: actions-user
           path: ${{ steps.load-actions.outputs.actions-file-path }}
@@ -89,7 +89,7 @@ jobs:
 
       # upload the second result file as an artefact
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with: 
           name: actions-user
           path: ${{ steps.load-actions-second-run.outputs.actions-file-path }}
@@ -146,7 +146,7 @@ jobs:
           fi
             
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: always()
         with: 
           name: actions-organization-with-forks
@@ -201,7 +201,7 @@ jobs:
           fi
 
       - name: Upload result file as artefact
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with: 
           name: actions-organization
           path: ${{ steps.load-actions.outputs.actions-file-path }}
