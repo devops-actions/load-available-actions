@@ -46210,10 +46210,20 @@ async function run() {
       );
       return;
     }
-    let actionFiles = await getAllActions(octokit, user, organization, isEnterpriseServer);
+    let actionFiles = await getAllActions(
+      octokit,
+      user,
+      organization,
+      isEnterpriseServer
+    );
     let workflows = [];
     if (scanForReusableWorkflows === "true") {
-      workflows = await getAllReusableWorkflowsUsingSearch(octokit, user, organization, isEnterpriseServer);
+      workflows = await getAllReusableWorkflowsUsingSearch(
+        octokit,
+        user,
+        organization,
+        isEnterpriseServer
+      );
     }
     const output = {
       lastUpdated: GetDateFormatted(/* @__PURE__ */ new Date()),
@@ -46237,10 +46247,22 @@ var ActionContent = class {
 var WorkflowContent = class {
 };
 async function getAllActions(client, user, organization, isEnterpriseServer) {
-  let actionFiles = await getAllNormalActions(client, user, organization, isEnterpriseServer);
+  let actionFiles = await getAllNormalActions(
+    client,
+    user,
+    organization,
+    isEnterpriseServer
+  );
   actionFiles = await enrichActionFiles(client, actionFiles);
-  const allActionableDockerFiles = await getActionableDockerFiles(client, user, organization, isEnterpriseServer);
-  core3.info(`Found [${allActionableDockerFiles.length}] docker files with action definitions`);
+  const allActionableDockerFiles = await getActionableDockerFiles(
+    client,
+    user,
+    organization,
+    isEnterpriseServer
+  );
+  core3.info(
+    `Found [${allActionableDockerFiles.length}] docker files with action definitions`
+  );
   const actionFilesToReturn = actionFiles.concat(allActionableDockerFiles);
   return actionFilesToReturn;
 }
@@ -46277,9 +46299,17 @@ var getSearchResult = async (client, username, organization, isEnterpriseServer,
   }
   let searchResult;
   if (searchQuery.includes("fork")) {
-    searchResult = await executeRepoSearch(client, searchQuery, isEnterpriseServer);
+    searchResult = await executeRepoSearch(
+      client,
+      searchQuery,
+      isEnterpriseServer
+    );
   } else {
-    searchResult = await executeCodeSearch(client, searchQuery, isEnterpriseServer);
+    searchResult = await executeCodeSearch(
+      client,
+      searchQuery,
+      isEnterpriseServer
+    );
   }
   return searchResult;
 };
@@ -46290,7 +46320,9 @@ async function checkRateLimits(client, isEnterpriseServer, limitToSearch = false
       ratelimit = await client.rest.rateLimit.get();
     } catch (error2) {
       if (error2.message === "Not Found") {
-        core3.info("Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks.");
+        core3.info(
+          "Rate limit is not enabled on this GitHub Enterprise Server instance. Skipping rate limit checks."
+        );
         return;
       }
     }
@@ -46310,22 +46342,49 @@ async function checkRateLimits(client, isEnterpriseServer, limitToSearch = false
       }
     }
     core3.debug(`Search API reset time: ${resetTime}, backing off untill then`);
-    core3.debug(`Search ratelimit info: ${JSON.stringify(ratelimit.data.resources.search)}`);
+    core3.debug(
+      `Search ratelimit info: ${JSON.stringify(ratelimit.data.resources.search)}`
+    );
     var waitTime = resetTime.getTime() - (/* @__PURE__ */ new Date()).getTime();
     if (waitTime < 0) {
       waitTime = 7e3;
     } else {
       waitTime = waitTime + 1e3;
     }
+    const waitTimeSeconds = waitTime / 1e3;
+    let formattedWaitTime;
+    if (waitTimeSeconds < 60) {
+      formattedWaitTime = `${waitTimeSeconds.toFixed(1)} seconds`;
+    } else if (waitTimeSeconds < 3600) {
+      const minutes = Math.floor(waitTimeSeconds / 60);
+      formattedWaitTime = `${minutes} minute${minutes !== 1 ? "s" : ""}`;
+    } else {
+      const hours = Math.floor(waitTimeSeconds / 3600);
+      const minutes = Math.floor(waitTimeSeconds % 3600 / 60);
+      formattedWaitTime = `${hours}:${minutes.toString().padStart(2, "0")} hours`;
+    }
+    const continueTime = new Date((/* @__PURE__ */ new Date()).getTime() + waitTime);
+    const continueTimeFormatted = continueTime.toISOString().replace("T", " ").substring(0, 19) + " UTC";
     core3.info(
-      `Waiting ${waitTime / 1e3} seconds to prevent the search API rate limit`
+      `Waiting ${waitTimeSeconds.toFixed(3)} seconds (${formattedWaitTime}) to prevent the search API rate limit`
     );
+    core3.info(`Will continue at ${continueTimeFormatted}`);
     await new Promise((r2) => setTimeout(r2, waitTime));
   }
 }
 async function getAllNormalActions(client, username, organization, isEnterpriseServer) {
-  let actions = await getAllActionsUsingSearch(client, username, organization, isEnterpriseServer);
-  let forkedActions = await getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer);
+  let actions = await getAllActionsUsingSearch(
+    client,
+    username,
+    organization,
+    isEnterpriseServer
+  );
+  let forkedActions = await getAllActionsFromForkedRepos(
+    client,
+    username,
+    organization,
+    isEnterpriseServer
+  );
   actions = actions.concat(forkedActions);
   core3.debug(`Found [${actions.length}] actions in total`);
   actions = actions.filter(
@@ -46339,7 +46398,13 @@ async function getAllNormalActions(client, username, organization, isEnterpriseS
 async function getActionableDockerFiles(client, username, organization, isEnterpriseServer) {
   let dockerActions = [];
   let actions = [];
-  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, "+fork:only");
+  const searchResult = await getSearchResult(
+    client,
+    username,
+    organization,
+    isEnterpriseServer,
+    "+fork:only"
+  );
   core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index];
@@ -46378,7 +46443,13 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
 }
 async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
   const actions = [];
-  const searchResult = await getSearchResult(client, username, organization, isEnterpriseServer, "+fork:only");
+  const searchResult = await getSearchResult(
+    client,
+    username,
+    organization,
+    isEnterpriseServer,
+    "+fork:only"
+  );
   core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index];
@@ -46401,11 +46472,22 @@ async function getAllActionsFromForkedRepos(client, username, organization, isEn
       `Found [${actionFiles.length - 1}] action in repo [${repoName}] that was cloned to [${repoPath}]`
     );
     for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
-      core3.debug(`Found action file [${actionFiles[index2]}] in repo [${repoName}]`);
-      const actionFile = actionFiles[index2].substring(`actions/${repoName}/`.length);
+      core3.debug(
+        `Found action file [${actionFiles[index2]}] in repo [${repoName}]`
+      );
+      const actionFile = actionFiles[index2].substring(
+        `actions/${repoName}/`.length
+      );
       core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
       const parentInfo = await getForkParent(repo);
-      const action = await getActionInfo(client, repoOwner, repoName, actionFile, parentInfo, isArchived);
+      const action = await getActionInfo(
+        client,
+        repoOwner,
+        repoName,
+        actionFile,
+        parentInfo,
+        isArchived
+      );
       actions.push(action);
     }
   }
@@ -46436,12 +46518,21 @@ function cloneRepo(repo, owner) {
 async function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
   try {
     core3.debug(`searchQuery for code: [${searchQuery}]`);
-    const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer, false);
+    const searchResult = await paginateSearchQuery(
+      client,
+      searchQuery,
+      isEnterpriseServer,
+      false
+    );
     core3.debug(`Found [${searchResult.length}] code search results`);
     return searchResult;
   } catch (error2) {
-    core3.info(`executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`);
-    if (error2.message.includes("SecondaryRateLimit detected for request") || error2.message.includes("API rate limit exceeded for")) {
+    core3.info(
+      `executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`
+    );
+    if (error2.message.includes(
+      "SecondaryRateLimit detected for request"
+    ) || error2.message.includes("API rate limit exceeded for")) {
     } else {
       core3.info(`Error executing code search: ${error2}`);
       throw error2;
@@ -46450,21 +46541,41 @@ async function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
 }
 async function callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos) {
   try {
-    core3.debug(`Calling the search API with query [${searchQuery}] and page [${page}] `);
+    core3.debug(
+      `Calling the search API with query [${searchQuery}] and page [${page}] `
+    );
     let results;
     if (searchRepos) {
-      results = await client.rest.search.repos({ q: searchQuery, per_page: 100, page });
+      results = await client.rest.search.repos({
+        q: searchQuery,
+        per_page: 100,
+        page
+      });
     } else {
-      results = await client.rest.search.code({ q: searchQuery, per_page: 100, page });
+      results = await client.rest.search.code({
+        q: searchQuery,
+        per_page: 100,
+        page
+      });
     }
     return results.data;
   } catch (error2) {
-    core3.info(`Error calling the search API with query [${searchQuery}] and page [${page}] `);
+    core3.info(
+      `Error calling the search API with query [${searchQuery}] and page [${page}] `
+    );
     if (error2.message.includes("API rate limit exceeded for")) {
       checkRateLimits(client, isEnterpriseServer, true);
-      return callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos);
+      return callSearchQueryWithBackoff(
+        client,
+        searchQuery,
+        page,
+        isEnterpriseServer,
+        searchRepos
+      );
     }
-    if (error2.message.includes("Cannot access beyond the first 1000 results")) {
+    if (error2.message.includes(
+      "Cannot access beyond the first 1000 results"
+    )) {
       return null;
     }
     throw error2;
@@ -46475,13 +46586,21 @@ async function paginateSearchQuery(client, searchQuery, isEnterpriseServer, sear
   var total_count = 0;
   var items = [];
   do {
-    var response = await callSearchQueryWithBackoff(client, searchQuery, page, isEnterpriseServer, searchRepos);
+    var response = await callSearchQueryWithBackoff(
+      client,
+      searchQuery,
+      page,
+      isEnterpriseServer,
+      searchRepos
+    );
     if (response) {
       total_count = response.total_count;
       items = items.concat(response.items);
       core3.debug(`Found [${items.length}] results so far`);
       if (items.length >= 1e3) {
-        core3.warning(`Found [${items.length}] results, API does not give more results, stopping search and returning the first 1000 results`);
+        core3.warning(
+          `Found [${items.length}] results, API does not give more results, stopping search and returning the first 1000 results`
+        );
         return items;
       }
       page++;
@@ -46495,15 +46614,26 @@ async function paginateSearchQuery(client, searchQuery, isEnterpriseServer, sear
 async function executeRepoSearch(client, searchQuery, isEnterpriseServer) {
   try {
     core3.debug(`searchQuery for repos: [${searchQuery}]`);
-    const searchResult = await paginateSearchQuery(client, searchQuery, isEnterpriseServer, true);
+    const searchResult = await paginateSearchQuery(
+      client,
+      searchQuery,
+      isEnterpriseServer,
+      true
+    );
     core3.debug(`Found [${searchResult.length}] repo search results`);
     return searchResult;
   } catch (error2) {
     core3.info(`executeRepoSearch: catch!`);
-    if (error2.message.includes("SecondaryRateLimit detected for request") || error2.message.includes(`API rate limit exceeded for`) || error2.message.includes(`You have exceeded a secondary rate limit`)) {
+    if (error2.message.includes(
+      "SecondaryRateLimit detected for request"
+    ) || error2.message.includes(`API rate limit exceeded for`) || error2.message.includes(
+      `You have exceeded a secondary rate limit`
+    )) {
       return [];
     } else {
-      core3.error(`Error executing repo search: ${error2} with message ${error2.message}`);
+      core3.error(
+        `Error executing repo search: ${error2} with message ${error2.message}`
+      );
       return [];
     }
   }
