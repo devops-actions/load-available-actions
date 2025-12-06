@@ -46175,6 +46175,11 @@ var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 var hostname = getHostName();
 var scanForReusableWorkflows = getInputOrEnv("scanForReusableWorkflows");
 var includePrivateWorkflows = getInputOrEnv("includePrivateWorkflows");
+function isRecoverableSearchError(error2) {
+  return error2.message.includes(
+    "SecondaryRateLimit detected for request"
+  ) || error2.message.includes("API rate limit exceeded for") || error2.status === 422 || error2.message.includes("Validation Failed");
+}
 async function validateUser(client, username) {
   try {
     await client.rest.users.getByUsername({
@@ -46187,10 +46192,8 @@ async function validateUser(client, username) {
       core3.warning(`User '${username}' not found`);
       return false;
     }
-    core3.warning(
-      `Error validating user '${username}': ${error2.message || error2}`
-    );
-    return false;
+    core3.error(`Error validating user '${username}': ${error2.message || error2}`);
+    throw error2;
   }
 }
 async function validateOrganization(client, orgname) {
@@ -46205,10 +46208,10 @@ async function validateOrganization(client, orgname) {
       core3.warning(`Organization '${orgname}' not found`);
       return false;
     }
-    core3.warning(
+    core3.error(
       `Error validating organization '${orgname}': ${error2.message || error2}`
     );
-    return false;
+    throw error2;
   }
 }
 async function run() {
@@ -46584,9 +46587,7 @@ async function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
     core3.info(
       `executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`
     );
-    if (error2.message.includes(
-      "SecondaryRateLimit detected for request"
-    ) || error2.message.includes("API rate limit exceeded for") || error2.status === 422 || error2.message.includes("Validation Failed")) {
+    if (isRecoverableSearchError(error2)) {
       core3.warning(
         `Search error (rate limit or validation): ${error2.message}`
       );

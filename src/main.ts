@@ -32,6 +32,17 @@ const hostname = getHostName()
 const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 
+function isRecoverableSearchError(error: any): boolean {
+  return (
+    (error as Error).message.includes(
+      'SecondaryRateLimit detected for request'
+    ) ||
+    (error as Error).message.includes('API rate limit exceeded for') ||
+    (error as any).status === 422 ||
+    (error as Error).message.includes('Validation Failed')
+  )
+}
+
 async function validateUser(
   client: Octokit,
   username: string
@@ -47,11 +58,9 @@ async function validateUser(
       core.warning(`User '${username}' not found`)
       return false
     }
-    // For other errors, log and return false
-    core.warning(
-      `Error validating user '${username}': ${error.message || error}`
-    )
-    return false
+    // For other errors (network, auth, etc.), throw them up
+    core.error(`Error validating user '${username}': ${error.message || error}`)
+    throw error
   }
 }
 
@@ -70,11 +79,11 @@ async function validateOrganization(
       core.warning(`Organization '${orgname}' not found`)
       return false
     }
-    // For other errors, log and return false
-    core.warning(
+    // For other errors (network, auth, etc.), throw them up
+    core.error(
       `Error validating organization '${orgname}': ${error.message || error}`
     )
-    return false
+    throw error
   }
 }
 
@@ -613,14 +622,7 @@ async function executeCodeSearch(
     core.info(
       `executeCodeSearch: catch! Error is: ${error} with message ${(error as Error).message}`
     )
-    if (
-      (error as Error).message.includes(
-        'SecondaryRateLimit detected for request'
-      ) ||
-      (error as Error).message.includes('API rate limit exceeded for') ||
-      (error as any).status === 422 ||
-      (error as Error).message.includes('Validation Failed')
-    ) {
+    if (isRecoverableSearchError(error)) {
       // Rate limit and validation errors are handled, return empty result
       core.warning(
         `Search error (rate limit or validation): ${(error as Error).message}`
@@ -693,6 +695,7 @@ async function callSearchQueryWithBackoff(
       core.warning(
         `Search query validation failed: ${(error as Error).message}. This may indicate an invalid username or organization.`
       )
+      // Return empty result structure that matches GitHub API response
       return {total_count: 0, items: []}
     }
 
