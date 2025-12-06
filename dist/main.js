@@ -46175,6 +46175,47 @@ var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 var hostname = getHostName();
 var scanForReusableWorkflows = getInputOrEnv("scanForReusableWorkflows");
 var includePrivateWorkflows = getInputOrEnv("includePrivateWorkflows");
+function isRecoverableSearchError(error2) {
+  const isRateLimitError2 = error2.message?.includes(
+    "SecondaryRateLimit detected for request"
+  ) || error2.message?.includes("API rate limit exceeded for");
+  const isValidationError = error2.status === 422 || error2.message?.includes("Validation Failed");
+  return isRateLimitError2 || isValidationError;
+}
+async function validateUser(client, username) {
+  try {
+    await client.rest.users.getByUsername({
+      username
+    });
+    core3.info(`User '${username}' found`);
+    return true;
+  } catch (error2) {
+    if (error2.status === 404) {
+      core3.warning(`User '${username}' not found`);
+      return false;
+    }
+    core3.error(`Error validating user '${username}': ${error2.message || error2}`);
+    throw error2;
+  }
+}
+async function validateOrganization(client, orgname) {
+  try {
+    await client.rest.orgs.get({
+      org: orgname
+    });
+    core3.info(`Organization '${orgname}' found`);
+    return true;
+  } catch (error2) {
+    if (error2.status === 404) {
+      core3.warning(`Organization '${orgname}' not found`);
+      return false;
+    }
+    core3.error(
+      `Error validating organization '${orgname}': ${error2.message || error2}`
+    );
+    throw error2;
+  }
+}
 async function run() {
   core3.info("Starting");
   try {
@@ -46209,6 +46250,24 @@ async function run() {
         `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error2}`
       );
       return;
+    }
+    if (user) {
+      const userExists = await validateUser(octokit, user);
+      if (!userExists) {
+        core3.setFailed(
+          `User '${user}' not found. Please check that the username is correct.`
+        );
+        return;
+      }
+    }
+    if (organization) {
+      const orgExists = await validateOrganization(octokit, organization);
+      if (!orgExists) {
+        core3.setFailed(
+          `Organization '${organization}' not found. Please check that the organization name is correct.`
+        );
+        return;
+      }
     }
     let actionFiles = await getAllActions(
       octokit,
@@ -46530,9 +46589,9 @@ async function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
     core3.info(
       `executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`
     );
-    if (error2.message.includes(
-      "SecondaryRateLimit detected for request"
-    ) || error2.message.includes("API rate limit exceeded for")) {
+    if (isRecoverableSearchError(error2)) {
+      core3.warning(`Search error (recoverable): ${error2.message}`);
+      return [];
     } else {
       core3.info(`Error executing code search: ${error2}`);
       throw error2;
@@ -46577,6 +46636,12 @@ async function callSearchQueryWithBackoff(client, searchQuery, page, isEnterpris
       "Cannot access beyond the first 1000 results"
     )) {
       return null;
+    }
+    if (error2.status === 422 || error2.message.includes("Validation Failed")) {
+      core3.warning(
+        `Search query validation failed: ${error2.message}. This may indicate an invalid username or organization.`
+      );
+      return { total_count: 0, items: [] };
     }
     throw error2;
   }

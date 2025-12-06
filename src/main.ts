@@ -32,6 +32,65 @@ const hostname = getHostName()
 const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 
+function isRecoverableSearchError(error: any): boolean {
+  // Check for rate limit errors via message
+  const isRateLimitError =
+    (error as Error).message?.includes(
+      'SecondaryRateLimit detected for request'
+    ) || (error as Error).message?.includes('API rate limit exceeded for')
+
+  // Check for validation errors via status code or message
+  const isValidationError =
+    error.status === 422 ||
+    (error as Error).message?.includes('Validation Failed')
+
+  return isRateLimitError || isValidationError
+}
+
+async function validateUser(
+  client: Octokit,
+  username: string
+): Promise<boolean> {
+  try {
+    await client.rest.users.getByUsername({
+      username
+    })
+    core.info(`User '${username}' found`)
+    return true
+  } catch (error: any) {
+    if (error.status === 404) {
+      core.warning(`User '${username}' not found`)
+      return false
+    }
+    // For other errors (network, auth, etc.), throw them up
+    core.error(`Error validating user '${username}': ${error.message || error}`)
+    throw error
+  }
+}
+
+async function validateOrganization(
+  client: Octokit,
+  orgname: string
+): Promise<boolean> {
+  try {
+    await client.rest.orgs.get({
+      org: orgname
+    })
+    core.info(`Organization '${orgname}' found`)
+    return true
+  } catch (error: any) {
+    if (error.status === 404) {
+      core.warning(`Organization '${orgname}' not found`)
+      return false
+    }
+    // For other errors (network, auth, etc.), throw them up
+    core.error(
+      `Error validating organization '${orgname}': ${error.message || error}`
+    )
+    throw error
+  }
+}
+
 async function run(): Promise<void> {
   core.info('Starting')
   try {
@@ -73,6 +132,28 @@ async function run(): Promise<void> {
         `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
       )
       return
+    }
+
+    // Validate that the user or organization exists
+    // This provides clear error messages upfront and prevents wasting time on searches that will fail
+    if (user) {
+      const userExists = await validateUser(octokit, user)
+      if (!userExists) {
+        core.setFailed(
+          `User '${user}' not found. Please check that the username is correct.`
+        )
+        return
+      }
+    }
+
+    if (organization) {
+      const orgExists = await validateOrganization(octokit, organization)
+      if (!orgExists) {
+        core.setFailed(
+          `Organization '${organization}' not found. Please check that the organization name is correct.`
+        )
+        return
+      }
     }
 
     let actionFiles = await getAllActions(
@@ -545,12 +626,10 @@ async function executeCodeSearch(
     core.info(
       `executeCodeSearch: catch! Error is: ${error} with message ${(error as Error).message}`
     )
-    if (
-      (error as Error).message.includes(
-        'SecondaryRateLimit detected for request'
-      ) ||
-      (error as Error).message.includes('API rate limit exceeded for')
-    ) {
+    if (isRecoverableSearchError(error)) {
+      // Recoverable errors (rate limits, validation failures, etc.) - return empty result
+      core.warning(`Search error (recoverable): ${(error as Error).message}`)
+      return []
     } else {
       core.info(`Error executing code search: ${error}`)
       throw error
@@ -608,6 +687,20 @@ async function callSearchQueryWithBackoff(
       )
     ) {
       return null
+    }
+
+    // Handle validation errors from GitHub API (e.g., invalid user/org)
+    // Note: We check these separately from rate limits because they need different handling
+    // (return empty result vs recursive retry)
+    if (
+      (error as any).status === 422 ||
+      (error as Error).message.includes('Validation Failed')
+    ) {
+      core.warning(
+        `Search query validation failed: ${(error as Error).message}. This may indicate an invalid username or organization.`
+      )
+      // Return empty result structure that matches GitHub API response
+      return {total_count: 0, items: []}
     }
 
     // if we get to here:
