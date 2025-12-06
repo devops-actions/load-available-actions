@@ -23,6 +23,8 @@ jobs:
     with:
       org_name: ${{ vars.FIXED_ORG_NAME }}
       tag_team: ${{ vars.TAG_TEAM }}
+      issue: ${{ github.event.issue.number }}
+      pr: ${{ github.event.pull_request.number }}
     # Pass secrets to the reusable workflow (secrets must be in secrets: block, not with:)
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
