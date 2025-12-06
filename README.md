@@ -43,7 +43,7 @@ Repo permissions needed for the access token:
 
 - actions-file-path: path to the file containing a compressed json string with all the actions used in the workflows in the organization. The json is in the format:
 
-```language:json
+``` json
 {
     "lastUpdated": "20210818_1534",
     "actions": [

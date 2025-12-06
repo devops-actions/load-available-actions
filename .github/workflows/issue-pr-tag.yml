@@ -13,16 +13,15 @@ on:
 
 jobs:
   notify:
-    # Call the reusable workflow from devops-actions/.github repository
     uses: devops-actions/.github/.github/workflows/issue-pr-tag.yml@main
     permissions:
       contents: read
       issues: write
       pull-requests: write
-    # Pass input variables to the reusable workflow
     with:
       org_name: ${{ vars.FIXED_ORG_NAME }}
       tag_team: ${{ vars.TAG_TEAM }}
-    # Pass secrets to the reusable workflow (secrets must be in secrets: block, not with:)
+      issue: ${{ github.event.issue.number }}
+      pr: ${{ github.event.pull_request.number }}
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
