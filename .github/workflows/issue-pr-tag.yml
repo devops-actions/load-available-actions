@@ -13,16 +13,17 @@ permissions:
   
 jobs:
   notify:
+    if: ${{ github.repository_owner == secrets.FIXED_ORG_NAME }}
     runs-on: ubuntu-latest
     permissions:
       issues: write
       pull-requests: write
     steps:
-        - uses: devops-actions/issue-comment-tag@ec5e2b8d5f031330ff19bf4ee5b5252b1176995a # v0.1.8
-          with:
-            team: ${{ vars.tag_team }}
-            issue: ${{ github.event.issue.number }}
-            pr: ${{ github.event.pull_request.number }}
-            owner: ${{ github.repository_owner }}
-            repo: ${{ github.repository }}
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: devops-actions/issue-comment-tag@ec5e2b8d5f031330ff19bf4ee5b5252b1176995a # v0.1.8
+        with:
+          team: ${{ vars.tag_team }}
+          issue: ${{ github.event.issue.number }}
+          pr: ${{ github.event.pull_request.number }}
+          owner: ${{ github.repository_owner }}
+          repo: ${{ github.repository }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
