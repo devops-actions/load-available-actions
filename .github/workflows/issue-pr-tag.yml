@@ -8,6 +8,7 @@ on:
     paths:
       - .github/workflows/issue-pr-create.yml
 
+jobs:
   notify:
     uses: devops-actions/.github/.github/workflows/issue-pr-tag.yml@main
     with:
