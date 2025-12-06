@@ -32,6 +32,52 @@ const hostname = getHostName()
 const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 
+async function validateUser(
+  client: Octokit,
+  username: string
+): Promise<boolean> {
+  try {
+    await client.rest.users.getByUsername({
+      username
+    })
+    core.info(`User '${username}' found`)
+    return true
+  } catch (error: any) {
+    if (error.status === 404) {
+      core.warning(`User '${username}' not found`)
+      return false
+    }
+    // For other errors, log and return false
+    core.warning(
+      `Error validating user '${username}': ${error.message || error}`
+    )
+    return false
+  }
+}
+
+async function validateOrganization(
+  client: Octokit,
+  orgname: string
+): Promise<boolean> {
+  try {
+    await client.rest.orgs.get({
+      org: orgname
+    })
+    core.info(`Organization '${orgname}' found`)
+    return true
+  } catch (error: any) {
+    if (error.status === 404) {
+      core.warning(`Organization '${orgname}' not found`)
+      return false
+    }
+    // For other errors, log and return false
+    core.warning(
+      `Error validating organization '${orgname}': ${error.message || error}`
+    )
+    return false
+  }
+}
+
 async function run(): Promise<void> {
   core.info('Starting')
   try {
@@ -73,6 +119,27 @@ async function run(): Promise<void> {
         `Could not authenticate with PAT. Please check that it is correct and that it has [read access] to the organization or user account: ${error}`
       )
       return
+    }
+
+    // Validate that the user or organization exists
+    if (user) {
+      const userExists = await validateUser(octokit, user)
+      if (!userExists) {
+        core.setFailed(
+          `User '${user}' not found. Please check that the username is correct.`
+        )
+        return
+      }
+    }
+
+    if (organization) {
+      const orgExists = await validateOrganization(octokit, organization)
+      if (!orgExists) {
+        core.setFailed(
+          `Organization '${organization}' not found. Please check that the organization name is correct.`
+        )
+        return
+      }
     }
 
     let actionFiles = await getAllActions(
@@ -551,6 +618,15 @@ async function executeCodeSearch(
       ) ||
       (error as Error).message.includes('API rate limit exceeded for')
     ) {
+      // Rate limit errors are handled, return empty result
+      return []
+    } else if (
+      (error as any).status === 422 ||
+      (error as Error).message.includes('Validation Failed')
+    ) {
+      // Validation errors (e.g., invalid user/org) should not crash the action
+      core.warning(`Code search validation error: ${(error as Error).message}`)
+      return []
     } else {
       core.info(`Error executing code search: ${error}`)
       throw error
@@ -608,6 +684,17 @@ async function callSearchQueryWithBackoff(
       )
     ) {
       return null
+    }
+
+    // Handle validation errors from GitHub API (e.g., invalid user/org)
+    if (
+      (error as any).status === 422 ||
+      (error as Error).message.includes('Validation Failed')
+    ) {
+      core.warning(
+        `Search query validation failed: ${(error as Error).message}. This may indicate an invalid username or organization.`
+      )
+      return {total_count: 0, items: []}
     }
 
     // if we get to here:
