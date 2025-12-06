@@ -80,7 +80,7 @@ Properties:
 Minimal uses expression to use this action:
 
 ``` yaml
-uses: devops-actions/load-available-actions@6ff0cdddb24a91bfe889faa29e8d7a97e521f2c3 # v1.2.23`
+uses: devops-actions/load-available-actions@25cd9b38595c0526bb938c99f432d0a3e7365c3f # v2.1.16`
 with: 
     PAT: ${{ secrets.GITHUB_TOKEN }}
 ```
@@ -101,7 +101,7 @@ jobs:
   load-all-available-actions:
     runs-on: ubuntu-latest
     steps: 
-      - uses: devops-actions/load-available-actions@v2.0.0
+      - uses: devops-actions/load-available-actions@25cd9b38595c0526bb938c99f432d0a3e7365c3f # v2.1.16
         name: Load available actions
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
