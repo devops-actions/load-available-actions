@@ -3,12 +3,14 @@ on:
   pull_request:
 
 permissions:
-  contents: write
-  pull-requests: write
-  actions: write
+  contents: read
   
 jobs:
   dependabot:
     uses: devops-actions/.github/.github/workflows/approve-dependabot-pr.yml@main
     secrets:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
