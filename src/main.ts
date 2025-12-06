@@ -122,6 +122,7 @@ async function run(): Promise<void> {
     }
 
     // Validate that the user or organization exists
+    // This provides clear error messages upfront and prevents wasting time on searches that will fail
     if (user) {
       const userExists = await validateUser(octokit, user)
       if (!userExists) {
@@ -616,16 +617,14 @@ async function executeCodeSearch(
       (error as Error).message.includes(
         'SecondaryRateLimit detected for request'
       ) ||
-      (error as Error).message.includes('API rate limit exceeded for')
-    ) {
-      // Rate limit errors are handled, return empty result
-      return []
-    } else if (
+      (error as Error).message.includes('API rate limit exceeded for') ||
       (error as any).status === 422 ||
       (error as Error).message.includes('Validation Failed')
     ) {
-      // Validation errors (e.g., invalid user/org) should not crash the action
-      core.warning(`Code search validation error: ${(error as Error).message}`)
+      // Rate limit and validation errors are handled, return empty result
+      core.warning(
+        `Search error (rate limit or validation): ${(error as Error).message}`
+      )
       return []
     } else {
       core.info(`Error executing code search: ${error}`)

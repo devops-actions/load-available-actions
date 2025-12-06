@@ -46586,10 +46586,10 @@ async function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
     );
     if (error2.message.includes(
       "SecondaryRateLimit detected for request"
-    ) || error2.message.includes("API rate limit exceeded for")) {
-      return [];
-    } else if (error2.status === 422 || error2.message.includes("Validation Failed")) {
-      core3.warning(`Code search validation error: ${error2.message}`);
+    ) || error2.message.includes("API rate limit exceeded for") || error2.status === 422 || error2.message.includes("Validation Failed")) {
+      core3.warning(
+        `Search error (rate limit or validation): ${error2.message}`
+      );
       return [];
     } else {
       core3.info(`Error executing code search: ${error2}`);
