@@ -33,14 +33,18 @@ const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 
 function isRecoverableSearchError(error: any): boolean {
-  return (
-    (error as Error).message.includes(
+  // Check for rate limit errors via message
+  const isRateLimitError =
+    (error as Error).message?.includes(
       'SecondaryRateLimit detected for request'
-    ) ||
-    (error as Error).message.includes('API rate limit exceeded for') ||
-    (error as any).status === 422 ||
-    (error as Error).message.includes('Validation Failed')
-  )
+    ) || (error as Error).message?.includes('API rate limit exceeded for')
+
+  // Check for validation errors via status code or message
+  const isValidationError =
+    error.status === 422 ||
+    (error as Error).message?.includes('Validation Failed')
+
+  return isRateLimitError || isValidationError
 }
 
 async function validateUser(
@@ -623,10 +627,8 @@ async function executeCodeSearch(
       `executeCodeSearch: catch! Error is: ${error} with message ${(error as Error).message}`
     )
     if (isRecoverableSearchError(error)) {
-      // Rate limit and validation errors are handled, return empty result
-      core.warning(
-        `Search error (rate limit or validation): ${(error as Error).message}`
-      )
+      // Recoverable errors (rate limits, validation failures, etc.) - return empty result
+      core.warning(`Search error (recoverable): ${(error as Error).message}`)
       return []
     } else {
       core.info(`Error executing code search: ${error}`)
@@ -688,6 +690,8 @@ async function callSearchQueryWithBackoff(
     }
 
     // Handle validation errors from GitHub API (e.g., invalid user/org)
+    // Note: We check these separately from rate limits because they need different handling
+    // (return empty result vs recursive retry)
     if (
       (error as any).status === 422 ||
       (error as Error).message.includes('Validation Failed')

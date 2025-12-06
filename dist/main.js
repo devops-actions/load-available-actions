@@ -46176,9 +46176,11 @@ var hostname = getHostName();
 var scanForReusableWorkflows = getInputOrEnv("scanForReusableWorkflows");
 var includePrivateWorkflows = getInputOrEnv("includePrivateWorkflows");
 function isRecoverableSearchError(error2) {
-  return error2.message.includes(
+  const isRateLimitError2 = error2.message?.includes(
     "SecondaryRateLimit detected for request"
-  ) || error2.message.includes("API rate limit exceeded for") || error2.status === 422 || error2.message.includes("Validation Failed");
+  ) || error2.message?.includes("API rate limit exceeded for");
+  const isValidationError = error2.status === 422 || error2.message?.includes("Validation Failed");
+  return isRateLimitError2 || isValidationError;
 }
 async function validateUser(client, username) {
   try {
@@ -46588,9 +46590,7 @@ async function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
       `executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`
     );
     if (isRecoverableSearchError(error2)) {
-      core3.warning(
-        `Search error (rate limit or validation): ${error2.message}`
-      );
+      core3.warning(`Search error (recoverable): ${error2.message}`);
       return [];
     } else {
       core3.info(`Error executing code search: ${error2}`);
