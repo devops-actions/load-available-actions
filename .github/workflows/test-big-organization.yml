@@ -9,7 +9,8 @@ on:
   workflow_dispatch:
 
 # declare default GITHUB_TOKEN permissions as read only.
-permissions: read-all
+permissions:
+  contents: read
     
 jobs:
   test-load-from-user: # test the action for the user space
