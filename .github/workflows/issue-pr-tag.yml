@@ -1,4 +1,7 @@
 name: "Issue/PR Tag"
+
+# Trigger workflow when issues or pull requests are opened/edited,
+# or when this workflow file is modified
 on:
   issues:
     types: [opened, edited]
@@ -6,16 +9,20 @@ on:
     types: [opened, edited]
   push:
     paths:
-      - .github/workflows/issue-pr-create.yml
+      - .github/workflows/issue-pr-tag.yml
 
 jobs:
   notify:
+    # Call the reusable workflow from devops-actions/.github repository
     uses: devops-actions/.github/.github/workflows/issue-pr-tag.yml@main
     permissions:
       contents: read
       issues: write
       pull-requests: write
+    # Pass input variables to the reusable workflow
     with:
-      token: ${{ secrets.GITHUB_TOKEN }}
       org_name: ${{ vars.FIXED_ORG_NAME }}
       tag_team: ${{ vars.TAG_TEAM }}
+    # Pass secrets to the reusable workflow (secrets must be in secrets: block, not with:)
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
