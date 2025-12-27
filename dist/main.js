@@ -44821,7 +44821,7 @@ function parseYAML(filePath, repo, content) {
       `Error parsing action file [${filePath}] in repo [${repo}] with error: ${error2}`
     );
     core.info(
-      `The parsing error is informational, seaching for actions has continued`
+      `The parsing error is informational, searching for actions has continued`
     );
   }
   return { name, author, description, using, isWorkflow };

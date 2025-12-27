@@ -5,6 +5,15 @@ import string from 'string-sanitizer'
 import YAML from 'yaml'
 import {promisify} from 'util'
 import fs from 'fs'
+
+export interface ParseYAMLResult {
+  name: string
+  author: string
+  description: string
+  using: string
+  isWorkflow: boolean
+}
+
 export function GetDateFormatted(date: Date): string {
   return moment(date).format('YYYYMMDD_HHmm')
 }
@@ -13,7 +22,7 @@ export function parseYAML(
   filePath: string,
   repo: string | undefined,
   content: string
-): any {
+): ParseYAMLResult {
   const defaultValue = 'Undefined' // Default value when json field is not defined
   let name = defaultValue
   let author = defaultValue
@@ -52,7 +61,7 @@ export function parseYAML(
       }`
     )
     core.info(
-      `The parsing error is informational, seaching for actions has continued`
+      `The parsing error is informational, searching for actions has continued`
     )
   }
   return {name, author, description, using, isWorkflow}
