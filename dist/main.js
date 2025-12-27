@@ -46165,7 +46165,11 @@ function fixResponseChunkedTransferBadEnding(request2, errorCallback) {
 
 // src/graphql-search.ts
 var core3 = __toESM(require_core());
-async function executeGraphQLCodeSearch(client, searchQuery, maxResults = 1e4) {
+var GRAPHQL_PAGE_SIZE = 100;
+var RATE_LIMIT_DELAY_MS = 1e3;
+var RATE_LIMIT_COOLDOWN_MS = 6e4;
+var MAX_GRAPHQL_RESULTS = 1e4;
+async function executeGraphQLCodeSearch(client, searchQuery, maxResults = MAX_GRAPHQL_RESULTS) {
   const results = [];
   let hasNextPage = true;
   let cursor = null;
@@ -46175,7 +46179,7 @@ async function executeGraphQLCodeSearch(client, searchQuery, maxResults = 1e4) {
     try {
       const query = `
         query($searchQuery: String!, $cursor: String) {
-          search(query: $searchQuery, type: CODE, first: 100, after: $cursor) {
+          search(query: $searchQuery, type: CODE, first: ${GRAPHQL_PAGE_SIZE}, after: $cursor) {
             codeCount
             edges {
               node {
@@ -46238,7 +46242,7 @@ async function executeGraphQLCodeSearch(client, searchQuery, maxResults = 1e4) {
         `Fetched ${edges.length} results. Total: ${resultsCount}. Has next page: ${hasNextPage}`
       );
       if (hasNextPage) {
-        await new Promise((r2) => setTimeout(r2, 1e3));
+        await new Promise((r2) => setTimeout(r2, RATE_LIMIT_DELAY_MS));
       }
       if (resultsCount >= 1e3 && hasNextPage) {
         core3.info(
@@ -46250,7 +46254,7 @@ async function executeGraphQLCodeSearch(client, searchQuery, maxResults = 1e4) {
         core3.warning(
           `Rate limit hit during GraphQL search. Waiting before retry...`
         );
-        await new Promise((r2) => setTimeout(r2, 6e4));
+        await new Promise((r2) => setTimeout(r2, RATE_LIMIT_COOLDOWN_MS));
         continue;
       }
       core3.error(`GraphQL search error: ${error3.message || error3}`);
@@ -46262,7 +46266,7 @@ async function executeGraphQLCodeSearch(client, searchQuery, maxResults = 1e4) {
   );
   return results;
 }
-async function executeGraphQLRepoSearch(client, searchQuery, maxResults = 1e4) {
+async function executeGraphQLRepoSearch(client, searchQuery, maxResults = MAX_GRAPHQL_RESULTS) {
   const results = [];
   let hasNextPage = true;
   let cursor = null;
@@ -46272,7 +46276,7 @@ async function executeGraphQLRepoSearch(client, searchQuery, maxResults = 1e4) {
     try {
       const query = `
         query($searchQuery: String!, $cursor: String) {
-          search(query: $searchQuery, type: REPOSITORY, first: 100, after: $cursor) {
+          search(query: $searchQuery, type: REPOSITORY, first: ${GRAPHQL_PAGE_SIZE}, after: $cursor) {
             repositoryCount
             edges {
               node {
@@ -46326,14 +46330,14 @@ async function executeGraphQLRepoSearch(client, searchQuery, maxResults = 1e4) {
         `Fetched ${edges.length} repos. Total: ${resultsCount}. Has next page: ${hasNextPage}`
       );
       if (hasNextPage) {
-        await new Promise((r2) => setTimeout(r2, 1e3));
+        await new Promise((r2) => setTimeout(r2, RATE_LIMIT_DELAY_MS));
       }
     } catch (error3) {
       if (error3.message?.includes("rate limit") || error3.status === 403 || error3.status === 429) {
         core3.warning(
           `Rate limit hit during GraphQL repo search. Waiting before retry...`
         );
-        await new Promise((r2) => setTimeout(r2, 6e4));
+        await new Promise((r2) => setTimeout(r2, RATE_LIMIT_COOLDOWN_MS));
         continue;
       }
       core3.error(`GraphQL repo search error: ${error3.message || error3}`);
@@ -46788,7 +46792,7 @@ async function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
       const searchResult2 = await executeGraphQLCodeSearch(
         client,
         searchQuery,
-        1e4
+        MAX_GRAPHQL_RESULTS
       );
       core4.debug(
         `Found [${searchResult2.length}] code search results via GraphQL`
@@ -46903,7 +46907,7 @@ async function executeRepoSearch(client, searchQuery, isEnterpriseServer) {
       const searchResult2 = await executeGraphQLRepoSearch(
         client,
         searchQuery,
-        1e4
+        MAX_GRAPHQL_RESULTS
       );
       core4.debug(
         `Found [${searchResult2.length}] repo search results via GraphQL`

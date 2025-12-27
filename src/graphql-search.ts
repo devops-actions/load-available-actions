@@ -1,6 +1,12 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
 
+// Configuration constants for GraphQL search
+export const GRAPHQL_PAGE_SIZE = 100 // Maximum items per page in GraphQL queries
+export const RATE_LIMIT_DELAY_MS = 1000 // Delay between GraphQL requests (1 second)
+export const RATE_LIMIT_COOLDOWN_MS = 60000 // Wait time when rate limited (60 seconds)
+export const MAX_GRAPHQL_RESULTS = 10000 // Default maximum results to fetch
+
 /**
  * Result from a code search (files)
  * Includes name, path, and repository information
@@ -86,7 +92,7 @@ interface GraphQLRepoSearchResponse {
 export async function executeGraphQLCodeSearch(
   client: Octokit,
   searchQuery: string,
-  maxResults: number = 10000
+  maxResults: number = MAX_GRAPHQL_RESULTS
 ): Promise<SearchResult[]> {
   const results: SearchResult[] = []
   let hasNextPage = true
@@ -100,7 +106,7 @@ export async function executeGraphQLCodeSearch(
       // Build the GraphQL query
       const query = `
         query($searchQuery: String!, $cursor: String) {
-          search(query: $searchQuery, type: CODE, first: 100, after: $cursor) {
+          search(query: $searchQuery, type: CODE, first: ${GRAPHQL_PAGE_SIZE}, after: $cursor) {
             codeCount
             edges {
               node {
@@ -172,7 +178,7 @@ export async function executeGraphQLCodeSearch(
 
       // GitHub GraphQL API has rate limits - wait between requests
       if (hasNextPage) {
-        await new Promise(r => setTimeout(r, 1000))
+        await new Promise(r => setTimeout(r, RATE_LIMIT_DELAY_MS))
       }
 
       // Log progress for large result sets
@@ -191,7 +197,7 @@ export async function executeGraphQLCodeSearch(
         core.warning(
           `Rate limit hit during GraphQL search. Waiting before retry...`
         )
-        await new Promise(r => setTimeout(r, 60000)) // Wait 1 minute
+        await new Promise(r => setTimeout(r, RATE_LIMIT_COOLDOWN_MS))
         continue
       }
 
@@ -215,7 +221,7 @@ export async function executeGraphQLCodeSearch(
 export async function executeGraphQLRepoSearch(
   client: Octokit,
   searchQuery: string,
-  maxResults: number = 10000
+  maxResults: number = MAX_GRAPHQL_RESULTS
 ): Promise<RepoSearchResult[]> {
   const results: RepoSearchResult[] = []
   let hasNextPage = true
@@ -228,7 +234,7 @@ export async function executeGraphQLRepoSearch(
     try {
       const query = `
         query($searchQuery: String!, $cursor: String) {
-          search(query: $searchQuery, type: REPOSITORY, first: 100, after: $cursor) {
+          search(query: $searchQuery, type: REPOSITORY, first: ${GRAPHQL_PAGE_SIZE}, after: $cursor) {
             repositoryCount
             edges {
               node {
@@ -291,7 +297,7 @@ export async function executeGraphQLRepoSearch(
 
       // Rate limiting
       if (hasNextPage) {
-        await new Promise(r => setTimeout(r, 1000))
+        await new Promise(r => setTimeout(r, RATE_LIMIT_DELAY_MS))
       }
     } catch (error: any) {
       if (
@@ -302,7 +308,7 @@ export async function executeGraphQLRepoSearch(
         core.warning(
           `Rate limit hit during GraphQL repo search. Waiting before retry...`
         )
-        await new Promise(r => setTimeout(r, 60000))
+        await new Promise(r => setTimeout(r, RATE_LIMIT_COOLDOWN_MS))
         continue
       }
 

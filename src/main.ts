@@ -17,7 +17,8 @@ import fetch from 'node-fetch'
 import {
   executeGraphQLCodeSearch,
   executeGraphQLRepoSearch,
-  shouldUseGraphQLSearch
+  shouldUseGraphQLSearch,
+  MAX_GRAPHQL_RESULTS
 } from './graphql-search'
 
 dotenv.config()
@@ -639,7 +640,7 @@ async function executeCodeSearch(
       const searchResult = await executeGraphQLCodeSearch(
         client,
         searchQuery,
-        10000
+        MAX_GRAPHQL_RESULTS
       )
       core.debug(
         `Found [${searchResult.length}] code search results via GraphQL`
@@ -797,7 +798,7 @@ async function executeRepoSearch(
       const searchResult = await executeGraphQLRepoSearch(
         client,
         searchQuery,
-        10000
+        MAX_GRAPHQL_RESULTS
       )
       core.debug(
         `Found [${searchResult.length}] repo search results via GraphQL`
