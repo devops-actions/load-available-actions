@@ -52,12 +52,15 @@ export function sanitize(value: string) {
 
 // Interface for a Dockerfile with actionable properties
 export interface DockerActionFiles {
-  [key: string]: string | undefined
+  [key: string]: string | boolean | undefined
   name?: string
   description?: string
   author?: string
   repo?: string
   downloadUrl?: string
+  visibility?: string
+  isFork?: boolean
+  isArchived?: boolean
   // icon?: string
   // color?: string
 

@@ -213,6 +213,8 @@ export class ActionContent {
   readme: string | undefined
   using: string | undefined
   isArchived: boolean | undefined
+  visibility: string | undefined
+  isFork: boolean | undefined
 }
 
 export class WorkflowContent {
@@ -466,6 +468,9 @@ async function getActionableDockerFiles(
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
+    const visibility = repo.visibility || 'public'
+    const isFork = repo.fork || false
+    const isArchived = repo.archived || false
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
@@ -484,6 +489,9 @@ async function getActionableDockerFiles(
         item.author = repoOwner
         item.repo = repoName
         item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`
+        item.visibility = visibility
+        item.isFork = isFork
+        item.isArchived = isArchived
       })
       dockerActions = actionableDockerFiles
     }
@@ -498,6 +506,9 @@ async function getActionableDockerFiles(
     actions[index].author = value.author
     actions[index].description = value.description
     actions[index].using = 'docker'
+    actions[index].visibility = value.visibility
+    actions[index].isFork = value.isFork
+    actions[index].isArchived = value.isArchived
   })
   return actions
 }
@@ -529,6 +540,8 @@ async function getAllActionsFromForkedRepos(
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
     const isArchived = repo.archived
+    const visibility = repo.visibility || 'public'
+    const isFork = repo.fork || false
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
@@ -569,7 +582,9 @@ async function getAllActionsFromForkedRepos(
         repoName,
         actionFile,
         parentInfo,
-        isArchived
+        isArchived,
+        visibility,
+        isFork
       )
       actions.push(action)
     }
@@ -828,6 +843,8 @@ async function getAllActionsUsingSearch(
       // Get the Repository Details
       const repoDetail = await getRepoDetails(client, repoOwner, repoName)
       const isArchived = repoDetail.archived
+      const visibility = repoDetail.visibility || 'public'
+      const isFork = repoDetail.fork || false
 
       // Get "Forked from" info for the repo
       let parentInfo = ''
@@ -842,7 +859,9 @@ async function getAllActionsUsingSearch(
         repoName,
         filePath,
         parentInfo,
-        isArchived
+        isArchived,
+        visibility,
+        isFork
       )
       actions.push(result)
     }
@@ -865,7 +884,9 @@ async function getActionInfo(
   repo: string,
   actionFilePath: string,
   forkedFrom: string,
-  isArchived: boolean = false
+  isArchived: boolean = false,
+  visibility: string = 'public',
+  isFork: boolean = false
 ): Promise<ActionContent> {
   // Get File content
   const {data: yaml} = await client.rest.repos.getContent({
@@ -884,6 +905,8 @@ async function getActionInfo(
       : ''
     result.forkedfrom = forkedFrom
     result.isArchived = isArchived
+    result.visibility = visibility
+    result.isFork = isFork
     if (yaml.download_url !== null) {
       result.downloadUrl = removeTokenSetting
         ? yaml.download_url.replace(/\?(.*)/, '')
@@ -931,7 +954,7 @@ async function getAllReusableWorkflowsUsingSearch(
     // Get the Repository Details
     const repoDetail = await getRepoDetails(client, repoOwner, repoName)
     const isArchived = repoDetail.archived
-    const visibility = repoDetail.visibility
+    const visibility = repoDetail.visibility || 'public'
 
     // Skip workflow if it is a private repo
     if (includePrivateWorkflows === 'false' && visibility === 'private') {
