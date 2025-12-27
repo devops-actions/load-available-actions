@@ -44800,8 +44800,16 @@ function parseYAML(filePath, repo, content) {
   let author = defaultValue;
   let description = defaultValue;
   let using = description;
+  let isWorkflow = false;
   try {
     const parsed = import_yaml.default.parse(content);
+    if (parsed.on) {
+      core.info(
+        `Skipping [${filePath}] in repo [${repo}] - detected as workflow definition (has 'on' trigger)`
+      );
+      isWorkflow = true;
+      return { name, author, description, using, isWorkflow };
+    }
     name = parsed.name ? sanitize(parsed.name) : defaultValue;
     author = parsed.author ? sanitize(parsed.author) : defaultValue;
     description = parsed.description ? sanitize(parsed.description) : defaultValue;
@@ -44813,10 +44821,10 @@ function parseYAML(filePath, repo, content) {
       `Error parsing action file [${filePath}] in repo [${repo}] with error: ${error2}`
     );
     core.info(
-      `The parsing error is informational, seaching for actions has continued`
+      `The parsing error is informational, searching for actions has continued`
     );
   }
-  return { name, author, description, using };
+  return { name, author, description, using, isWorkflow };
 }
 function sanitize(value) {
   return import_string_sanitizer.default.sanitize.keepSpace(value);
@@ -46326,22 +46334,27 @@ async function getAllActions(client, user, organization, isEnterpriseServer) {
   return actionFilesToReturn;
 }
 async function enrichActionFiles(client, actionFiles) {
+  const validActions = [];
   for (const action of actionFiles) {
     core3.debug(`Enrich action information from file: [${action.downloadUrl}]`);
     if (action.downloadUrl) {
       const { data: content } = await client.request({ url: action.downloadUrl });
-      const { name, author, description, using } = parseYAML(
+      const { name, author, description, using, isWorkflow } = parseYAML(
         action.downloadUrl,
         action.repo,
         content
       );
+      if (isWorkflow) {
+        continue;
+      }
       action.name = name;
       action.author = author;
       action.description = description;
       action.using = using;
+      validActions.push(action);
     }
   }
-  return actionFiles;
+  return validActions;
 }
 var getSearchResult = async (client, username, organization, isEnterpriseServer, searchQuery) => {
   if (username) {
