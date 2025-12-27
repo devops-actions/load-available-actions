@@ -17,6 +17,10 @@ jobs:
       user: ${{ vars.USER }}
     steps: 
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 16
+          cache: 'npm'
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -114,6 +118,10 @@ jobs:
       organization: ${{ vars.ORGANIZATION }}
     steps: 
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 16
+          cache: 'npm'
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
@@ -162,6 +170,10 @@ jobs:
     if: always()
     steps: 
       - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        with:
+          node-version: 16
+          cache: 'npm'
       # make sure we have a new build, in case the dist folder was not updated
       - name: Compile with NPM
         run: | 
