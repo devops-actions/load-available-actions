@@ -46301,7 +46301,10 @@ async function executeGraphQLRepoSearch(client, searchQuery, maxResults = 1e4) {
       core3.debug(
         `GraphQL repo query - cursor: ${cursor}, results so far: ${resultsCount}`
       );
-      const response = await client.graphql(query, variables);
+      const response = await client.graphql(
+        query,
+        variables
+      );
       const edges = response.search.edges;
       for (const edge of edges) {
         if (edge.node) {
@@ -46342,7 +46345,7 @@ async function executeGraphQLRepoSearch(client, searchQuery, maxResults = 1e4) {
   );
   return results;
 }
-function shouldUseGraphQLSearch(isEnterpriseServer) {
+function shouldUseGraphQLSearch() {
   const disableGraphQL = process.env.DISABLE_GRAPHQL_SEARCH === "true";
   if (disableGraphQL) {
     core3.info(
@@ -46780,7 +46783,7 @@ function cloneRepo(repo, owner) {
 async function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
   try {
     core4.debug(`searchQuery for code: [${searchQuery}]`);
-    if (shouldUseGraphQLSearch(isEnterpriseServer)) {
+    if (shouldUseGraphQLSearch()) {
       core4.info("Using GraphQL search (supports >1000 results)");
       const searchResult2 = await executeGraphQLCodeSearch(
         client,
@@ -46895,7 +46898,7 @@ async function paginateSearchQuery(client, searchQuery, isEnterpriseServer, sear
 async function executeRepoSearch(client, searchQuery, isEnterpriseServer) {
   try {
     core4.debug(`searchQuery for repos: [${searchQuery}]`);
-    if (shouldUseGraphQLSearch(isEnterpriseServer)) {
+    if (shouldUseGraphQLSearch()) {
       core4.info("Using GraphQL repo search (supports >1000 results)");
       const searchResult2 = await executeGraphQLRepoSearch(
         client,

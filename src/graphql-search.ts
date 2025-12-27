@@ -11,7 +11,7 @@ interface SearchResult {
     }
     fork: boolean
     archived: boolean
-    visibility?: string
+    visibility: string
   }
 }
 
@@ -31,6 +31,27 @@ interface GraphQLSearchResponse {
           isArchived: boolean
           visibility: string
         }
+      }
+    }>
+    pageInfo: {
+      hasNextPage: boolean
+      endCursor: string | null
+    }
+  }
+}
+
+interface GraphQLRepoSearchResponse {
+  search: {
+    repositoryCount: number
+    edges: Array<{
+      node: {
+        name: string
+        owner: {
+          login: string
+        }
+        isFork: boolean
+        isArchived: boolean
+        visibility: string
       }
     }>
     pageInfo: {
@@ -221,7 +242,10 @@ export async function executeGraphQLRepoSearch(
         `GraphQL repo query - cursor: ${cursor}, results so far: ${resultsCount}`
       )
 
-      const response: any = await client.graphql(query, variables)
+      const response: GraphQLRepoSearchResponse = await client.graphql(
+        query,
+        variables
+      )
 
       // Extract results from the response
       const edges = response.search.edges
@@ -276,11 +300,11 @@ export async function executeGraphQLRepoSearch(
 }
 
 /**
- * Check if we should use GraphQL search (not available on some GHES versions)
+ * Check if we should use GraphQL search
+ * GraphQL is available on GitHub.com and GHES 2.21+
  */
-export function shouldUseGraphQLSearch(isEnterpriseServer: boolean): boolean {
-  // GraphQL is available on GitHub.com and GHES 2.21+
-  // For now, we'll use it everywhere unless explicitly disabled via env var
+export function shouldUseGraphQLSearch(): boolean {
+  // Use GraphQL everywhere unless explicitly disabled via env var
   const disableGraphQL = process.env.DISABLE_GRAPHQL_SEARCH === 'true'
 
   if (disableGraphQL) {
