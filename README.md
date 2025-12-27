@@ -102,7 +102,7 @@ Properties:
 |----|-----------|
 |lastUpdated|The date and time this action list was created. Format = YYYYMMDD_HHmm|
 |actions|The list of actions available in the workflows in the organization.|
-|workflows|The list of reusable workflows availabe in the repositories in the organization.|
+|workflows|The list of reusable workflows available in the repositories in the organization.|
 
 ## Example usage
 
@@ -150,13 +150,13 @@ with:
 
 ## Full example
 
-This example shows how to use the action with a GitHub App token to get a json file with all the available actions in an organization. The json file is uploaded as an artefact in the third step.
+This example shows how to use the action with a GitHub App token to get a json file with all the available actions in an organization. The json file is uploaded as an artifact in the third step.
 
 | #   | Name                                                | Description                                                                                |
 | --- | --------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | 1   | Generate GitHub App token                           | Create a short-lived token using a GitHub App (recommended for security)                   |
 | 2   | Load available actions                              | Run this action to load all actions available in an organization. Note the id of this step |
-| 3   | Upload result file as artefact for later inspection | Upload the json file as an artefact                                                        |
+| 3   | Upload result file as artifact for later inspection | Upload the json file as an artifact                                                        |
 
 ```yaml
 jobs:
@@ -177,7 +177,7 @@ jobs:
           organization: your-org-name
         id: load-actions
 
-      - name: Upload result file as artefact
+      - name: Upload result file as artifact
         uses: actions/upload-artifact@v3
         with:
           name: actions
