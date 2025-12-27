@@ -36,5 +36,5 @@ outputs:
   actions-file-path:
     description: 'Path to the file that contains a list of all actions available in the organization or user space'  
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'dist/main.js'
