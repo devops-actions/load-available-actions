@@ -26,12 +26,12 @@ test('ActionContent structure should include visibility and isFork', () => {
     description: 'test description',
     forkedfrom: '',
     readme: '',
-    using: 'node16',
+    using: 'node20',
     isArchived: false,
     visibility: 'public',
     isFork: false
   }
-  
+
   expect(mockAction).toHaveProperty('visibility')
   expect(mockAction).toHaveProperty('isFork')
   expect(mockAction.visibility).toBe('public')
@@ -50,7 +50,7 @@ test('WorkflowContent structure should include visibility', () => {
     isArchived: false,
     visibility: 'private'
   }
-  
+
   expect(mockWorkflow).toHaveProperty('visibility')
   expect(mockWorkflow.visibility).toBe('private')
 })
