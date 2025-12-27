@@ -46815,7 +46815,7 @@ async function getAllReusableWorkflowsUsingSearch(client, username, organization
     const repoOwner = searchResult[index].repository.owner.login;
     const repoDetail = await getRepoDetails(client, repoOwner, repoName);
     const isArchived = repoDetail.archived;
-    const visibility = repoDetail.visibility;
+    const visibility = repoDetail.visibility || "public";
     if (includePrivateWorkflows === "false" && visibility === "private") {
       continue;
     }

@@ -954,7 +954,7 @@ async function getAllReusableWorkflowsUsingSearch(
     // Get the Repository Details
     const repoDetail = await getRepoDetails(client, repoOwner, repoName)
     const isArchived = repoDetail.archived
-    const visibility = repoDetail.visibility
+    const visibility = repoDetail.visibility || 'public'
 
     // Skip workflow if it is a private repo
     if (includePrivateWorkflows === 'false' && visibility === 'private') {
