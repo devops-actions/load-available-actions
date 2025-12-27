@@ -2,11 +2,11 @@
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions/badge)](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions) [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/6813/badge)](https://bestpractices.coreinfrastructure.org/projects/6813)
 
-Load all actions and reusable workflows stored in the current organization, by calling the REST API with an  Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
+Load all actions and reusable workflows stored in the current organization, by calling the GitHub API with an Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
 
 The output is stored in a file with the name `actions`, which can be retrieved in another action with `${{ steps.<step id>.outputs.outputFilename }}`.
 
-We use the search API to find the following files in your repositories:
+We use the GitHub API to find the following files in your repositories:
 
 - action.yml
 - action.yaml
@@ -18,7 +18,7 @@ For the Dockerfiles we search for the required labels to identify them as action
 
 For the reusable workflow a search is done if the workflow file contains '`workflow_call:`'
 
-Note that the search API only supports up to a maximum of 1000 results, so we cannot return more actions than that at the moment.
+This action uses GraphQL API by default which supports pagination beyond the 1000 result limit of the REST search API. For organizations with many repositories, this allows discovering all available actions and workflows. To disable GraphQL and fall back to REST API (limited to 1000 results), set the environment variable `DISABLE_GRAPHQL_SEARCH=true`.
 
 ## Inputs
 

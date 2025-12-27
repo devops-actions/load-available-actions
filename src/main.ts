@@ -14,6 +14,11 @@ import {execSync} from 'child_process'
 import {Buffer} from 'buffer'
 import YAML from 'yaml'
 import fetch from 'node-fetch'
+import {
+  executeGraphQLCodeSearch,
+  executeGraphQLRepoSearch,
+  shouldUseGraphQLSearch
+} from './graphql-search'
 
 dotenv.config()
 
@@ -628,6 +633,22 @@ async function executeCodeSearch(
   try {
     core.debug(`searchQuery for code: [${searchQuery}]`)
 
+    // Use GraphQL search if available (supports more than 1000 results)
+    if (shouldUseGraphQLSearch(isEnterpriseServer)) {
+      core.info('Using GraphQL search (supports >1000 results)')
+      const searchResult = await executeGraphQLCodeSearch(
+        client,
+        searchQuery,
+        10000
+      )
+      core.debug(
+        `Found [${searchResult.length}] code search results via GraphQL`
+      )
+      return searchResult
+    }
+
+    // Fall back to REST API pagination (limited to 1000 results)
+    core.info('Using REST API search (limited to 1000 results)')
     const searchResult = await paginateSearchQuery(
       client,
       searchQuery,
@@ -769,6 +790,23 @@ async function executeRepoSearch(
 ): Promise<any> {
   try {
     core.debug(`searchQuery for repos: [${searchQuery}]`)
+
+    // Use GraphQL search if available (supports more than 1000 results)
+    if (shouldUseGraphQLSearch(isEnterpriseServer)) {
+      core.info('Using GraphQL repo search (supports >1000 results)')
+      const searchResult = await executeGraphQLRepoSearch(
+        client,
+        searchQuery,
+        10000
+      )
+      core.debug(
+        `Found [${searchResult.length}] repo search results via GraphQL`
+      )
+      return searchResult
+    }
+
+    // Fall back to REST API pagination (limited to 1000 results)
+    core.info('Using REST API repo search (limited to 1000 results)')
     const searchResult = await paginateSearchQuery(
       client,
       searchQuery,
