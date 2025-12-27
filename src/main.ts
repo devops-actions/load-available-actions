@@ -265,6 +265,8 @@ async function enrichActionFiles(
   client: Octokit,
   actionFiles: ActionContent[]
 ): Promise<ActionContent[]> {
+  const validActions: ActionContent[] = []
+
   for (const action of actionFiles) {
     core.debug(`Enrich action information from file: [${action.downloadUrl}]`)
     // download the file in it and parse it
@@ -272,18 +274,25 @@ async function enrichActionFiles(
       const {data: content} = await client.request({url: action.downloadUrl})
 
       // try to parse the yaml
-      const {name, author, description, using} = parseYAML(
+      const {name, author, description, using, isWorkflow} = parseYAML(
         action.downloadUrl,
         action.repo,
         content
       )
+
+      // Skip files that are workflow definitions, not action definitions
+      if (isWorkflow) {
+        continue
+      }
+
       action.name = name
       action.author = author
       action.description = description
       action.using = using
+      validActions.push(action)
     }
   }
-  return actionFiles
+  return validActions
 }
 
 const getSearchResult = async (

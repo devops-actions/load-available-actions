@@ -19,9 +19,21 @@ export function parseYAML(
   let author = defaultValue
   let description = defaultValue
   let using = description
+  let isWorkflow = false
 
   try {
     const parsed = YAML.parse(content)
+
+    // Check if this is a workflow definition instead of an action definition
+    // Workflows have an 'on' trigger field, actions have 'runs' field
+    if (parsed.on) {
+      core.info(
+        `Skipping [${filePath}] in repo [${repo}] - detected as workflow definition (has 'on' trigger)`
+      )
+      isWorkflow = true
+      return {name, author, description, using, isWorkflow}
+    }
+
     name = parsed.name ? sanitize(parsed.name) : defaultValue
     author = parsed.author ? sanitize(parsed.author) : defaultValue
     description = parsed.description
@@ -43,7 +55,7 @@ export function parseYAML(
       `The parsing error is informational, seaching for actions has continued`
     )
   }
-  return {name, author, description, using}
+  return {name, author, description, using, isWorkflow}
 }
 
 export function sanitize(value: string) {
