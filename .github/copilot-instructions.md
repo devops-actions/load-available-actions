@@ -69,7 +69,7 @@ When the action runs successfully, it creates a JSON file with this structure:
       "downloadUrl": "https://raw.githubusercontent.com/...",
       "author": "action author",
       "description": "action description",
-      "using": "node20|docker|composite",
+      "using": "node16|docker|composite",
       "isArchived": false
     }
   ],

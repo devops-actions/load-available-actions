@@ -78,7 +78,7 @@ Regardless of the authentication method, the following permissions are needed:
           "downloadUrl": "<raw url>?token=***",
           "author": "actions author",
           "description": "actions description",
-          "using": "what is used to execute the action (node20, Docker, composite)",
+          "using": "what is used to execute the action (node16, Docker, composite)",
           "readme": "base64 encoded readme",    #optional
           "isArchived": "true / false indicating if the repo is archived or not",
           "visibility": "public / private / internal",
