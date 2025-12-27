@@ -46241,8 +46241,8 @@ async function executeGraphQLCodeSearch(client, searchQuery, maxResults = 1e4) {
         await new Promise((r2) => setTimeout(r2, 1e3));
       }
       if (resultsCount >= 1e3 && hasNextPage) {
-        core3.warning(
-          `Hit 1000 result limit with cursor pagination. Total count from API: ${response.search.codeCount}. This may indicate we need date-based query splitting.`
+        core3.info(
+          `Processing large result set: ${resultsCount} results so far. Total available: ${response.search.codeCount}. Continuing with cursor pagination.`
         );
       }
     } catch (error3) {

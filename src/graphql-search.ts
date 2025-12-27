@@ -1,6 +1,10 @@
 import * as core from '@actions/core'
 import {Octokit} from 'octokit'
 
+/**
+ * Result from a code search (files)
+ * Includes name, path, and repository information
+ */
 interface SearchResult {
   name: string
   path: string
@@ -13,6 +17,20 @@ interface SearchResult {
     archived: boolean
     visibility: string
   }
+}
+
+/**
+ * Result from a repository search
+ * Includes name and owner, but no path (repos don't have paths)
+ */
+interface RepoSearchResult {
+  name: string
+  owner: {
+    login: string
+  }
+  fork: boolean
+  archived: boolean
+  visibility: string
 }
 
 interface GraphQLSearchResponse {
@@ -157,11 +175,10 @@ export async function executeGraphQLCodeSearch(
         await new Promise(r => setTimeout(r, 1000))
       }
 
-      // Check if we've hit the 1000 result limit for a single query
-      // This shouldn't happen with cursor pagination, but we check anyway
+      // Log progress for large result sets
       if (resultsCount >= 1000 && hasNextPage) {
-        core.warning(
-          `Hit 1000 result limit with cursor pagination. Total count from API: ${response.search.codeCount}. This may indicate we need date-based query splitting.`
+        core.info(
+          `Processing large result set: ${resultsCount} results so far. Total available: ${response.search.codeCount}. Continuing with cursor pagination.`
         )
       }
     } catch (error: any) {
@@ -193,13 +210,14 @@ export async function executeGraphQLCodeSearch(
 /**
  * Execute a GraphQL repository search query
  * Used for finding forked repositories
+ * Note: Repository results don't include a 'path' field (unlike code search results)
  */
 export async function executeGraphQLRepoSearch(
   client: Octokit,
   searchQuery: string,
   maxResults: number = 10000
-): Promise<any[]> {
-  const results: any[] = []
+): Promise<RepoSearchResult[]> {
+  const results: RepoSearchResult[] = []
   let hasNextPage = true
   let cursor: string | null = null
   let resultsCount = 0
