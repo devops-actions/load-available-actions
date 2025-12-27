@@ -54,8 +54,10 @@ Repo permissions needed for the access token:
           "author": "actions author",
           "description": "actions description",
           "using": "what is used to execute the action (node16, Docker, composite)",
-          "readme": "base64 encoded readme"    #optional
-          "isArchived": "true / false indicating if the repo is archived or not"
+          "readme": "base64 encoded readme",    #optional
+          "isArchived": "true / false indicating if the repo is archived or not",
+          "visibility": "public / private / internal",
+          "isFork": "true / false indicating if the repo is a fork"
         }
     ],
     "workflows": [
@@ -63,7 +65,8 @@ Repo permissions needed for the access token:
         "name": "The name from the workflow",
         "repo": "The name of the repo hosting the workflow",
         "isArchived": false,
-        "downloadUrl": "<raw url>/.github/workflows/<workflow file>.yml"
+        "downloadUrl": "<raw url>/.github/workflows/<workflow file>.yml",
+        "visibility": "public / private / internal"
       }
     ]
 }

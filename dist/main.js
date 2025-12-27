@@ -46472,6 +46472,9 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
     }
     const repoName = repo.name;
     const repoOwner = repo.owner ? repo.owner.login : "";
+    const visibility = repo.visibility || "public";
+    const isFork = repo.fork || false;
+    const isArchived = repo.archived || false;
     core3.debug(`Checking repo [${repoName}] for action files`);
     const repoPath = cloneRepo(repoName, repoOwner);
     if (!repoPath) {
@@ -46484,6 +46487,9 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
         item.author = repoOwner;
         item.repo = repoName;
         item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`;
+        item.visibility = visibility;
+        item.isFork = isFork;
+        item.isArchived = isArchived;
       });
       dockerActions = actionableDockerFiles;
     }
@@ -46497,6 +46503,9 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
     actions[index].author = value.author;
     actions[index].description = value.description;
     actions[index].using = "docker";
+    actions[index].visibility = value.visibility;
+    actions[index].isFork = value.isFork;
+    actions[index].isArchived = value.isArchived;
   });
   return actions;
 }
@@ -46518,6 +46527,8 @@ async function getAllActionsFromForkedRepos(client, username, organization, isEn
     const repoName = repo.name;
     const repoOwner = repo.owner ? repo.owner.login : "";
     const isArchived = repo.archived;
+    const visibility = repo.visibility || "public";
+    const isFork = repo.fork || false;
     core3.debug(`Checking repo [${repoName}] for action files`);
     const repoPath = cloneRepo(repoName, repoOwner);
     if (!repoPath) {
@@ -46545,7 +46556,9 @@ async function getAllActionsFromForkedRepos(client, username, organization, isEn
         repoName,
         actionFile,
         parentInfo,
-        isArchived
+        isArchived,
+        visibility,
+        isFork
       );
       actions.push(action);
     }
@@ -46729,6 +46742,8 @@ async function getAllActionsUsingSearch(client, username, organization, isEnterp
       core3.info(`Found action in ${repoName}/${filePath}`);
       const repoDetail = await getRepoDetails(client, repoOwner, repoName);
       const isArchived = repoDetail.archived;
+      const visibility = repoDetail.visibility || "public";
+      const isFork = repoDetail.fork || false;
       let parentInfo = "";
       if (searchResult[index].repository.fork) {
         parentInfo = await getForkParent(repoDetail);
@@ -46739,7 +46754,9 @@ async function getAllActionsUsingSearch(client, username, organization, isEnterp
         repoName,
         filePath,
         parentInfo,
-        isArchived
+        isArchived,
+        visibility,
+        isFork
       );
       actions.push(result);
     }
@@ -46753,7 +46770,7 @@ async function getForkParent(repoDetails) {
   }
   return parentInfo;
 }
-async function getActionInfo(client, owner, repo, actionFilePath, forkedFrom, isArchived = false) {
+async function getActionInfo(client, owner, repo, actionFilePath, forkedFrom, isArchived = false, visibility = "public", isFork = false) {
   const { data: yaml } = await client.rest.repos.getContent({
     owner,
     repo,
@@ -46767,6 +46784,8 @@ async function getActionInfo(client, owner, repo, actionFilePath, forkedFrom, is
     result.path = actionFilePath.includes("/") ? import_path.default.dirname(actionFilePath) : "";
     result.forkedfrom = forkedFrom;
     result.isArchived = isArchived;
+    result.visibility = visibility;
+    result.isFork = isFork;
     if (yaml.download_url !== null) {
       result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
     }
