@@ -129,6 +129,15 @@ test('isInTestFolder does not flag normal paths', () => {
   expect(isInTestFolder('packages/core/action.yml')).toBe(false)
 })
 
+test('isInTestFolder does not flag paths with test in directory names', () => {
+  // Directories that contain 'test' but are not test directories
+  expect(isInTestFolder('attestation/action.yml')).toBe(false)
+  expect(isInTestFolder('latest/action.yml')).toBe(false)
+  expect(isInTestFolder('contest-winner/action.yml')).toBe(false)
+  expect(isInTestFolder('my-test-directory/action.yml')).toBe(false)
+  expect(isInTestFolder('important-test-data/action.yml')).toBe(false)
+})
+
 test('isInTestFolder handles Windows-style paths', () => {
   expect(
     isInTestFolder('toolkit\\packages\\artifact\\__tests__\\action.yml')

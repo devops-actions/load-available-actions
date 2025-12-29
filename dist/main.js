@@ -44798,17 +44798,17 @@ function isInTestFolder(filePath) {
   const normalizedPath = filePath.replace(/\\/g, "/");
   const testPatterns = [
     /__tests__\//,
-    // __tests__/
+    // __tests__/ directory anywhere in path
     /__fixtures__\//,
-    // __fixtures__/
-    /\/tests?\//,
-    // /test/ or /tests/
-    /\.test\//,
-    // .test/
-    /\/test-/,
-    // /test-something/
-    /-test\//
-    // /something-test/
+    // __fixtures__/ directory anywhere in path
+    /(?:^|\/)tests?\//,
+    // /test/ or /tests/ directory (including at root)
+    /(?:^|\/)\.test\//,
+    // /.test/ directory (including at root)
+    /\/test-[^/]*\//,
+    // /test-something/ directory (complete segment)
+    /\/[^/]*-test\//
+    // /something-test/ directory (complete segment)
   ];
   return testPatterns.some((pattern) => pattern.test(normalizedPath));
 }
