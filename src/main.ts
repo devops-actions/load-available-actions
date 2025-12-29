@@ -3,7 +3,8 @@ import {Octokit} from 'octokit'
 import {
   DockerActionFiles,
   GetDateFormatted,
-  getActionableDockerFilesFromDisk
+  getActionableDockerFilesFromDisk,
+  isInTestFolder
 } from './utils'
 import dotenv from 'dotenv'
 import fs from 'fs'
@@ -581,6 +582,14 @@ async function getAllActionsFromForkedRepos(
       )
       core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
 
+      // Skip actions in test folders
+      if (isInTestFolder(actionFile)) {
+        core.info(
+          `Skipping action in ${repoName}/${actionFile} - detected in test folder`
+        )
+        continue
+      }
+
       // Get "Forked from" info for the repo
       const parentInfo = await getForkParent(repo)
 
@@ -847,6 +856,14 @@ async function getAllActionsUsingSearch(
 
     // Push file to action list if filename matches action.yaml or action.yml
     if (fileName == 'action.yaml' || fileName == 'action.yml') {
+      // Skip actions in test folders
+      if (isInTestFolder(filePath)) {
+        core.info(
+          `Skipping action in ${repoName}/${filePath} - detected in test folder`
+        )
+        continue
+      }
+
       core.info(`Found action in ${repoName}/${filePath}`)
 
       // Get the Repository Details

@@ -18,6 +18,28 @@ export function GetDateFormatted(date: Date): string {
   return moment(date).format('YYYYMMDD_HHmm')
 }
 
+/**
+ * Check if a file path is in a test folder
+ * @param filePath The path to check
+ * @returns true if the path is in a test folder, false otherwise
+ */
+export function isInTestFolder(filePath: string): boolean {
+  // Normalize the path to use forward slashes
+  const normalizedPath = filePath.replace(/\\/g, '/')
+
+  // Common test directory patterns
+  const testPatterns = [
+    /__tests__\//, // __tests__/
+    /__fixtures__\//, // __fixtures__/
+    /\/tests?\//, // /test/ or /tests/
+    /\.test\//, // .test/
+    /\/test-/, // /test-something/
+    /-test\// // /something-test/
+  ]
+
+  return testPatterns.some(pattern => pattern.test(normalizedPath))
+}
+
 export function parseYAML(
   filePath: string,
   repo: string | undefined,

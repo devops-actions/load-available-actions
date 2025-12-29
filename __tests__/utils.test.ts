@@ -2,6 +2,7 @@ import {expect, test} from '@jest/globals'
 import {GetDateFormatted} from '../src/utils'
 import {parseYAML} from '../src/utils'
 import {sanitize} from '../src/utils'
+import {isInTestFolder} from '../src/utils'
 
 test('date parsing', () => {
   const date = new Date(2021, 0, 16, 11, 43, 0, 0)
@@ -86,4 +87,51 @@ test(`Check sanitization`, () => {
   const value = 'Abc$%#6- ZZpp'
   const cleaned = sanitize(value)
   expect(cleaned).toBe('Abc6 ZZpp')
+})
+
+test('isInTestFolder detects __tests__ directories', () => {
+  expect(
+    isInTestFolder(
+      'toolkit/packages/artifact/__tests__/ci-test-action/action.yml'
+    )
+  ).toBe(true)
+  expect(isInTestFolder('path/to/__tests__/action.yml')).toBe(true)
+})
+
+test('isInTestFolder detects __fixtures__ directories', () => {
+  expect(
+    isInTestFolder('toolkit/packages/cache/__tests__/__fixtures__/action.yml')
+  ).toBe(true)
+  expect(isInTestFolder('some/__fixtures__/action.yml')).toBe(true)
+})
+
+test('isInTestFolder detects test directories', () => {
+  expect(isInTestFolder('src/test/action.yml')).toBe(true)
+  expect(isInTestFolder('src/tests/action.yml')).toBe(true)
+})
+
+test('isInTestFolder detects .test directories', () => {
+  expect(isInTestFolder('src/.test/action.yml')).toBe(true)
+})
+
+test('isInTestFolder detects test- prefixed directories', () => {
+  expect(isInTestFolder('src/test-utils/action.yml')).toBe(true)
+})
+
+test('isInTestFolder detects -test suffixed directories', () => {
+  expect(isInTestFolder('src/integration-test/action.yml')).toBe(true)
+})
+
+test('isInTestFolder does not flag normal paths', () => {
+  expect(isInTestFolder('action.yml')).toBe(false)
+  expect(isInTestFolder('src/action.yml')).toBe(false)
+  expect(isInTestFolder('.github/actions/my-action/action.yml')).toBe(false)
+  expect(isInTestFolder('packages/core/action.yml')).toBe(false)
+})
+
+test('isInTestFolder handles Windows-style paths', () => {
+  expect(
+    isInTestFolder('toolkit\\packages\\artifact\\__tests__\\action.yml')
+  ).toBe(true)
+  expect(isInTestFolder('src\\test\\action.yml')).toBe(true)
 })

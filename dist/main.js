@@ -44794,6 +44794,24 @@ var import_fs = __toESM(require("fs"));
 function GetDateFormatted(date) {
   return (0, import_moment.default)(date).format("YYYYMMDD_HHmm");
 }
+function isInTestFolder(filePath) {
+  const normalizedPath = filePath.replace(/\\/g, "/");
+  const testPatterns = [
+    /__tests__\//,
+    // __tests__/
+    /__fixtures__\//,
+    // __fixtures__/
+    /\/tests?\//,
+    // /test/ or /tests/
+    /\.test\//,
+    // .test/
+    /\/test-/,
+    // /test-something/
+    /-test\//
+    // /something-test/
+  ];
+  return testPatterns.some((pattern) => pattern.test(normalizedPath));
+}
 function parseYAML(filePath, repo, content) {
   const defaultValue = "Undefined";
   let name = defaultValue;
@@ -46562,6 +46580,12 @@ async function getAllActionsFromForkedRepos(client, username, organization, isEn
         `actions/${repoName}/`.length
       );
       core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
+      if (isInTestFolder(actionFile)) {
+        core3.info(
+          `Skipping action in ${repoName}/${actionFile} - detected in test folder`
+        );
+        continue;
+      }
       const parentInfo = await getForkParent(repo);
       const action = await getActionInfo(
         client,
@@ -46752,6 +46776,12 @@ async function getAllActionsUsingSearch(client, username, organization, isEnterp
     const repoName = searchResult[index].repository.name;
     const repoOwner = searchResult[index].repository.owner.login;
     if (fileName == "action.yaml" || fileName == "action.yml") {
+      if (isInTestFolder(filePath)) {
+        core3.info(
+          `Skipping action in ${repoName}/${filePath} - detected in test folder`
+        );
+        continue;
+      }
       core3.info(`Found action in ${repoName}/${filePath}`);
       const repoDetail = await getRepoDetails(client, repoOwner, repoName);
       const isArchived = repoDetail.archived;
