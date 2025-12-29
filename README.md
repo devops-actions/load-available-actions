@@ -20,6 +20,30 @@ For the reusable workflow a search is done if the workflow file contains '`workf
 
 Note that the search API only supports up to a maximum of 1000 results, so we cannot return more actions than that at the moment.
 
+## Finding Sub-Actions
+
+When a repository contains an `action.yml` or `action.yaml` file in its root directory, this action will clone the repository and search for additional action files in subdirectories. This allows discovery of repositories that contain multiple actions in different folders.
+
+**How it works:**
+1. The action uses GitHub's search API to find action files across all repositories
+2. When a root action file (`action.yml` or `action.yaml` in the repository root) is found, the repository is cloned
+3. The action searches recursively for all `action.yml` and `action.yaml` files within the cloned repository
+4. Sub-actions found in subdirectories are added to the output with their path information
+5. Actions in test folders (e.g., `__tests__`, `test/`, `.test/`) are automatically excluded
+
+**Example:** If a repository has the following structure:
+```
+my-action-repo/
+├── action.yml           # Root action
+├── docker/
+│   └── action.yml       # Sub-action
+└── .github/actions/
+    └── helper/
+        └── action.yml   # Sub-action
+```
+
+All three actions will be discovered and included in the output, with the `path` field indicating their location within the repository.
+
 ## Authentication
 
 This action requires authentication to access the GitHub API. There are two methods available:
@@ -75,6 +99,7 @@ Regardless of the authentication method, the following permissions are needed:
         {
           "name": "Get Action Data",
           "repo": "actions-marketplace",
+          "path": "subdirectory/path",
           "downloadUrl": "<raw url>?token=***",
           "author": "actions author",
           "description": "actions description",
@@ -103,6 +128,21 @@ Properties:
 |lastUpdated|The date and time this action list was created. Format = YYYYMMDD_HHmm|
 |actions|The list of actions available in the workflows in the organization.|
 |workflows|The list of reusable workflows available in the repositories in the organization.|
+
+Action Properties:
+|Name|Description|
+|----|-----------|
+|name|The name of the action from the action.yml file|
+|repo|The repository name containing the action|
+|path|The subdirectory path within the repo (empty for root actions, or e.g., "docker" for sub-actions)|
+|downloadUrl|The raw URL to download the action file|
+|author|The author of the action|
+|description|Description of what the action does|
+|using|The runtime environment (node16, node20, docker, composite)|
+|readme|Base64 encoded readme content (optional, if fetchReadmes is enabled)|
+|isArchived|Whether the repository is archived|
+|visibility|The repository visibility (public, private, or internal)|
+|isFork|Whether the repository is a fork|
 
 ## Example usage
 

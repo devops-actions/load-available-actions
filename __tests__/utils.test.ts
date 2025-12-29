@@ -144,3 +144,15 @@ test('isInTestFolder handles Windows-style paths', () => {
   ).toBe(true)
   expect(isInTestFolder('src\\test\\action.yml')).toBe(true)
 })
+
+test('isInTestFolder correctly identifies sub-action paths', () => {
+  // Sub-actions in valid directories should not be flagged as test folders
+  expect(isInTestFolder('.github/actions/sub-action/action.yml')).toBe(false)
+  expect(isInTestFolder('actions/my-action/action.yml')).toBe(false)
+  expect(isInTestFolder('src/actions/helper/action.yml')).toBe(false)
+  expect(isInTestFolder('docker/action/action.yml')).toBe(false)
+
+  // But sub-actions in test folders should still be flagged
+  expect(isInTestFolder('.github/actions/__tests__/mock/action.yml')).toBe(true)
+  expect(isInTestFolder('actions/test/action.yml')).toBe(true)
+})

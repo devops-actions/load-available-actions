@@ -46479,7 +46479,7 @@ async function getAllNormalActions(client, username, organization, isEnterpriseS
   core3.debug(`Found [${actions.length}] actions in total`);
   actions = actions.filter(
     (action, index, self2) => index === self2.findIndex(
-      (t2) => `${t2.name} ${t2.repo}` === `${action.name} ${action.repo}`
+      (t2) => `${t2.name} ${t2.repo} ${t2.path || ""}` === `${action.name} ${action.repo} ${action.path || ""}`
     )
   );
   core3.debug(`After dedupliation we have [${actions.length}] actions in total`);
@@ -46540,6 +46540,52 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
   });
   return actions;
 }
+async function findSubActionsInRepo(client, repoName, repoOwner, repoDetail) {
+  const actions = [];
+  const isArchived = repoDetail.archived;
+  const visibility = repoDetail.visibility || "public";
+  const isFork = repoDetail.fork || false;
+  core3.debug(`Checking repo [${repoName}] for sub-actions`);
+  const repoPath = cloneRepo(repoName, repoOwner);
+  if (!repoPath) {
+    return actions;
+  }
+  const actionFiles = (0, import_child_process2.execSync)(
+    `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
+    { encoding: "utf8" }
+  ).split("\n");
+  core3.debug(
+    `Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`
+  );
+  for (let index = 0; index < actionFiles.length - 1; index++) {
+    core3.debug(
+      `Found action file [${actionFiles[index]}] in repo [${repoName}]`
+    );
+    const actionFile = actionFiles[index].substring(
+      `actions/${repoName}/`.length
+    );
+    core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
+    if (isInTestFolder(actionFile)) {
+      core3.info(
+        `Skipping action in ${repoName}/${actionFile} - detected in test folder`
+      );
+      continue;
+    }
+    const parentInfo = await getForkParent(repoDetail);
+    const action = await getActionInfo(
+      client,
+      repoOwner,
+      repoName,
+      actionFile,
+      parentInfo,
+      isArchived,
+      visibility,
+      isFork
+    );
+    actions.push(action);
+  }
+  return actions;
+}
 async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
   const actions = [];
   const searchResult = await getSearchResult(
@@ -46557,48 +46603,13 @@ async function getAllActionsFromForkedRepos(client, username, organization, isEn
     }
     const repoName = repo.name;
     const repoOwner = repo.owner ? repo.owner.login : "";
-    const isArchived = repo.archived;
-    const visibility = repo.visibility || "public";
-    const isFork = repo.fork || false;
-    core3.debug(`Checking repo [${repoName}] for action files`);
-    const repoPath = cloneRepo(repoName, repoOwner);
-    if (!repoPath) {
-      continue;
-    }
-    const actionFiles = (0, import_child_process2.execSync)(
-      `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
-      { encoding: "utf8" }
-    ).split("\n");
-    core3.debug(
-      `Found [${actionFiles.length - 1}] action in repo [${repoName}] that was cloned to [${repoPath}]`
+    const subActions = await findSubActionsInRepo(
+      client,
+      repoName,
+      repoOwner,
+      repo
     );
-    for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
-      core3.debug(
-        `Found action file [${actionFiles[index2]}] in repo [${repoName}]`
-      );
-      const actionFile = actionFiles[index2].substring(
-        `actions/${repoName}/`.length
-      );
-      core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
-      if (isInTestFolder(actionFile)) {
-        core3.info(
-          `Skipping action in ${repoName}/${actionFile} - detected in test folder`
-        );
-        continue;
-      }
-      const parentInfo = await getForkParent(repo);
-      const action = await getActionInfo(
-        client,
-        repoOwner,
-        repoName,
-        actionFile,
-        parentInfo,
-        isArchived,
-        visibility,
-        isFork
-      );
-      actions.push(action);
-    }
+    actions.push(...subActions);
   }
   return actions;
 }
@@ -46762,6 +46773,7 @@ async function getRepoDetails(client, owner, repo) {
 }
 async function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
   const actions = [];
+  const reposWithRootAction = /* @__PURE__ */ new Set();
   const searchResult = await getSearchResult(
     client,
     username,
@@ -46802,6 +46814,27 @@ async function getAllActionsUsingSearch(client, username, organization, isEnterp
         isFork
       );
       actions.push(result);
+      if (filePath === "action.yml" || filePath === "action.yaml") {
+        const repoKey = `${repoOwner}/${repoName}`;
+        if (!reposWithRootAction.has(repoKey)) {
+          reposWithRootAction.add(repoKey);
+          core3.info(
+            `Found root action in ${repoKey}, will search for sub-actions`
+          );
+          const subActions = await findSubActionsInRepo(
+            client,
+            repoName,
+            repoOwner,
+            repoDetail
+          );
+          for (const subAction of subActions) {
+            if (subAction.path === "" || subAction.path === "." || subAction.path === void 0) {
+              continue;
+            }
+            actions.push(subAction);
+          }
+        }
+      }
     }
   }
   return actions;
