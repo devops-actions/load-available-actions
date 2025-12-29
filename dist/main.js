@@ -46538,6 +46538,20 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
     actions[index].isFork = value.isFork;
     actions[index].isArchived = value.isArchived;
   });
+  if (fetchReadmesSetting) {
+    for (const action of actions) {
+      if (action.repo && action.author) {
+        const readmeLink = await getReadmeContent(
+          client,
+          action.repo,
+          action.author
+        );
+        if (readmeLink) {
+          action.readme = readmeLink;
+        }
+      }
+    }
+  }
   return actions;
 }
 async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
