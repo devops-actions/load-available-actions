@@ -44794,6 +44794,15 @@ var import_fs = __toESM(require("fs"));
 function GetDateFormatted(date) {
   return (0, import_moment.default)(date).format("YYYYMMDD_HHmm");
 }
+function getHostName() {
+  const serverUrl = process.env["GITHUB_SERVER_URL"] || "https://github.com";
+  try {
+    const url = new URL(serverUrl);
+    return url.hostname;
+  } catch (error2) {
+    return serverUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+  }
+}
 function isInTestFolder(filePath) {
   const normalizedPath = filePath.replace(/\\/g, "/");
   const testPatterns = [
@@ -46192,10 +46201,6 @@ function fixResponseChunkedTransferBadEnding(request2, errorCallback) {
 // src/main.ts
 import_dotenv.default.config();
 var getInputOrEnv = (input) => core3.getInput(input) || process.env[input] || "";
-function getHostName() {
-  const hostName = process.env["GITHUB_SERVER_URL"] || "github.com";
-  return hostName;
-}
 var removeTokenSetting = getInputOrEnv("removeToken");
 var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 var hostname = getHostName();

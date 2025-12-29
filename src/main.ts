@@ -4,7 +4,8 @@ import {
   DockerActionFiles,
   GetDateFormatted,
   getActionableDockerFilesFromDisk,
-  isInTestFolder
+  isInTestFolder,
+  getHostName
 } from './utils'
 import dotenv from 'dotenv'
 import fs from 'fs'
@@ -20,11 +21,6 @@ dotenv.config()
 
 const getInputOrEnv = (input: string) =>
   core.getInput(input) || process.env[input] || ''
-
-function getHostName(): string {
-  const hostName = process.env['GITHUB_SERVER_URL'] || 'github.com'
-  return hostName
-}
 
 //Optional values
 const removeTokenSetting = getInputOrEnv('removeToken')

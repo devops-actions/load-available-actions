@@ -3,6 +3,7 @@ import {GetDateFormatted} from '../src/utils'
 import {parseYAML} from '../src/utils'
 import {sanitize} from '../src/utils'
 import {isInTestFolder} from '../src/utils'
+import {getHostName} from '../src/utils'
 
 test('date parsing', () => {
   const date = new Date(2021, 0, 16, 11, 43, 0, 0)
@@ -143,4 +144,105 @@ test('isInTestFolder handles Windows-style paths', () => {
     isInTestFolder('toolkit\\packages\\artifact\\__tests__\\action.yml')
   ).toBe(true)
   expect(isInTestFolder('src\\test\\action.yml')).toBe(true)
+})
+
+test('getHostName returns github.com by default', () => {
+  // Save original env var
+  const originalServerUrl = process.env['GITHUB_SERVER_URL']
+  delete process.env['GITHUB_SERVER_URL']
+
+  const hostname = getHostName()
+  expect(hostname).toBe('github.com')
+
+  // Restore original env var
+  if (originalServerUrl) {
+    process.env['GITHUB_SERVER_URL'] = originalServerUrl
+  }
+})
+
+test('getHostName extracts hostname from GITHUB_SERVER_URL', () => {
+  // Save original env var
+  const originalServerUrl = process.env['GITHUB_SERVER_URL']
+
+  process.env['GITHUB_SERVER_URL'] = 'https://github.com'
+  expect(getHostName()).toBe('github.com')
+
+  // Restore original env var
+  if (originalServerUrl) {
+    process.env['GITHUB_SERVER_URL'] = originalServerUrl
+  } else {
+    delete process.env['GITHUB_SERVER_URL']
+  }
+})
+
+test('getHostName supports *.ghe.com domains for EMU with Data Residency', () => {
+  // Save original env var
+  const originalServerUrl = process.env['GITHUB_SERVER_URL']
+
+  process.env['GITHUB_SERVER_URL'] = 'https://example.ghe.com'
+  expect(getHostName()).toBe('example.ghe.com')
+
+  process.env['GITHUB_SERVER_URL'] = 'https://mycompany.ghe.com'
+  expect(getHostName()).toBe('mycompany.ghe.com')
+
+  // Restore original env var
+  if (originalServerUrl) {
+    process.env['GITHUB_SERVER_URL'] = originalServerUrl
+  } else {
+    delete process.env['GITHUB_SERVER_URL']
+  }
+})
+
+test('getHostName supports GitHub Enterprise Server domains', () => {
+  // Save original env var
+  const originalServerUrl = process.env['GITHUB_SERVER_URL']
+
+  process.env['GITHUB_SERVER_URL'] = 'https://github.mycompany.com'
+  expect(getHostName()).toBe('github.mycompany.com')
+
+  process.env['GITHUB_SERVER_URL'] = 'https://ghe.internal.corp'
+  expect(getHostName()).toBe('ghe.internal.corp')
+
+  // Restore original env var
+  if (originalServerUrl) {
+    process.env['GITHUB_SERVER_URL'] = originalServerUrl
+  } else {
+    delete process.env['GITHUB_SERVER_URL']
+  }
+})
+
+test('getHostName handles URLs without protocol', () => {
+  // Save original env var
+  const originalServerUrl = process.env['GITHUB_SERVER_URL']
+
+  process.env['GITHUB_SERVER_URL'] = 'github.com'
+  expect(getHostName()).toBe('github.com')
+
+  process.env['GITHUB_SERVER_URL'] = 'example.ghe.com'
+  expect(getHostName()).toBe('example.ghe.com')
+
+  // Restore original env var
+  if (originalServerUrl) {
+    process.env['GITHUB_SERVER_URL'] = originalServerUrl
+  } else {
+    delete process.env['GITHUB_SERVER_URL']
+  }
+})
+
+test('getHostName handles URLs with trailing slash', () => {
+  // Save original env var
+  const originalServerUrl = process.env['GITHUB_SERVER_URL']
+
+  process.env['GITHUB_SERVER_URL'] = 'https://github.com/'
+  expect(getHostName()).toBe('github.com')
+
+  process.env['GITHUB_SERVER_URL'] = 'https://example.ghe.com/'
+  expect(getHostName()).toBe('example.ghe.com')
+
+  // Restore original env var
+  if (originalServerUrl) {
+    process.env['GITHUB_SERVER_URL'] = originalServerUrl
+  } else {
+    delete process.env['GITHUB_SERVER_URL']
+  }
 })

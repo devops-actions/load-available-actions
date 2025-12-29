@@ -19,6 +19,23 @@ export function GetDateFormatted(date: Date): string {
 }
 
 /**
+ * Get the hostname from GITHUB_SERVER_URL environment variable
+ * Supports github.com, GitHub Enterprise Server, and *.ghe.com (EMU with Data Residency)
+ * @returns The hostname (e.g., 'github.com', 'example.ghe.com', 'github.mycompany.com')
+ */
+export function getHostName(): string {
+  const serverUrl = process.env['GITHUB_SERVER_URL'] || 'https://github.com'
+  // Parse the URL to extract just the hostname (supports github.com, GHES, and *.ghe.com domains)
+  try {
+    const url = new URL(serverUrl)
+    return url.hostname
+  } catch (error) {
+    // Fallback if URL parsing fails - assume it's already a hostname
+    return serverUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
+  }
+}
+
+/**
  * Check if a file path is in a test folder
  * @param filePath The path to check
  * @returns true if the path is in a test folder, false otherwise
