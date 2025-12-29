@@ -44800,7 +44800,9 @@ function getHostName() {
     const url = new URL(serverUrl);
     return url.hostname;
   } catch (error2) {
-    return serverUrl.replace(/^https?:\/\//, "").replace(/\/$/, "");
+    const withoutProtocol = serverUrl.replace(/^https?:\/\//, "");
+    const hostname2 = withoutProtocol.split(/[/:?]/)[0];
+    return hostname2;
   }
 }
 function isInTestFolder(filePath) {

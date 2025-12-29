@@ -30,8 +30,11 @@ export function getHostName(): string {
     const url = new URL(serverUrl)
     return url.hostname
   } catch (error) {
-    // Fallback if URL parsing fails - assume it's already a hostname
-    return serverUrl.replace(/^https?:\/\//, '').replace(/\/$/, '')
+    // Fallback if URL parsing fails - try to extract hostname manually
+    // Remove protocol, then split on first occurrence of '/', ':', or '?'
+    const withoutProtocol = serverUrl.replace(/^https?:\/\//, '')
+    const hostname = withoutProtocol.split(/[/:?]/)[0]
+    return hostname
   }
 }
 

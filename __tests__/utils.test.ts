@@ -246,3 +246,32 @@ test('getHostName handles URLs with trailing slash', () => {
     delete process.env['GITHUB_SERVER_URL']
   }
 })
+
+test('getHostName handles edge cases with ports and paths', () => {
+  // Save original env var
+  const originalServerUrl = process.env['GITHUB_SERVER_URL']
+
+  // Test URL with port
+  process.env['GITHUB_SERVER_URL'] = 'https://github.com:8080'
+  expect(getHostName()).toBe('github.com')
+
+  // Test URL with path
+  process.env['GITHUB_SERVER_URL'] = 'https://github.com/api/v3'
+  expect(getHostName()).toBe('github.com')
+
+  // Test URL with query params
+  process.env['GITHUB_SERVER_URL'] = 'https://github.com?param=value'
+  expect(getHostName()).toBe('github.com')
+
+  // Test URL with port, path, and query
+  process.env['GITHUB_SERVER_URL'] =
+    'https://ghe.company.com:8443/api/v3?test=1'
+  expect(getHostName()).toBe('ghe.company.com')
+
+  // Restore original env var
+  if (originalServerUrl) {
+    process.env['GITHUB_SERVER_URL'] = originalServerUrl
+  } else {
+    delete process.env['GITHUB_SERVER_URL']
+  }
+})
