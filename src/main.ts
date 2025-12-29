@@ -525,6 +525,10 @@ async function getActionableDockerFiles(
   return actions
 }
 
+function isRootAction(actionPath: string | undefined): boolean {
+  return actionPath === '' || actionPath === '.' || actionPath === undefined
+}
+
 async function findSubActionsInRepo(
   client: Octokit,
   repoName: string,
@@ -934,11 +938,7 @@ async function getAllActionsUsingSearch(
           // Add sub-actions (filtering out the root action we already added)
           for (const subAction of subActions) {
             // Skip if this is the root action (already added)
-            if (
-              subAction.path === '' ||
-              subAction.path === '.' ||
-              subAction.path === undefined
-            ) {
+            if (isRootAction(subAction.path)) {
               continue
             }
             actions.push(subAction)

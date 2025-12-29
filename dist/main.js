@@ -46540,6 +46540,9 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
   });
   return actions;
 }
+function isRootAction(actionPath) {
+  return actionPath === "" || actionPath === "." || actionPath === void 0;
+}
 async function findSubActionsInRepo(client, repoName, repoOwner, repoDetail) {
   const actions = [];
   const isArchived = repoDetail.archived;
@@ -46828,7 +46831,7 @@ async function getAllActionsUsingSearch(client, username, organization, isEnterp
             repoDetail
           );
           for (const subAction of subActions) {
-            if (subAction.path === "" || subAction.path === "." || subAction.path === void 0) {
+            if (isRootAction(subAction.path)) {
               continue;
             }
             actions.push(subAction);
