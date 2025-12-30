@@ -442,7 +442,9 @@ async function getAllNormalActions(
     (action, index, self) =>
       index ===
       self.findIndex(
-        t => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`
+        t =>
+          `${t.name} ${t.repo} ${t.path || ''}` ===
+          `${action.name} ${action.repo} ${action.path || ''}`
       )
   )
   core.debug(`After dedupliation we have [${actions.length}] actions in total`)
@@ -542,6 +544,79 @@ async function getActionableDockerFiles(
   return actions
 }
 
+function isRootAction(actionPath: string | undefined): boolean {
+  return actionPath === '' || actionPath === '.' || actionPath === undefined
+}
+
+async function findSubActionsInRepo(
+  client: Octokit,
+  repoName: string,
+  repoOwner: string,
+  repoDetail: any
+): Promise<ActionContent[]> {
+  const actions: ActionContent[] = []
+  const isArchived = repoDetail.archived
+  const visibility = repoDetail.visibility || 'public'
+  const isFork = repoDetail.fork || false
+
+  core.debug(`Checking repo [${repoName}] for sub-actions`)
+  // clone the repo
+  const repoPath = cloneRepo(repoName, repoOwner)
+  if (!repoPath) {
+    // error cloning the repo, skip it
+    return actions
+  }
+
+  // check with a shell command if the repo contains action files
+  const actionFiles = execSync(
+    `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
+    {encoding: 'utf8'}
+  ).split('\n')
+  core.debug(
+    `Found [${
+      actionFiles.length - 1
+    }] action files in repo [${repoName}] that was cloned to [${repoPath}]`
+  )
+
+  for (let index = 0; index < actionFiles.length - 1; index++) {
+    core.debug(
+      `Found action file [${actionFiles[index]}] in repo [${repoName}]`
+    )
+
+    // remove the actions/$repopath
+    const actionFile = actionFiles[index].substring(
+      `actions/${repoName}/`.length
+    )
+    core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
+
+    // Skip actions in test folders
+    if (isInTestFolder(actionFile)) {
+      core.info(
+        `Skipping action in ${repoName}/${actionFile} - detected in test folder`
+      )
+      continue
+    }
+
+    // Get "Forked from" info for the repo
+    const parentInfo = await getForkParent(repoDetail)
+
+    // get the action info
+    const action = await getActionInfo(
+      client,
+      repoOwner,
+      repoName,
+      actionFile,
+      parentInfo,
+      isArchived,
+      visibility,
+      isFork
+    )
+    actions.push(action)
+  }
+
+  return actions
+}
+
 async function getAllActionsFromForkedRepos(
   client: Octokit,
   username: string,
@@ -568,63 +643,14 @@ async function getAllActionsFromForkedRepos(
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
-    const isArchived = repo.archived
-    const visibility = repo.visibility || 'public'
-    const isFork = repo.fork || false
 
-    core.debug(`Checking repo [${repoName}] for action files`)
-    // clone the repo
-    const repoPath = cloneRepo(repoName, repoOwner)
-    if (!repoPath) {
-      // error cloning the repo, skip it
-      continue
-    }
-    // check with a shell command if the repo contains action files in the root of the repo
-    const actionFiles = execSync(
-      `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
-      {encoding: 'utf8'}
-    ).split('\n')
-    core.debug(
-      `Found [${
-        actionFiles.length - 1
-      }] action in repo [${repoName}] that was cloned to [${repoPath}]`
+    const subActions = await findSubActionsInRepo(
+      client,
+      repoName,
+      repoOwner,
+      repo
     )
-
-    for (let index = 0; index < actionFiles.length - 1; index++) {
-      core.debug(
-        `Found action file [${actionFiles[index]}] in repo [${repoName}]`
-      )
-
-      // remove the actions/$repopath
-      const actionFile = actionFiles[index].substring(
-        `actions/${repoName}/`.length
-      )
-      core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
-
-      // Skip actions in test folders
-      if (isInTestFolder(actionFile)) {
-        core.info(
-          `Skipping action in ${repoName}/${actionFile} - detected in test folder`
-        )
-        continue
-      }
-
-      // Get "Forked from" info for the repo
-      const parentInfo = await getForkParent(repo)
-
-      // get the action info
-      const action = await getActionInfo(
-        client,
-        repoOwner,
-        repoName,
-        actionFile,
-        parentInfo,
-        isArchived,
-        visibility,
-        isFork
-      )
-      actions.push(action)
-    }
+    actions.push(...subActions)
   }
 
   return actions
@@ -856,6 +882,7 @@ async function getAllActionsUsingSearch(
   isEnterpriseServer: boolean
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
+  const reposWithRootAction = new Set<string>()
 
   const searchResult = await getSearchResult(
     client,
@@ -909,6 +936,34 @@ async function getAllActionsUsingSearch(
         isFork
       )
       actions.push(result)
+
+      // Check if this is a root action file (action.yml or action.yaml in the root)
+      if (filePath === 'action.yml' || filePath === 'action.yaml') {
+        const repoKey = `${repoOwner}/${repoName}`
+        if (!reposWithRootAction.has(repoKey)) {
+          reposWithRootAction.add(repoKey)
+          core.info(
+            `Found root action in ${repoKey}, will search for sub-actions`
+          )
+
+          // Find all sub-actions in this repo
+          const subActions = await findSubActionsInRepo(
+            client,
+            repoName,
+            repoOwner,
+            repoDetail
+          )
+
+          // Add sub-actions (filtering out the root action we already added)
+          for (const subAction of subActions) {
+            // Skip if this is the root action (already added)
+            if (isRootAction(subAction.path)) {
+              continue
+            }
+            actions.push(subAction)
+          }
+        }
+      }
     }
   }
   return actions
