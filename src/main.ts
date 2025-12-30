@@ -522,6 +522,25 @@ async function getActionableDockerFiles(
     actions[index].isFork = value.isFork
     actions[index].isArchived = value.isArchived
   })
+
+  // Fetch readmes if the setting is enabled
+  if (fetchReadmesSetting) {
+    await Promise.allSettled(
+      actions.map(async action => {
+        if (action.repo && action.author) {
+          const readmeLink = await getReadmeContent(
+            client,
+            action.repo,
+            action.author
+          )
+          if (readmeLink) {
+            action.readme = readmeLink
+          }
+        }
+      })
+    )
+  }
+
   return actions
 }
 

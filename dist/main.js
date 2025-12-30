@@ -46538,6 +46538,22 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
     actions[index].isFork = value.isFork;
     actions[index].isArchived = value.isArchived;
   });
+  if (fetchReadmesSetting) {
+    await Promise.allSettled(
+      actions.map(async (action) => {
+        if (action.repo && action.author) {
+          const readmeLink = await getReadmeContent(
+            client,
+            action.repo,
+            action.author
+          );
+          if (readmeLink) {
+            action.readme = readmeLink;
+          }
+        }
+      })
+    );
+  }
   return actions;
 }
 function isRootAction(actionPath) {
