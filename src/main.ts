@@ -3,7 +3,8 @@ import {Octokit} from 'octokit'
 import {
   DockerActionFiles,
   GetDateFormatted,
-  getActionableDockerFilesFromDisk
+  getActionableDockerFilesFromDisk,
+  isInTestFolder
 } from './utils'
 import dotenv from 'dotenv'
 import fs from 'fs'
@@ -213,6 +214,8 @@ export class ActionContent {
   readme: string | undefined
   using: string | undefined
   isArchived: boolean | undefined
+  visibility: string | undefined
+  isFork: boolean | undefined
 }
 
 export class WorkflowContent {
@@ -263,6 +266,8 @@ async function enrichActionFiles(
   client: Octokit,
   actionFiles: ActionContent[]
 ): Promise<ActionContent[]> {
+  const validActions: ActionContent[] = []
+
   for (const action of actionFiles) {
     core.debug(`Enrich action information from file: [${action.downloadUrl}]`)
     // download the file in it and parse it
@@ -270,18 +275,25 @@ async function enrichActionFiles(
       const {data: content} = await client.request({url: action.downloadUrl})
 
       // try to parse the yaml
-      const {name, author, description, using} = parseYAML(
+      const {name, author, description, using, isWorkflow} = parseYAML(
         action.downloadUrl,
         action.repo,
         content
       )
+
+      // Skip files that are workflow definitions, not action definitions
+      if (isWorkflow) {
+        continue
+      }
+
       action.name = name
       action.author = author
       action.description = description
       action.using = using
+      validActions.push(action)
     }
   }
-  return actionFiles
+  return validActions
 }
 
 const getSearchResult = async (
@@ -430,7 +442,9 @@ async function getAllNormalActions(
     (action, index, self) =>
       index ===
       self.findIndex(
-        t => `${t.name} ${t.repo}` === `${action.name} ${action.repo}`
+        t =>
+          `${t.name} ${t.repo} ${t.path || ''}` ===
+          `${action.name} ${action.repo} ${action.path || ''}`
       )
   )
   core.debug(`After dedupliation we have [${actions.length}] actions in total`)
@@ -466,6 +480,9 @@ async function getActionableDockerFiles(
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
+    const visibility = repo.visibility || 'public'
+    const isFork = repo.fork || false
+    const isArchived = repo.archived || false
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
@@ -484,6 +501,9 @@ async function getActionableDockerFiles(
         item.author = repoOwner
         item.repo = repoName
         item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`
+        item.visibility = visibility
+        item.isFork = isFork
+        item.isArchived = isArchived
       })
       dockerActions = actionableDockerFiles
     }
@@ -498,7 +518,102 @@ async function getActionableDockerFiles(
     actions[index].author = value.author
     actions[index].description = value.description
     actions[index].using = 'docker'
+    actions[index].visibility = value.visibility
+    actions[index].isFork = value.isFork
+    actions[index].isArchived = value.isArchived
   })
+
+  // Fetch readmes if the setting is enabled
+  if (fetchReadmesSetting) {
+    await Promise.allSettled(
+      actions.map(async action => {
+        if (action.repo && action.author) {
+          const readmeLink = await getReadmeContent(
+            client,
+            action.repo,
+            action.author
+          )
+          if (readmeLink) {
+            action.readme = readmeLink
+          }
+        }
+      })
+    )
+  }
+
+  return actions
+}
+
+function isRootAction(actionPath: string | undefined): boolean {
+  return actionPath === '' || actionPath === '.' || actionPath === undefined
+}
+
+async function findSubActionsInRepo(
+  client: Octokit,
+  repoName: string,
+  repoOwner: string,
+  repoDetail: any
+): Promise<ActionContent[]> {
+  const actions: ActionContent[] = []
+  const isArchived = repoDetail.archived
+  const visibility = repoDetail.visibility || 'public'
+  const isFork = repoDetail.fork || false
+
+  core.debug(`Checking repo [${repoName}] for sub-actions`)
+  // clone the repo
+  const repoPath = cloneRepo(repoName, repoOwner)
+  if (!repoPath) {
+    // error cloning the repo, skip it
+    return actions
+  }
+
+  // check with a shell command if the repo contains action files
+  const actionFiles = execSync(
+    `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
+    {encoding: 'utf8'}
+  ).split('\n')
+  core.debug(
+    `Found [${
+      actionFiles.length - 1
+    }] action files in repo [${repoName}] that was cloned to [${repoPath}]`
+  )
+
+  for (let index = 0; index < actionFiles.length - 1; index++) {
+    core.debug(
+      `Found action file [${actionFiles[index]}] in repo [${repoName}]`
+    )
+
+    // remove the actions/$repopath
+    const actionFile = actionFiles[index].substring(
+      `actions/${repoName}/`.length
+    )
+    core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
+
+    // Skip actions in test folders
+    if (isInTestFolder(actionFile)) {
+      core.info(
+        `Skipping action in ${repoName}/${actionFile} - detected in test folder`
+      )
+      continue
+    }
+
+    // Get "Forked from" info for the repo
+    const parentInfo = await getForkParent(repoDetail)
+
+    // get the action info
+    const action = await getActionInfo(
+      client,
+      repoOwner,
+      repoName,
+      actionFile,
+      parentInfo,
+      isArchived,
+      visibility,
+      isFork
+    )
+    actions.push(action)
+  }
+
   return actions
 }
 
@@ -528,51 +643,14 @@ async function getAllActionsFromForkedRepos(
     // check if the repo contains action files in the root of the repo
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
-    const isArchived = repo.archived
 
-    core.debug(`Checking repo [${repoName}] for action files`)
-    // clone the repo
-    const repoPath = cloneRepo(repoName, repoOwner)
-    if (!repoPath) {
-      // error cloning the repo, skip it
-      continue
-    }
-    // check with a shell command if the repo contains action files in the root of the repo
-    const actionFiles = execSync(
-      `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
-      {encoding: 'utf8'}
-    ).split('\n')
-    core.debug(
-      `Found [${
-        actionFiles.length - 1
-      }] action in repo [${repoName}] that was cloned to [${repoPath}]`
+    const subActions = await findSubActionsInRepo(
+      client,
+      repoName,
+      repoOwner,
+      repo
     )
-
-    for (let index = 0; index < actionFiles.length - 1; index++) {
-      core.debug(
-        `Found action file [${actionFiles[index]}] in repo [${repoName}]`
-      )
-
-      // remove the actions/$repopath
-      const actionFile = actionFiles[index].substring(
-        `actions/${repoName}/`.length
-      )
-      core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
-
-      // Get "Forked from" info for the repo
-      const parentInfo = await getForkParent(repo)
-
-      // get the action info
-      const action = await getActionInfo(
-        client,
-        repoOwner,
-        repoName,
-        actionFile,
-        parentInfo,
-        isArchived
-      )
-      actions.push(action)
-    }
+    actions.push(...subActions)
   }
 
   return actions
@@ -804,6 +882,7 @@ async function getAllActionsUsingSearch(
   isEnterpriseServer: boolean
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
+  const reposWithRootAction = new Set<string>()
 
   const searchResult = await getSearchResult(
     client,
@@ -823,11 +902,21 @@ async function getAllActionsUsingSearch(
 
     // Push file to action list if filename matches action.yaml or action.yml
     if (fileName == 'action.yaml' || fileName == 'action.yml') {
+      // Skip actions in test folders
+      if (isInTestFolder(filePath)) {
+        core.info(
+          `Skipping action in ${repoName}/${filePath} - detected in test folder`
+        )
+        continue
+      }
+
       core.info(`Found action in ${repoName}/${filePath}`)
 
       // Get the Repository Details
       const repoDetail = await getRepoDetails(client, repoOwner, repoName)
       const isArchived = repoDetail.archived
+      const visibility = repoDetail.visibility || 'public'
+      const isFork = repoDetail.fork || false
 
       // Get "Forked from" info for the repo
       let parentInfo = ''
@@ -842,9 +931,39 @@ async function getAllActionsUsingSearch(
         repoName,
         filePath,
         parentInfo,
-        isArchived
+        isArchived,
+        visibility,
+        isFork
       )
       actions.push(result)
+
+      // Check if this is a root action file (action.yml or action.yaml in the root)
+      if (filePath === 'action.yml' || filePath === 'action.yaml') {
+        const repoKey = `${repoOwner}/${repoName}`
+        if (!reposWithRootAction.has(repoKey)) {
+          reposWithRootAction.add(repoKey)
+          core.info(
+            `Found root action in ${repoKey}, will search for sub-actions`
+          )
+
+          // Find all sub-actions in this repo
+          const subActions = await findSubActionsInRepo(
+            client,
+            repoName,
+            repoOwner,
+            repoDetail
+          )
+
+          // Add sub-actions (filtering out the root action we already added)
+          for (const subAction of subActions) {
+            // Skip if this is the root action (already added)
+            if (isRootAction(subAction.path)) {
+              continue
+            }
+            actions.push(subAction)
+          }
+        }
+      }
     }
   }
   return actions
@@ -865,7 +984,9 @@ async function getActionInfo(
   repo: string,
   actionFilePath: string,
   forkedFrom: string,
-  isArchived: boolean = false
+  isArchived: boolean = false,
+  visibility: string = 'public',
+  isFork: boolean = false
 ): Promise<ActionContent> {
   // Get File content
   const {data: yaml} = await client.rest.repos.getContent({
@@ -884,6 +1005,8 @@ async function getActionInfo(
       : ''
     result.forkedfrom = forkedFrom
     result.isArchived = isArchived
+    result.visibility = visibility
+    result.isFork = isFork
     if (yaml.download_url !== null) {
       result.downloadUrl = removeTokenSetting
         ? yaml.download_url.replace(/\?(.*)/, '')
@@ -931,7 +1054,7 @@ async function getAllReusableWorkflowsUsingSearch(
     // Get the Repository Details
     const repoDetail = await getRepoDetails(client, repoOwner, repoName)
     const isArchived = repoDetail.archived
-    const visibility = repoDetail.visibility
+    const visibility = repoDetail.visibility || 'public'
 
     // Skip workflow if it is a private repo
     if (includePrivateWorkflows === 'false' && visibility === 'private') {

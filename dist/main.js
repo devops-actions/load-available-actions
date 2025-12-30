@@ -44794,14 +44794,40 @@ var import_fs = __toESM(require("fs"));
 function GetDateFormatted(date) {
   return (0, import_moment.default)(date).format("YYYYMMDD_HHmm");
 }
+function isInTestFolder(filePath) {
+  const normalizedPath = filePath.replace(/\\/g, "/");
+  const testPatterns = [
+    /__tests__\//,
+    // __tests__/ directory anywhere in path
+    /__fixtures__\//,
+    // __fixtures__/ directory anywhere in path
+    /(?:^|\/)tests?\//,
+    // /test/ or /tests/ directory (including at root)
+    /(?:^|\/)\.test\//,
+    // /.test/ directory (including at root)
+    /\/test-[^/]*\//,
+    // /test-something/ directory (complete segment)
+    /\/[^/]*-test\//
+    // /something-test/ directory (complete segment)
+  ];
+  return testPatterns.some((pattern) => pattern.test(normalizedPath));
+}
 function parseYAML(filePath, repo, content) {
   const defaultValue = "Undefined";
   let name = defaultValue;
   let author = defaultValue;
   let description = defaultValue;
   let using = description;
+  let isWorkflow = false;
   try {
     const parsed = import_yaml.default.parse(content);
+    if (parsed.on) {
+      core.info(
+        `Skipping [${filePath}] in repo [${repo}] - detected as workflow definition (has 'on' trigger)`
+      );
+      isWorkflow = true;
+      return { name, author, description, using, isWorkflow };
+    }
     name = parsed.name ? sanitize(parsed.name) : defaultValue;
     author = parsed.author ? sanitize(parsed.author) : defaultValue;
     description = parsed.description ? sanitize(parsed.description) : defaultValue;
@@ -44813,10 +44839,10 @@ function parseYAML(filePath, repo, content) {
       `Error parsing action file [${filePath}] in repo [${repo}] with error: ${error2}`
     );
     core.info(
-      `The parsing error is informational, seaching for actions has continued`
+      `The parsing error is informational, searching for actions has continued`
     );
   }
-  return { name, author, description, using };
+  return { name, author, description, using, isWorkflow };
 }
 function sanitize(value) {
   return import_string_sanitizer.default.sanitize.keepSpace(value);
@@ -46326,22 +46352,27 @@ async function getAllActions(client, user, organization, isEnterpriseServer) {
   return actionFilesToReturn;
 }
 async function enrichActionFiles(client, actionFiles) {
+  const validActions = [];
   for (const action of actionFiles) {
     core3.debug(`Enrich action information from file: [${action.downloadUrl}]`);
     if (action.downloadUrl) {
       const { data: content } = await client.request({ url: action.downloadUrl });
-      const { name, author, description, using } = parseYAML(
+      const { name, author, description, using, isWorkflow } = parseYAML(
         action.downloadUrl,
         action.repo,
         content
       );
+      if (isWorkflow) {
+        continue;
+      }
       action.name = name;
       action.author = author;
       action.description = description;
       action.using = using;
+      validActions.push(action);
     }
   }
-  return actionFiles;
+  return validActions;
 }
 var getSearchResult = async (client, username, organization, isEnterpriseServer, searchQuery) => {
   if (username) {
@@ -46448,7 +46479,7 @@ async function getAllNormalActions(client, username, organization, isEnterpriseS
   core3.debug(`Found [${actions.length}] actions in total`);
   actions = actions.filter(
     (action, index, self2) => index === self2.findIndex(
-      (t2) => `${t2.name} ${t2.repo}` === `${action.name} ${action.repo}`
+      (t2) => `${t2.name} ${t2.repo} ${t2.path || ""}` === `${action.name} ${action.repo} ${action.path || ""}`
     )
   );
   core3.debug(`After dedupliation we have [${actions.length}] actions in total`);
@@ -46472,6 +46503,9 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
     }
     const repoName = repo.name;
     const repoOwner = repo.owner ? repo.owner.login : "";
+    const visibility = repo.visibility || "public";
+    const isFork = repo.fork || false;
+    const isArchived = repo.archived || false;
     core3.debug(`Checking repo [${repoName}] for action files`);
     const repoPath = cloneRepo(repoName, repoOwner);
     if (!repoPath) {
@@ -46484,6 +46518,9 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
         item.author = repoOwner;
         item.repo = repoName;
         item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`;
+        item.visibility = visibility;
+        item.isFork = isFork;
+        item.isArchived = isArchived;
       });
       dockerActions = actionableDockerFiles;
     }
@@ -46497,7 +46534,75 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
     actions[index].author = value.author;
     actions[index].description = value.description;
     actions[index].using = "docker";
+    actions[index].visibility = value.visibility;
+    actions[index].isFork = value.isFork;
+    actions[index].isArchived = value.isArchived;
   });
+  if (fetchReadmesSetting) {
+    await Promise.allSettled(
+      actions.map(async (action) => {
+        if (action.repo && action.author) {
+          const readmeLink = await getReadmeContent(
+            client,
+            action.repo,
+            action.author
+          );
+          if (readmeLink) {
+            action.readme = readmeLink;
+          }
+        }
+      })
+    );
+  }
+  return actions;
+}
+function isRootAction(actionPath) {
+  return actionPath === "" || actionPath === "." || actionPath === void 0;
+}
+async function findSubActionsInRepo(client, repoName, repoOwner, repoDetail) {
+  const actions = [];
+  const isArchived = repoDetail.archived;
+  const visibility = repoDetail.visibility || "public";
+  const isFork = repoDetail.fork || false;
+  core3.debug(`Checking repo [${repoName}] for sub-actions`);
+  const repoPath = cloneRepo(repoName, repoOwner);
+  if (!repoPath) {
+    return actions;
+  }
+  const actionFiles = (0, import_child_process2.execSync)(
+    `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
+    { encoding: "utf8" }
+  ).split("\n");
+  core3.debug(
+    `Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`
+  );
+  for (let index = 0; index < actionFiles.length - 1; index++) {
+    core3.debug(
+      `Found action file [${actionFiles[index]}] in repo [${repoName}]`
+    );
+    const actionFile = actionFiles[index].substring(
+      `actions/${repoName}/`.length
+    );
+    core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
+    if (isInTestFolder(actionFile)) {
+      core3.info(
+        `Skipping action in ${repoName}/${actionFile} - detected in test folder`
+      );
+      continue;
+    }
+    const parentInfo = await getForkParent(repoDetail);
+    const action = await getActionInfo(
+      client,
+      repoOwner,
+      repoName,
+      actionFile,
+      parentInfo,
+      isArchived,
+      visibility,
+      isFork
+    );
+    actions.push(action);
+  }
   return actions;
 }
 async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
@@ -46517,38 +46622,13 @@ async function getAllActionsFromForkedRepos(client, username, organization, isEn
     }
     const repoName = repo.name;
     const repoOwner = repo.owner ? repo.owner.login : "";
-    const isArchived = repo.archived;
-    core3.debug(`Checking repo [${repoName}] for action files`);
-    const repoPath = cloneRepo(repoName, repoOwner);
-    if (!repoPath) {
-      continue;
-    }
-    const actionFiles = (0, import_child_process2.execSync)(
-      `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
-      { encoding: "utf8" }
-    ).split("\n");
-    core3.debug(
-      `Found [${actionFiles.length - 1}] action in repo [${repoName}] that was cloned to [${repoPath}]`
+    const subActions = await findSubActionsInRepo(
+      client,
+      repoName,
+      repoOwner,
+      repo
     );
-    for (let index2 = 0; index2 < actionFiles.length - 1; index2++) {
-      core3.debug(
-        `Found action file [${actionFiles[index2]}] in repo [${repoName}]`
-      );
-      const actionFile = actionFiles[index2].substring(
-        `actions/${repoName}/`.length
-      );
-      core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
-      const parentInfo = await getForkParent(repo);
-      const action = await getActionInfo(
-        client,
-        repoOwner,
-        repoName,
-        actionFile,
-        parentInfo,
-        isArchived
-      );
-      actions.push(action);
-    }
+    actions.push(...subActions);
   }
   return actions;
 }
@@ -46712,6 +46792,7 @@ async function getRepoDetails(client, owner, repo) {
 }
 async function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
   const actions = [];
+  const reposWithRootAction = /* @__PURE__ */ new Set();
   const searchResult = await getSearchResult(
     client,
     username,
@@ -46726,9 +46807,17 @@ async function getAllActionsUsingSearch(client, username, organization, isEnterp
     const repoName = searchResult[index].repository.name;
     const repoOwner = searchResult[index].repository.owner.login;
     if (fileName == "action.yaml" || fileName == "action.yml") {
+      if (isInTestFolder(filePath)) {
+        core3.info(
+          `Skipping action in ${repoName}/${filePath} - detected in test folder`
+        );
+        continue;
+      }
       core3.info(`Found action in ${repoName}/${filePath}`);
       const repoDetail = await getRepoDetails(client, repoOwner, repoName);
       const isArchived = repoDetail.archived;
+      const visibility = repoDetail.visibility || "public";
+      const isFork = repoDetail.fork || false;
       let parentInfo = "";
       if (searchResult[index].repository.fork) {
         parentInfo = await getForkParent(repoDetail);
@@ -46739,9 +46828,32 @@ async function getAllActionsUsingSearch(client, username, organization, isEnterp
         repoName,
         filePath,
         parentInfo,
-        isArchived
+        isArchived,
+        visibility,
+        isFork
       );
       actions.push(result);
+      if (filePath === "action.yml" || filePath === "action.yaml") {
+        const repoKey = `${repoOwner}/${repoName}`;
+        if (!reposWithRootAction.has(repoKey)) {
+          reposWithRootAction.add(repoKey);
+          core3.info(
+            `Found root action in ${repoKey}, will search for sub-actions`
+          );
+          const subActions = await findSubActionsInRepo(
+            client,
+            repoName,
+            repoOwner,
+            repoDetail
+          );
+          for (const subAction of subActions) {
+            if (isRootAction(subAction.path)) {
+              continue;
+            }
+            actions.push(subAction);
+          }
+        }
+      }
     }
   }
   return actions;
@@ -46753,7 +46865,7 @@ async function getForkParent(repoDetails) {
   }
   return parentInfo;
 }
-async function getActionInfo(client, owner, repo, actionFilePath, forkedFrom, isArchived = false) {
+async function getActionInfo(client, owner, repo, actionFilePath, forkedFrom, isArchived = false, visibility = "public", isFork = false) {
   const { data: yaml } = await client.rest.repos.getContent({
     owner,
     repo,
@@ -46767,6 +46879,8 @@ async function getActionInfo(client, owner, repo, actionFilePath, forkedFrom, is
     result.path = actionFilePath.includes("/") ? import_path.default.dirname(actionFilePath) : "";
     result.forkedfrom = forkedFrom;
     result.isArchived = isArchived;
+    result.visibility = visibility;
+    result.isFork = isFork;
     if (yaml.download_url !== null) {
       result.downloadUrl = removeTokenSetting ? yaml.download_url.replace(/\?(.*)/, "") : yaml.download_url;
     }
@@ -46796,7 +46910,7 @@ async function getAllReusableWorkflowsUsingSearch(client, username, organization
     const repoOwner = searchResult[index].repository.owner.login;
     const repoDetail = await getRepoDetails(client, repoOwner, repoName);
     const isArchived = repoDetail.archived;
-    const visibility = repoDetail.visibility;
+    const visibility = repoDetail.visibility || "public";
     if (includePrivateWorkflows === "false" && visibility === "private") {
       continue;
     }
