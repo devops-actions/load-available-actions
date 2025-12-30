@@ -156,3 +156,32 @@ test('isInTestFolder correctly identifies sub-action paths', () => {
   expect(isInTestFolder('.github/actions/__tests__/mock/action.yml')).toBe(true)
   expect(isInTestFolder('actions/test/action.yml')).toBe(true)
 })
+
+test('isInTestFolder correctly handles github/codeql-action repository structure', () => {
+  // The github/codeql-action repository contains multiple actions in subfolders
+  // These are the actual paths from that repository (as of 2024)
+
+  // Root action and sub-actions in main directories should be valid
+  expect(isInTestFolder('action.yml')).toBe(false)
+  expect(isInTestFolder('analyze/action.yml')).toBe(false)
+  expect(isInTestFolder('autobuild/action.yml')).toBe(false)
+  expect(isInTestFolder('init/action.yml')).toBe(false)
+  expect(isInTestFolder('resolve-environment/action.yml')).toBe(false)
+  expect(isInTestFolder('setup-codeql/action.yml')).toBe(false)
+  expect(isInTestFolder('start-proxy/action.yml')).toBe(false)
+  expect(isInTestFolder('upload-sarif/action.yml')).toBe(false)
+
+  // Actions in .github/actions/ that are NOT in test folders should be valid
+  expect(isInTestFolder('.github/actions/release-initialise/action.yml')).toBe(
+    false
+  )
+  expect(isInTestFolder('.github/actions/check-sarif/action.yml')).toBe(false)
+  expect(isInTestFolder('.github/actions/update-bundle/action.yml')).toBe(false)
+
+  // Actions in .github/actions/ with 'test' in the path should be filtered
+  // This one has 'test' as a complete directory segment, so it should be filtered
+  expect(isInTestFolder('.github/actions/prepare-test/action.yml')).toBe(true)
+  expect(isInTestFolder('.github/actions/query-filter-test/action.yml')).toBe(
+    true
+  )
+})
