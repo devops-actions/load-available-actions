@@ -46217,7 +46217,7 @@ function parseExcludedRepos(excludeReposInput2) {
   const repoNames = excludeReposInput2.split("\n").map((line) => line.trim()).filter((line) => line.length > 0);
   repoNames.forEach((repoName) => {
     excludedRepos.add(repoName.toLowerCase());
-    core3.info(`Will exclude repo: ${repoName}`);
+    core3.info(`Will exclude repo: ${repoName.toLowerCase()}`);
   });
   return excludedRepos;
 }

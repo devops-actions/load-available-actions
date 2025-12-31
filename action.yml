@@ -33,7 +33,7 @@ inputs:
     default: 'false'
     required: false    
   exclude-repos:
-    description: 'List of repository names to exclude from cloning (one per line). Use this to skip large repos that are not needed. Format: repo-name (without owner/org prefix)'
+    description: 'List of repository names to exclude from cloning (one per line, case-insensitive). Use this to skip large repos that are not needed. Format: repo-name (without owner/org prefix)'
     required: false
 outputs:
   actions-file-path:

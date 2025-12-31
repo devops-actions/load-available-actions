@@ -69,7 +69,7 @@ function parseExcludedRepos(excludeReposInput: string): Set<string> {
 
   repoNames.forEach(repoName => {
     excludedRepos.add(repoName.toLowerCase())
-    core.info(`Will exclude repo: ${repoName}`)
+    core.info(`Will exclude repo: ${repoName.toLowerCase()}`)
   })
 
   return excludedRepos
