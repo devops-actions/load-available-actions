@@ -32,6 +32,9 @@ inputs:
     description: 'Include Workflows from private repositories'
     default: 'false'
     required: false    
+  exclude-repos:
+    description: 'List of repository names to exclude from cloning (one per line). Use this to skip large repos that are not needed. Format: repo-name (without owner/org prefix)'
+    required: false
 outputs:
   actions-file-path:
     description: 'Path to the file that contains a list of all actions available in the organization or user space'  
