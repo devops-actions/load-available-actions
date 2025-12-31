@@ -46370,19 +46370,7 @@ async function getAllActions(client, user, organization, isEnterpriseServer, exc
     forkedRepos
   );
   actionFiles = await enrichActionFiles(client, actionFiles);
-  const allActionableDockerFiles = await getActionableDockerFiles(
-    client,
-    user,
-    organization,
-    isEnterpriseServer,
-    excludedRepos,
-    forkedRepos
-  );
-  core3.info(
-    `Found [${allActionableDockerFiles.length}] docker files with action definitions`
-  );
-  const actionFilesToReturn = actionFiles.concat(allActionableDockerFiles);
-  return actionFilesToReturn;
+  return actionFiles;
 }
 async function enrichActionFiles(client, actionFiles) {
   const validActions = [];
@@ -46521,77 +46509,6 @@ async function getAllNormalActions(client, username, organization, isEnterpriseS
   core3.debug(`After dedupliation we have [${actions.length}] actions in total`);
   return actions;
 }
-async function getActionableDockerFiles(client, username, organization, isEnterpriseServer, excludedRepos, forkedRepos) {
-  let dockerActions = [];
-  let actions = [];
-  const searchResult = forkedRepos;
-  core3.info(
-    `Checking [${searchResult.length}] forked repos for docker action files`
-  );
-  for (let index = 0; index < searchResult.length; index++) {
-    const repo = searchResult[index];
-    if (!repo.fork) {
-      continue;
-    }
-    const repoName = repo.name;
-    const repoOwner = repo.owner ? repo.owner.login : "";
-    const visibility = repo.visibility || "public";
-    const isFork = repo.fork || false;
-    const isArchived = repo.archived || false;
-    if (isRepoExcluded(repoName, excludedRepos)) {
-      core3.info(`Skipping excluded repo: ${repoName}`);
-      continue;
-    }
-    core3.debug(`Checking repo [${repoName}] for action files`);
-    const repoPath = cloneRepo(repoName, repoOwner);
-    if (!repoPath) {
-      continue;
-    }
-    const actionableDockerFiles = await getActionableDockerFilesFromDisk(repoPath);
-    if (JSON.stringify(actionableDockerFiles) !== "[]") {
-      core3.info(`adding ${JSON.stringify(actionableDockerFiles)}`);
-      actionableDockerFiles?.map((item) => {
-        item.author = repoOwner;
-        item.repo = repoName;
-        item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`;
-        item.visibility = visibility;
-        item.isFork = isFork;
-        item.isArchived = isArchived;
-      });
-      dockerActions = actionableDockerFiles;
-    }
-  }
-  dockerActions?.forEach((value, index) => {
-    actions[index] = new ActionContent();
-    actions[index].name = value.name;
-    actions[index].repo = value.repo;
-    actions[index].forkedfrom = "";
-    actions[index].downloadUrl = value.downloadUrl;
-    actions[index].author = value.author;
-    actions[index].description = value.description;
-    actions[index].using = "docker";
-    actions[index].visibility = value.visibility;
-    actions[index].isFork = value.isFork;
-    actions[index].isArchived = value.isArchived;
-  });
-  if (fetchReadmesSetting) {
-    await Promise.allSettled(
-      actions.map(async (action) => {
-        if (action.repo && action.author) {
-          const readmeLink = await getReadmeContent(
-            client,
-            action.repo,
-            action.author
-          );
-          if (readmeLink) {
-            action.readme = readmeLink;
-          }
-        }
-      })
-    );
-  }
-  return actions;
-}
 function isRootAction(actionPath) {
   return actionPath === "" || actionPath === "." || actionPath === void 0;
 }
@@ -46645,10 +46562,91 @@ async function findSubActionsInRepo(client, repoName, repoOwner, repoDetail, exc
   }
   return actions;
 }
+async function scanForkedRepoForAllActions(client, repoName, repoOwner, repoDetail, excludedRepos) {
+  const actions = [];
+  const isArchived = repoDetail.archived;
+  const visibility = repoDetail.visibility || "public";
+  const isFork = repoDetail.fork || false;
+  if (isRepoExcluded(repoName, excludedRepos)) {
+    core3.info(`Skipping excluded repo: ${repoName}`);
+    return actions;
+  }
+  core3.debug(`Checking repo [${repoName}] for action files and docker files`);
+  const repoPath = cloneRepo(repoName, repoOwner);
+  if (!repoPath) {
+    return actions;
+  }
+  const actionFiles = (0, import_child_process2.execSync)(
+    `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
+    { encoding: "utf8" }
+  ).split("\n");
+  core3.debug(
+    `Found [${actionFiles.length - 1}] action files in repo [${repoName}] that was cloned to [${repoPath}]`
+  );
+  for (let index = 0; index < actionFiles.length - 1; index++) {
+    core3.debug(
+      `Found action file [${actionFiles[index]}] in repo [${repoName}]`
+    );
+    const actionFile = actionFiles[index].substring(
+      `actions/${repoName}/`.length
+    );
+    core3.debug(`Found action file [${actionFile}] in repo [${repoName}]`);
+    if (isInTestFolder(actionFile)) {
+      core3.info(
+        `Skipping action in ${repoName}/${actionFile} - detected in test folder`
+      );
+      continue;
+    }
+    const parentInfo = await getForkParent(repoDetail);
+    const action = await getActionInfo(
+      client,
+      repoOwner,
+      repoName,
+      actionFile,
+      parentInfo,
+      isArchived,
+      visibility,
+      isFork
+    );
+    actions.push(action);
+  }
+  const actionableDockerFiles = await getActionableDockerFilesFromDisk(repoPath);
+  if (JSON.stringify(actionableDockerFiles) !== "[]") {
+    core3.info(
+      `Found docker actions in ${repoName}: ${JSON.stringify(actionableDockerFiles)}`
+    );
+    const dockerParentInfo = await getForkParent(repoDetail);
+    actionableDockerFiles?.map((item) => {
+      item.author = repoOwner;
+      item.repo = repoName;
+      item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`;
+      item.visibility = visibility;
+      item.isFork = isFork;
+      item.isArchived = isArchived;
+    });
+    actionableDockerFiles?.forEach((value) => {
+      const dockerAction = new ActionContent();
+      dockerAction.name = value.name;
+      dockerAction.repo = value.repo;
+      dockerAction.forkedfrom = dockerParentInfo;
+      dockerAction.downloadUrl = value.downloadUrl;
+      dockerAction.author = value.author;
+      dockerAction.description = value.description;
+      dockerAction.using = "docker";
+      dockerAction.visibility = value.visibility;
+      dockerAction.isFork = value.isFork;
+      dockerAction.isArchived = value.isArchived;
+      actions.push(dockerAction);
+    });
+  }
+  return actions;
+}
 async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer, excludedRepos, forkedRepos) {
   const actions = [];
   const searchResult = forkedRepos;
-  core3.info(`Checking [${searchResult.length}] forked repos for action files`);
+  core3.info(
+    `Checking [${searchResult.length}] forked repos for action files and docker files`
+  );
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index];
     if (!repo.fork) {
@@ -46656,14 +46654,14 @@ async function getAllActionsFromForkedRepos(client, username, organization, isEn
     }
     const repoName = repo.name;
     const repoOwner = repo.owner ? repo.owner.login : "";
-    const subActions = await findSubActionsInRepo(
+    const repoActions = await scanForkedRepoForAllActions(
       client,
       repoName,
       repoOwner,
       repo,
       excludedRepos
     );
-    actions.push(...subActions);
+    actions.push(...repoActions);
   }
   return actions;
 }

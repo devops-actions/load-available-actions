@@ -302,23 +302,7 @@ async function getAllActions(
   // load the information inside of the action definition files
   actionFiles = await enrichActionFiles(client, actionFiles)
 
-  // get all docker action definition (Dockerfile / dockerfile) from the user or organization
-  const allActionableDockerFiles = await getActionableDockerFiles(
-    client,
-    user,
-    organization,
-    isEnterpriseServer,
-    excludedRepos,
-    forkedRepos
-  )
-  core.info(
-    `Found [${allActionableDockerFiles.length}] docker files with action definitions`
-  )
-
-  // concat the arrays before we return them in one go
-  const actionFilesToReturn = actionFiles.concat(allActionableDockerFiles)
-
-  return actionFilesToReturn
+  return actionFiles
 }
 
 async function enrichActionFiles(
@@ -515,103 +499,6 @@ async function getAllNormalActions(
   return actions
 }
 
-async function getActionableDockerFiles(
-  client: Octokit,
-  username: string,
-  organization: string,
-  isEnterpriseServer: boolean,
-  excludedRepos: Set<string>,
-  forkedRepos: any[]
-): Promise<ActionContent[]> {
-  let dockerActions: DockerActionFiles[] | undefined = []
-  let actions: ActionContent[] = []
-  const searchResult = forkedRepos
-
-  core.info(
-    `Checking [${searchResult.length}] forked repos for docker action files`
-  )
-
-  for (let index = 0; index < searchResult.length; index++) {
-    const repo = searchResult[index]
-
-    if (!repo.fork) {
-      // we only want forked repos
-      continue
-    }
-
-    // check if the repo contains action files in the root of the repo
-    const repoName = repo.name
-    const repoOwner = repo.owner ? repo.owner.login : ''
-    const visibility = repo.visibility || 'public'
-    const isFork = repo.fork || false
-    const isArchived = repo.archived || false
-
-    // Skip excluded repos
-    if (isRepoExcluded(repoName, excludedRepos)) {
-      core.info(`Skipping excluded repo: ${repoName}`)
-      continue
-    }
-
-    core.debug(`Checking repo [${repoName}] for action files`)
-    // clone the repo
-    const repoPath = cloneRepo(repoName, repoOwner)
-    if (!repoPath) {
-      // error cloning the repo, skip it
-      continue
-    }
-
-    const actionableDockerFiles =
-      await getActionableDockerFilesFromDisk(repoPath)
-
-    if (JSON.stringify(actionableDockerFiles) !== '[]') {
-      core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
-      actionableDockerFiles?.map(item => {
-        item.author = repoOwner
-        item.repo = repoName
-        item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`
-        item.visibility = visibility
-        item.isFork = isFork
-        item.isArchived = isArchived
-      })
-      dockerActions = actionableDockerFiles
-    }
-  }
-
-  dockerActions?.forEach((value, index) => {
-    actions[index] = new ActionContent()
-    actions[index].name = value.name
-    actions[index].repo = value.repo
-    actions[index].forkedfrom = ''
-    actions[index].downloadUrl = value.downloadUrl
-    actions[index].author = value.author
-    actions[index].description = value.description
-    actions[index].using = 'docker'
-    actions[index].visibility = value.visibility
-    actions[index].isFork = value.isFork
-    actions[index].isArchived = value.isArchived
-  })
-
-  // Fetch readmes if the setting is enabled
-  if (fetchReadmesSetting) {
-    await Promise.allSettled(
-      actions.map(async action => {
-        if (action.repo && action.author) {
-          const readmeLink = await getReadmeContent(
-            client,
-            action.repo,
-            action.author
-          )
-          if (readmeLink) {
-            action.readme = readmeLink
-          }
-        }
-      })
-    )
-  }
-
-  return actions
-}
-
 function isRootAction(actionPath: string | undefined): boolean {
   return actionPath === '' || actionPath === '.' || actionPath === undefined
 }
@@ -692,6 +579,119 @@ async function findSubActionsInRepo(
   return actions
 }
 
+async function scanForkedRepoForAllActions(
+  client: Octokit,
+  repoName: string,
+  repoOwner: string,
+  repoDetail: any,
+  excludedRepos: Set<string>
+): Promise<ActionContent[]> {
+  const actions: ActionContent[] = []
+  const isArchived = repoDetail.archived
+  const visibility = repoDetail.visibility || 'public'
+  const isFork = repoDetail.fork || false
+
+  // Skip excluded repos
+  if (isRepoExcluded(repoName, excludedRepos)) {
+    core.info(`Skipping excluded repo: ${repoName}`)
+    return actions
+  }
+
+  core.debug(`Checking repo [${repoName}] for action files and docker files`)
+  // clone the repo once
+  const repoPath = cloneRepo(repoName, repoOwner)
+  if (!repoPath) {
+    // error cloning the repo, skip it
+    return actions
+  }
+
+  // Scan for action.yml and action.yaml files
+  const actionFiles = execSync(
+    `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
+    {encoding: 'utf8'}
+  ).split('\n')
+  core.debug(
+    `Found [${
+      actionFiles.length - 1
+    }] action files in repo [${repoName}] that was cloned to [${repoPath}]`
+  )
+
+  for (let index = 0; index < actionFiles.length - 1; index++) {
+    core.debug(
+      `Found action file [${actionFiles[index]}] in repo [${repoName}]`
+    )
+
+    // remove the actions/$repopath
+    const actionFile = actionFiles[index].substring(
+      `actions/${repoName}/`.length
+    )
+    core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
+
+    // Skip actions in test folders
+    if (isInTestFolder(actionFile)) {
+      core.info(
+        `Skipping action in ${repoName}/${actionFile} - detected in test folder`
+      )
+      continue
+    }
+
+    // Get "Forked from" info for the repo
+    const parentInfo = await getForkParent(repoDetail)
+
+    // get the action info
+    const action = await getActionInfo(
+      client,
+      repoOwner,
+      repoName,
+      actionFile,
+      parentInfo,
+      isArchived,
+      visibility,
+      isFork
+    )
+    actions.push(action)
+  }
+
+  // Scan for Docker action files in the same cloned repo
+  const actionableDockerFiles = await getActionableDockerFilesFromDisk(repoPath)
+
+  if (JSON.stringify(actionableDockerFiles) !== '[]') {
+    core.info(
+      `Found docker actions in ${repoName}: ${JSON.stringify(actionableDockerFiles)}`
+    )
+
+    // Get parent info once for docker actions
+    const dockerParentInfo = await getForkParent(repoDetail)
+
+    actionableDockerFiles?.map(item => {
+      item.author = repoOwner
+      item.repo = repoName
+      item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`
+      item.visibility = visibility
+      item.isFork = isFork
+      item.isArchived = isArchived
+    })
+
+    // Convert docker actions to ActionContent format
+    actionableDockerFiles?.forEach(value => {
+      const dockerAction = new ActionContent()
+      dockerAction.name = value.name
+      dockerAction.repo = value.repo
+      dockerAction.forkedfrom = dockerParentInfo
+      dockerAction.downloadUrl = value.downloadUrl
+      dockerAction.author = value.author
+      dockerAction.description = value.description
+      dockerAction.using = 'docker'
+      dockerAction.visibility = value.visibility
+      dockerAction.isFork = value.isFork
+      dockerAction.isArchived = value.isArchived
+      actions.push(dockerAction)
+    })
+  }
+
+  return actions
+}
+
 async function getAllActionsFromForkedRepos(
   client: Octokit,
   username: string,
@@ -702,7 +702,9 @@ async function getAllActionsFromForkedRepos(
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
   const searchResult = forkedRepos
-  core.info(`Checking [${searchResult.length}] forked repos for action files`)
+  core.info(
+    `Checking [${searchResult.length}] forked repos for action files and docker files`
+  )
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
 
@@ -715,14 +717,15 @@ async function getAllActionsFromForkedRepos(
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
 
-    const subActions = await findSubActionsInRepo(
+    // Scan the repo once for both action files and docker files
+    const repoActions = await scanForkedRepoForAllActions(
       client,
       repoName,
       repoOwner,
       repo,
       excludedRepos
     )
-    actions.push(...subActions)
+    actions.push(...repoActions)
   }
 
   return actions
