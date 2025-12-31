@@ -46576,6 +46576,7 @@ async function scanForkedRepoForAllActions(client, repoName, repoOwner, repoDeta
   if (!repoPath) {
     return actions;
   }
+  const parentInfo = await getForkParent(repoDetail);
   const actionFiles = (0, import_child_process2.execSync)(
     `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
     { encoding: "utf8" }
@@ -46597,7 +46598,6 @@ async function scanForkedRepoForAllActions(client, repoName, repoOwner, repoDeta
       );
       continue;
     }
-    const parentInfo = await getForkParent(repoDetail);
     const action = await getActionInfo(
       client,
       repoOwner,
@@ -46611,12 +46611,11 @@ async function scanForkedRepoForAllActions(client, repoName, repoOwner, repoDeta
     actions.push(action);
   }
   const actionableDockerFiles = await getActionableDockerFilesFromDisk(repoPath);
-  if (JSON.stringify(actionableDockerFiles) !== "[]") {
+  if (actionableDockerFiles && actionableDockerFiles.length > 0) {
     core3.info(
       `Found docker actions in ${repoName}: ${JSON.stringify(actionableDockerFiles)}`
     );
-    const dockerParentInfo = await getForkParent(repoDetail);
-    actionableDockerFiles?.map((item) => {
+    actionableDockerFiles.map((item) => {
       item.author = repoOwner;
       item.repo = repoName;
       item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`;
@@ -46624,11 +46623,11 @@ async function scanForkedRepoForAllActions(client, repoName, repoOwner, repoDeta
       item.isFork = isFork;
       item.isArchived = isArchived;
     });
-    actionableDockerFiles?.forEach((value) => {
+    actionableDockerFiles.forEach((value) => {
       const dockerAction = new ActionContent();
       dockerAction.name = value.name;
       dockerAction.repo = value.repo;
-      dockerAction.forkedfrom = dockerParentInfo;
+      dockerAction.forkedfrom = parentInfo;
       dockerAction.downloadUrl = value.downloadUrl;
       dockerAction.author = value.author;
       dockerAction.description = value.description;

@@ -605,6 +605,9 @@ async function scanForkedRepoForAllActions(
     return actions
   }
 
+  // Get "Forked from" info once for the entire repo
+  const parentInfo = await getForkParent(repoDetail)
+
   // Scan for action.yml and action.yaml files
   const actionFiles = execSync(
     `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
@@ -635,9 +638,6 @@ async function scanForkedRepoForAllActions(
       continue
     }
 
-    // Get "Forked from" info for the repo
-    const parentInfo = await getForkParent(repoDetail)
-
     // get the action info
     const action = await getActionInfo(
       client,
@@ -655,15 +655,12 @@ async function scanForkedRepoForAllActions(
   // Scan for Docker action files in the same cloned repo
   const actionableDockerFiles = await getActionableDockerFilesFromDisk(repoPath)
 
-  if (JSON.stringify(actionableDockerFiles) !== '[]') {
+  if (actionableDockerFiles && actionableDockerFiles.length > 0) {
     core.info(
       `Found docker actions in ${repoName}: ${JSON.stringify(actionableDockerFiles)}`
     )
 
-    // Get parent info once for docker actions
-    const dockerParentInfo = await getForkParent(repoDetail)
-
-    actionableDockerFiles?.map(item => {
+    actionableDockerFiles.map(item => {
       item.author = repoOwner
       item.repo = repoName
       item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`
@@ -673,11 +670,11 @@ async function scanForkedRepoForAllActions(
     })
 
     // Convert docker actions to ActionContent format
-    actionableDockerFiles?.forEach(value => {
+    actionableDockerFiles.forEach(value => {
       const dockerAction = new ActionContent()
       dockerAction.name = value.name
       dockerAction.repo = value.repo
-      dockerAction.forkedfrom = dockerParentInfo
+      dockerAction.forkedfrom = parentInfo
       dockerAction.downloadUrl = value.downloadUrl
       dockerAction.author = value.author
       dockerAction.description = value.description
