@@ -46201,12 +46201,28 @@ var fetchReadmesSetting = getInputOrEnv("fetchReadmes");
 var hostname = getHostName();
 var scanForReusableWorkflows = getInputOrEnv("scanForReusableWorkflows");
 var includePrivateWorkflows = getInputOrEnv("includePrivateWorkflows");
+var excludeReposInput = getInputOrEnv("exclude-repos");
 function isRecoverableSearchError(error2) {
   const isRateLimitError2 = error2.message?.includes(
     "SecondaryRateLimit detected for request"
   ) || error2.message?.includes("API rate limit exceeded for");
   const isValidationError = error2.status === 422 || error2.message?.includes("Validation Failed");
   return isRateLimitError2 || isValidationError;
+}
+function parseExcludedRepos(excludeReposInput2) {
+  const excludedRepos = /* @__PURE__ */ new Set();
+  if (!excludeReposInput2 || excludeReposInput2.trim() === "") {
+    return excludedRepos;
+  }
+  const repoNames = excludeReposInput2.split("\n").map((line) => line.trim()).filter((line) => line.length > 0);
+  repoNames.forEach((repoName) => {
+    excludedRepos.add(repoName.toLowerCase());
+    core3.info(`Will exclude repo: ${repoName.toLowerCase()}`);
+  });
+  return excludedRepos;
+}
+function isRepoExcluded(repoName, excludedRepos) {
+  return excludedRepos.has(repoName.toLowerCase());
 }
 async function validateUser(client, username) {
   try {
@@ -46251,6 +46267,10 @@ async function run() {
     const baseUrl = process.env.GITHUB_API_URL || "https://api.github.com";
     const isEnterpriseServer = baseUrl !== "https://api.github.com";
     const outputFilename = getInputOrEnv("outputFilename") || "actions.json";
+    const excludedRepos = parseExcludedRepos(excludeReposInput);
+    if (excludedRepos.size > 0) {
+      core3.info(`Excluding ${excludedRepos.size} repositories from cloning`);
+    }
     if (!PAT) {
       core3.setFailed(
         "Parameter 'PAT' is required to load all actions from the organization or user account"
@@ -46299,7 +46319,8 @@ async function run() {
       octokit,
       user,
       organization,
-      isEnterpriseServer
+      isEnterpriseServer,
+      excludedRepos
     );
     let workflows = [];
     if (scanForReusableWorkflows === "true") {
@@ -46331,19 +46352,21 @@ var ActionContent = class {
 };
 var WorkflowContent = class {
 };
-async function getAllActions(client, user, organization, isEnterpriseServer) {
+async function getAllActions(client, user, organization, isEnterpriseServer, excludedRepos) {
   let actionFiles = await getAllNormalActions(
     client,
     user,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos
   );
   actionFiles = await enrichActionFiles(client, actionFiles);
   const allActionableDockerFiles = await getActionableDockerFiles(
     client,
     user,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos
   );
   core3.info(
     `Found [${allActionableDockerFiles.length}] docker files with action definitions`
@@ -46462,18 +46485,20 @@ async function checkRateLimits(client, isEnterpriseServer, limitToSearch = false
     await new Promise((r2) => setTimeout(r2, waitTime));
   }
 }
-async function getAllNormalActions(client, username, organization, isEnterpriseServer) {
+async function getAllNormalActions(client, username, organization, isEnterpriseServer, excludedRepos) {
   let actions = await getAllActionsUsingSearch(
     client,
     username,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos
   );
   let forkedActions = await getAllActionsFromForkedRepos(
     client,
     username,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos
   );
   actions = actions.concat(forkedActions);
   core3.debug(`Found [${actions.length}] actions in total`);
@@ -46485,7 +46510,7 @@ async function getAllNormalActions(client, username, organization, isEnterpriseS
   core3.debug(`After dedupliation we have [${actions.length}] actions in total`);
   return actions;
 }
-async function getActionableDockerFiles(client, username, organization, isEnterpriseServer) {
+async function getActionableDockerFiles(client, username, organization, isEnterpriseServer, excludedRepos) {
   let dockerActions = [];
   let actions = [];
   const searchResult = await getSearchResult(
@@ -46506,6 +46531,10 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
     const visibility = repo.visibility || "public";
     const isFork = repo.fork || false;
     const isArchived = repo.archived || false;
+    if (isRepoExcluded(repoName, excludedRepos)) {
+      core3.info(`Skipping excluded repo: ${repoName}`);
+      continue;
+    }
     core3.debug(`Checking repo [${repoName}] for action files`);
     const repoPath = cloneRepo(repoName, repoOwner);
     if (!repoPath) {
@@ -46559,11 +46588,15 @@ async function getActionableDockerFiles(client, username, organization, isEnterp
 function isRootAction(actionPath) {
   return actionPath === "" || actionPath === "." || actionPath === void 0;
 }
-async function findSubActionsInRepo(client, repoName, repoOwner, repoDetail) {
+async function findSubActionsInRepo(client, repoName, repoOwner, repoDetail, excludedRepos) {
   const actions = [];
   const isArchived = repoDetail.archived;
   const visibility = repoDetail.visibility || "public";
   const isFork = repoDetail.fork || false;
+  if (isRepoExcluded(repoName, excludedRepos)) {
+    core3.info(`Skipping excluded repo: ${repoName}`);
+    return actions;
+  }
   core3.debug(`Checking repo [${repoName}] for sub-actions`);
   const repoPath = cloneRepo(repoName, repoOwner);
   if (!repoPath) {
@@ -46605,7 +46638,7 @@ async function findSubActionsInRepo(client, repoName, repoOwner, repoDetail) {
   }
   return actions;
 }
-async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer) {
+async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer, excludedRepos) {
   const actions = [];
   const searchResult = await getSearchResult(
     client,
@@ -46626,7 +46659,8 @@ async function getAllActionsFromForkedRepos(client, username, organization, isEn
       client,
       repoName,
       repoOwner,
-      repo
+      repo,
+      excludedRepos
     );
     actions.push(...subActions);
   }
@@ -46790,7 +46824,7 @@ async function getRepoDetails(client, owner, repo) {
   });
   return repoDetails;
 }
-async function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer) {
+async function getAllActionsUsingSearch(client, username, organization, isEnterpriseServer, excludedRepos) {
   const actions = [];
   const reposWithRootAction = /* @__PURE__ */ new Set();
   const searchResult = await getSearchResult(
@@ -46837,6 +46871,12 @@ async function getAllActionsUsingSearch(client, username, organization, isEnterp
         const repoKey = `${repoOwner}/${repoName}`;
         if (!reposWithRootAction.has(repoKey)) {
           reposWithRootAction.add(repoKey);
+          if (isRepoExcluded(repoName, excludedRepos)) {
+            core3.info(
+              `Skipping excluded repo for sub-action search: ${repoName}`
+            );
+            continue;
+          }
           core3.info(
             `Found root action in ${repoKey}, will search for sub-actions`
           );
@@ -46844,7 +46884,8 @@ async function getAllActionsUsingSearch(client, username, organization, isEnterp
             client,
             repoName,
             repoOwner,
-            repoDetail
+            repoDetail,
+            excludedRepos
           );
           for (const subAction of subActions) {
             if (isRootAction(subAction.path)) {

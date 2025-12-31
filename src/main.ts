@@ -32,6 +32,7 @@ const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
 const hostname = getHostName()
 const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
+const excludeReposInput = getInputOrEnv('exclude-repos')
 
 function isRecoverableSearchError(error: any): boolean {
   // Check for rate limit errors via message
@@ -46,6 +47,42 @@ function isRecoverableSearchError(error: any): boolean {
     (error as Error).message?.includes('Validation Failed')
 
   return isRateLimitError || isValidationError
+}
+
+/**
+ * Parse the exclude-repos input and return a Set of repo names to exclude
+ * @param excludeReposInput The multiline input string with repo names
+ * @returns A Set containing repo names to exclude
+ */
+function parseExcludedRepos(excludeReposInput: string): Set<string> {
+  const excludedRepos = new Set<string>()
+
+  if (!excludeReposInput || excludeReposInput.trim() === '') {
+    return excludedRepos
+  }
+
+  // Split by newlines and filter out empty lines
+  const repoNames = excludeReposInput
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+
+  repoNames.forEach(repoName => {
+    excludedRepos.add(repoName.toLowerCase())
+    core.info(`Will exclude repo: ${repoName.toLowerCase()}`)
+  })
+
+  return excludedRepos
+}
+
+/**
+ * Check if a repository should be excluded from cloning
+ * @param repoName The repository name to check
+ * @param excludedRepos Set of excluded repository names
+ * @returns true if the repo should be excluded, false otherwise
+ */
+function isRepoExcluded(repoName: string, excludedRepos: Set<string>): boolean {
+  return excludedRepos.has(repoName.toLowerCase())
 }
 
 async function validateUser(
@@ -101,6 +138,12 @@ async function run(): Promise<void> {
     const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com'
     const isEnterpriseServer = baseUrl !== 'https://api.github.com'
     const outputFilename = getInputOrEnv('outputFilename') || 'actions.json'
+
+    // Parse excluded repositories
+    const excludedRepos = parseExcludedRepos(excludeReposInput)
+    if (excludedRepos.size > 0) {
+      core.info(`Excluding ${excludedRepos.size} repositories from cloning`)
+    }
 
     if (!PAT) {
       core.setFailed(
@@ -161,7 +204,8 @@ async function run(): Promise<void> {
       octokit,
       user,
       organization,
-      isEnterpriseServer
+      isEnterpriseServer,
+      excludedRepos
     )
     let workflows: WorkflowContent[] = []
 
@@ -233,14 +277,16 @@ async function getAllActions(
   client: Octokit,
   user: string,
   organization: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
   // get all action files (action.yml and action.yaml) from the user or organization
   let actionFiles = await getAllNormalActions(
     client,
     user,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos
   )
   // load the information inside of the action definition files
   actionFiles = await enrichActionFiles(client, actionFiles)
@@ -250,7 +296,8 @@ async function getAllActions(
     client,
     user,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos
   )
   core.info(
     `Found [${allActionableDockerFiles.length}] docker files with action definitions`
@@ -418,20 +465,23 @@ async function getAllNormalActions(
   client: Octokit,
   username: string,
   organization: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
   let actions = await getAllActionsUsingSearch(
     client,
     username,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos
   )
   // search does not work on forked repos, so we need to loop over all forks manually
   let forkedActions = await getAllActionsFromForkedRepos(
     client,
     username,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos
   )
 
   actions = actions.concat(forkedActions)
@@ -455,7 +505,8 @@ async function getActionableDockerFiles(
   client: Octokit,
   username: string,
   organization: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
   let dockerActions: DockerActionFiles[] | undefined = []
   let actions: ActionContent[] = []
@@ -483,6 +534,12 @@ async function getActionableDockerFiles(
     const visibility = repo.visibility || 'public'
     const isFork = repo.fork || false
     const isArchived = repo.archived || false
+
+    // Skip excluded repos
+    if (isRepoExcluded(repoName, excludedRepos)) {
+      core.info(`Skipping excluded repo: ${repoName}`)
+      continue
+    }
 
     core.debug(`Checking repo [${repoName}] for action files`)
     // clone the repo
@@ -552,12 +609,19 @@ async function findSubActionsInRepo(
   client: Octokit,
   repoName: string,
   repoOwner: string,
-  repoDetail: any
+  repoDetail: any,
+  excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
   const isArchived = repoDetail.archived
   const visibility = repoDetail.visibility || 'public'
   const isFork = repoDetail.fork || false
+
+  // Skip excluded repos
+  if (isRepoExcluded(repoName, excludedRepos)) {
+    core.info(`Skipping excluded repo: ${repoName}`)
+    return actions
+  }
 
   core.debug(`Checking repo [${repoName}] for sub-actions`)
   // clone the repo
@@ -621,7 +685,8 @@ async function getAllActionsFromForkedRepos(
   client: Octokit,
   username: string,
   organization: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
   const searchResult = await getSearchResult(
@@ -648,7 +713,8 @@ async function getAllActionsFromForkedRepos(
       client,
       repoName,
       repoOwner,
-      repo
+      repo,
+      excludedRepos
     )
     actions.push(...subActions)
   }
@@ -879,7 +945,8 @@ async function getAllActionsUsingSearch(
   client: Octokit,
   username: string,
   organization: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
   const reposWithRootAction = new Set<string>()
@@ -942,6 +1009,15 @@ async function getAllActionsUsingSearch(
         const repoKey = `${repoOwner}/${repoName}`
         if (!reposWithRootAction.has(repoKey)) {
           reposWithRootAction.add(repoKey)
+
+          // Skip excluded repos before cloning
+          if (isRepoExcluded(repoName, excludedRepos)) {
+            core.info(
+              `Skipping excluded repo for sub-action search: ${repoName}`
+            )
+            continue
+          }
+
           core.info(
             `Found root action in ${repoKey}, will search for sub-actions`
           )
@@ -951,7 +1027,8 @@ async function getAllActionsUsingSearch(
             client,
             repoName,
             repoOwner,
-            repoDetail
+            repoDetail,
+            excludedRepos
           )
 
           // Add sub-actions (filtering out the root action we already added)

@@ -44,6 +44,30 @@ my-action-repo/
 
 All three actions will be discovered and included in the output, with the `path` field indicating their location within the repository.
 
+### Excluding Repositories from Cloning
+
+When scanning for sub-actions, you can exclude specific repositories from being cloned. This is useful for skipping large repositories that you're not interested in, which can significantly reduce execution time.
+
+**Usage:**
+```yaml
+- name: Load available actions
+  uses: devops-actions/load-available-actions@v2
+  with:
+    PAT: ${{ secrets.PAT_TOKEN }}
+    organization: your-org-name
+    exclude-repos: |
+      large-repo-1
+      large-repo-2
+      another-repo-to-skip
+```
+
+**Important notes:**
+- Specify only the repository name, not the full `owner/repo` format
+- One repository name per line
+- Repository names are case-insensitive
+- Only affects the cloning process for sub-action discovery
+- Root actions from excluded repos are still included in the output
+
 ## Authentication
 
 This action requires authentication to access the GitHub API. There are two methods available:
@@ -87,6 +111,7 @@ Regardless of the authentication method, the following permissions are needed:
 | _removeToken (optional)_  | Removes token from remote url.                           |
 | _fetchReadmes (optional_) | Adds readmes of repositories to json in a base64 format. |
 | outputFilename (optional) | The name of the output file. Defaults to `actions.json`  |
+| _exclude-repos (optional)_ | List of repository names to exclude from cloning (one per line). Use this to skip large repos that are not needed. |
 
 ## Outputs
 
