@@ -46353,12 +46353,21 @@ var ActionContent = class {
 var WorkflowContent = class {
 };
 async function getAllActions(client, user, organization, isEnterpriseServer, excludedRepos) {
+  const forkedRepos = await getSearchResult(
+    client,
+    user,
+    organization,
+    isEnterpriseServer,
+    "+fork:only"
+  );
+  core3.info(`Found [${forkedRepos.length}] forked repos to scan`);
   let actionFiles = await getAllNormalActions(
     client,
     user,
     organization,
     isEnterpriseServer,
-    excludedRepos
+    excludedRepos,
+    forkedRepos
   );
   actionFiles = await enrichActionFiles(client, actionFiles);
   const allActionableDockerFiles = await getActionableDockerFiles(
@@ -46366,7 +46375,8 @@ async function getAllActions(client, user, organization, isEnterpriseServer, exc
     user,
     organization,
     isEnterpriseServer,
-    excludedRepos
+    excludedRepos,
+    forkedRepos
   );
   core3.info(
     `Found [${allActionableDockerFiles.length}] docker files with action definitions`
@@ -46485,7 +46495,7 @@ async function checkRateLimits(client, isEnterpriseServer, limitToSearch = false
     await new Promise((r2) => setTimeout(r2, waitTime));
   }
 }
-async function getAllNormalActions(client, username, organization, isEnterpriseServer, excludedRepos) {
+async function getAllNormalActions(client, username, organization, isEnterpriseServer, excludedRepos, forkedRepos) {
   let actions = await getAllActionsUsingSearch(
     client,
     username,
@@ -46498,7 +46508,8 @@ async function getAllNormalActions(client, username, organization, isEnterpriseS
     username,
     organization,
     isEnterpriseServer,
-    excludedRepos
+    excludedRepos,
+    forkedRepos
   );
   actions = actions.concat(forkedActions);
   core3.debug(`Found [${actions.length}] actions in total`);
@@ -46510,17 +46521,13 @@ async function getAllNormalActions(client, username, organization, isEnterpriseS
   core3.debug(`After dedupliation we have [${actions.length}] actions in total`);
   return actions;
 }
-async function getActionableDockerFiles(client, username, organization, isEnterpriseServer, excludedRepos) {
+async function getActionableDockerFiles(client, username, organization, isEnterpriseServer, excludedRepos, forkedRepos) {
   let dockerActions = [];
   let actions = [];
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    "+fork:only"
+  const searchResult = forkedRepos;
+  core3.info(
+    `Checking [${searchResult.length}] forked repos for docker action files`
   );
-  core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index];
     if (!repo.fork) {
@@ -46638,16 +46645,10 @@ async function findSubActionsInRepo(client, repoName, repoOwner, repoDetail, exc
   }
   return actions;
 }
-async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer, excludedRepos) {
+async function getAllActionsFromForkedRepos(client, username, organization, isEnterpriseServer, excludedRepos, forkedRepos) {
   const actions = [];
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    "+fork:only"
-  );
-  core3.info(`Found [${searchResult.length}] repos, checking only the forks`);
+  const searchResult = forkedRepos;
+  core3.info(`Checking [${searchResult.length}] forked repos for action files`);
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index];
     if (!repo.fork) {

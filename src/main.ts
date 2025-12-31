@@ -280,13 +280,24 @@ async function getAllActions(
   isEnterpriseServer: boolean,
   excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
+  // Fetch forked repos once to avoid duplicate API calls
+  const forkedRepos = await getSearchResult(
+    client,
+    user,
+    organization,
+    isEnterpriseServer,
+    '+fork:only'
+  )
+  core.info(`Found [${forkedRepos.length}] forked repos to scan`)
+
   // get all action files (action.yml and action.yaml) from the user or organization
   let actionFiles = await getAllNormalActions(
     client,
     user,
     organization,
     isEnterpriseServer,
-    excludedRepos
+    excludedRepos,
+    forkedRepos
   )
   // load the information inside of the action definition files
   actionFiles = await enrichActionFiles(client, actionFiles)
@@ -297,7 +308,8 @@ async function getAllActions(
     user,
     organization,
     isEnterpriseServer,
-    excludedRepos
+    excludedRepos,
+    forkedRepos
   )
   core.info(
     `Found [${allActionableDockerFiles.length}] docker files with action definitions`
@@ -466,7 +478,8 @@ async function getAllNormalActions(
   username: string,
   organization: string,
   isEnterpriseServer: boolean,
-  excludedRepos: Set<string>
+  excludedRepos: Set<string>,
+  forkedRepos: any[]
 ): Promise<ActionContent[]> {
   let actions = await getAllActionsUsingSearch(
     client,
@@ -481,7 +494,8 @@ async function getAllNormalActions(
     username,
     organization,
     isEnterpriseServer,
-    excludedRepos
+    excludedRepos,
+    forkedRepos
   )
 
   actions = actions.concat(forkedActions)
@@ -506,19 +520,16 @@ async function getActionableDockerFiles(
   username: string,
   organization: string,
   isEnterpriseServer: boolean,
-  excludedRepos: Set<string>
+  excludedRepos: Set<string>,
+  forkedRepos: any[]
 ): Promise<ActionContent[]> {
   let dockerActions: DockerActionFiles[] | undefined = []
   let actions: ActionContent[] = []
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+fork:only'
-  )
+  const searchResult = forkedRepos
 
-  core.info(`Found [${searchResult.length}] repos, checking only the forks`)
+  core.info(
+    `Checking [${searchResult.length}] forked repos for docker action files`
+  )
 
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
@@ -686,17 +697,12 @@ async function getAllActionsFromForkedRepos(
   username: string,
   organization: string,
   isEnterpriseServer: boolean,
-  excludedRepos: Set<string>
+  excludedRepos: Set<string>,
+  forkedRepos: any[]
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+fork:only'
-  )
-  core.info(`Found [${searchResult.length}] repos, checking only the forks`)
+  const searchResult = forkedRepos
+  core.info(`Checking [${searchResult.length}] forked repos for action files`)
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
 
