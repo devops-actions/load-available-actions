@@ -32,6 +32,7 @@ const fetchReadmesSetting = getInputOrEnv('fetchReadmes')
 const hostname = getHostName()
 const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
+const excludeReposInput = getInputOrEnv('exclude-repos')
 
 function isRecoverableSearchError(error: any): boolean {
   // Check for rate limit errors via message
@@ -46,6 +47,42 @@ function isRecoverableSearchError(error: any): boolean {
     (error as Error).message?.includes('Validation Failed')
 
   return isRateLimitError || isValidationError
+}
+
+/**
+ * Parse the exclude-repos input and return a Set of repo names to exclude
+ * @param excludeReposInput The multiline input string with repo names
+ * @returns A Set containing repo names to exclude
+ */
+function parseExcludedRepos(excludeReposInput: string): Set<string> {
+  const excludedRepos = new Set<string>()
+
+  if (!excludeReposInput || excludeReposInput.trim() === '') {
+    return excludedRepos
+  }
+
+  // Split by newlines and filter out empty lines
+  const repoNames = excludeReposInput
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.length > 0)
+
+  repoNames.forEach(repoName => {
+    excludedRepos.add(repoName.toLowerCase())
+    core.info(`Will exclude repo: ${repoName.toLowerCase()}`)
+  })
+
+  return excludedRepos
+}
+
+/**
+ * Check if a repository should be excluded from cloning
+ * @param repoName The repository name to check
+ * @param excludedRepos Set of excluded repository names
+ * @returns true if the repo should be excluded, false otherwise
+ */
+function isRepoExcluded(repoName: string, excludedRepos: Set<string>): boolean {
+  return excludedRepos.has(repoName.toLowerCase())
 }
 
 async function validateUser(
@@ -101,6 +138,12 @@ async function run(): Promise<void> {
     const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com'
     const isEnterpriseServer = baseUrl !== 'https://api.github.com'
     const outputFilename = getInputOrEnv('outputFilename') || 'actions.json'
+
+    // Parse excluded repositories
+    const excludedRepos = parseExcludedRepos(excludeReposInput)
+    if (excludedRepos.size > 0) {
+      core.info(`Excluding ${excludedRepos.size} repositories from cloning`)
+    }
 
     if (!PAT) {
       core.setFailed(
@@ -161,7 +204,8 @@ async function run(): Promise<void> {
       octokit,
       user,
       organization,
-      isEnterpriseServer
+      isEnterpriseServer,
+      excludedRepos
     )
     let workflows: WorkflowContent[] = []
 
@@ -233,33 +277,32 @@ async function getAllActions(
   client: Octokit,
   user: string,
   organization: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
+  // Fetch forked repos once to avoid duplicate API calls
+  const forkedRepos = await getSearchResult(
+    client,
+    user,
+    organization,
+    isEnterpriseServer,
+    '+fork:only'
+  )
+  core.info(`Found [${forkedRepos.length}] forked repos to scan`)
+
   // get all action files (action.yml and action.yaml) from the user or organization
   let actionFiles = await getAllNormalActions(
     client,
     user,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos,
+    forkedRepos
   )
   // load the information inside of the action definition files
   actionFiles = await enrichActionFiles(client, actionFiles)
 
-  // get all docker action definition (Dockerfile / dockerfile) from the user or organization
-  const allActionableDockerFiles = await getActionableDockerFiles(
-    client,
-    user,
-    organization,
-    isEnterpriseServer
-  )
-  core.info(
-    `Found [${allActionableDockerFiles.length}] docker files with action definitions`
-  )
-
-  // concat the arrays before we return them in one go
-  const actionFilesToReturn = actionFiles.concat(allActionableDockerFiles)
-
-  return actionFilesToReturn
+  return actionFiles
 }
 
 async function enrichActionFiles(
@@ -418,20 +461,25 @@ async function getAllNormalActions(
   client: Octokit,
   username: string,
   organization: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  excludedRepos: Set<string>,
+  forkedRepos: any[]
 ): Promise<ActionContent[]> {
   let actions = await getAllActionsUsingSearch(
     client,
     username,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos
   )
   // search does not work on forked repos, so we need to loop over all forks manually
   let forkedActions = await getAllActionsFromForkedRepos(
     client,
     username,
     organization,
-    isEnterpriseServer
+    isEnterpriseServer,
+    excludedRepos,
+    forkedRepos
   )
 
   actions = actions.concat(forkedActions)
@@ -451,99 +499,6 @@ async function getAllNormalActions(
   return actions
 }
 
-async function getActionableDockerFiles(
-  client: Octokit,
-  username: string,
-  organization: string,
-  isEnterpriseServer: boolean
-): Promise<ActionContent[]> {
-  let dockerActions: DockerActionFiles[] | undefined = []
-  let actions: ActionContent[] = []
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+fork:only'
-  )
-
-  core.info(`Found [${searchResult.length}] repos, checking only the forks`)
-
-  for (let index = 0; index < searchResult.length; index++) {
-    const repo = searchResult[index]
-
-    if (!repo.fork) {
-      // we only want forked repos
-      continue
-    }
-
-    // check if the repo contains action files in the root of the repo
-    const repoName = repo.name
-    const repoOwner = repo.owner ? repo.owner.login : ''
-    const visibility = repo.visibility || 'public'
-    const isFork = repo.fork || false
-    const isArchived = repo.archived || false
-
-    core.debug(`Checking repo [${repoName}] for action files`)
-    // clone the repo
-    const repoPath = cloneRepo(repoName, repoOwner)
-    if (!repoPath) {
-      // error cloning the repo, skip it
-      continue
-    }
-
-    const actionableDockerFiles =
-      await getActionableDockerFilesFromDisk(repoPath)
-
-    if (JSON.stringify(actionableDockerFiles) !== '[]') {
-      core.info(`adding ${JSON.stringify(actionableDockerFiles)}`)
-      actionableDockerFiles?.map(item => {
-        item.author = repoOwner
-        item.repo = repoName
-        item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`
-        item.visibility = visibility
-        item.isFork = isFork
-        item.isArchived = isArchived
-      })
-      dockerActions = actionableDockerFiles
-    }
-  }
-
-  dockerActions?.forEach((value, index) => {
-    actions[index] = new ActionContent()
-    actions[index].name = value.name
-    actions[index].repo = value.repo
-    actions[index].forkedfrom = ''
-    actions[index].downloadUrl = value.downloadUrl
-    actions[index].author = value.author
-    actions[index].description = value.description
-    actions[index].using = 'docker'
-    actions[index].visibility = value.visibility
-    actions[index].isFork = value.isFork
-    actions[index].isArchived = value.isArchived
-  })
-
-  // Fetch readmes if the setting is enabled
-  if (fetchReadmesSetting) {
-    await Promise.allSettled(
-      actions.map(async action => {
-        if (action.repo && action.author) {
-          const readmeLink = await getReadmeContent(
-            client,
-            action.repo,
-            action.author
-          )
-          if (readmeLink) {
-            action.readme = readmeLink
-          }
-        }
-      })
-    )
-  }
-
-  return actions
-}
-
 function isRootAction(actionPath: string | undefined): boolean {
   return actionPath === '' || actionPath === '.' || actionPath === undefined
 }
@@ -552,12 +507,19 @@ async function findSubActionsInRepo(
   client: Octokit,
   repoName: string,
   repoOwner: string,
-  repoDetail: any
+  repoDetail: any,
+  excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
   const isArchived = repoDetail.archived
   const visibility = repoDetail.visibility || 'public'
   const isFork = repoDetail.fork || false
+
+  // Skip excluded repos
+  if (isRepoExcluded(repoName, excludedRepos)) {
+    core.info(`Skipping excluded repo: ${repoName}`)
+    return actions
+  }
 
   core.debug(`Checking repo [${repoName}] for sub-actions`)
   // clone the repo
@@ -617,21 +579,129 @@ async function findSubActionsInRepo(
   return actions
 }
 
+async function scanForkedRepoForAllActions(
+  client: Octokit,
+  repoName: string,
+  repoOwner: string,
+  repoDetail: any,
+  excludedRepos: Set<string>
+): Promise<ActionContent[]> {
+  const actions: ActionContent[] = []
+  const isArchived = repoDetail.archived
+  const visibility = repoDetail.visibility || 'public'
+  const isFork = repoDetail.fork || false
+
+  // Skip excluded repos
+  if (isRepoExcluded(repoName, excludedRepos)) {
+    core.info(`Skipping excluded repo: ${repoName}`)
+    return actions
+  }
+
+  core.debug(`Checking repo [${repoName}] for action files and docker files`)
+  // clone the repo once
+  const repoPath = cloneRepo(repoName, repoOwner)
+  if (!repoPath) {
+    // error cloning the repo, skip it
+    return actions
+  }
+
+  // Get "Forked from" info once for the entire repo
+  const parentInfo = await getForkParent(repoDetail)
+
+  // Scan for action.yml and action.yaml files
+  const actionFiles = execSync(
+    `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
+    {encoding: 'utf8'}
+  ).split('\n')
+  core.debug(
+    `Found [${
+      actionFiles.length - 1
+    }] action files in repo [${repoName}] that was cloned to [${repoPath}]`
+  )
+
+  for (let index = 0; index < actionFiles.length - 1; index++) {
+    core.debug(
+      `Found action file [${actionFiles[index]}] in repo [${repoName}]`
+    )
+
+    // remove the actions/$repopath
+    const actionFile = actionFiles[index].substring(
+      `actions/${repoName}/`.length
+    )
+    core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
+
+    // Skip actions in test folders
+    if (isInTestFolder(actionFile)) {
+      core.info(
+        `Skipping action in ${repoName}/${actionFile} - detected in test folder`
+      )
+      continue
+    }
+
+    // get the action info
+    const action = await getActionInfo(
+      client,
+      repoOwner,
+      repoName,
+      actionFile,
+      parentInfo,
+      isArchived,
+      visibility,
+      isFork
+    )
+    actions.push(action)
+  }
+
+  // Scan for Docker action files in the same cloned repo
+  const actionableDockerFiles = await getActionableDockerFilesFromDisk(repoPath)
+
+  if (actionableDockerFiles && actionableDockerFiles.length > 0) {
+    core.info(
+      `Found docker actions in ${repoName}: ${JSON.stringify(actionableDockerFiles)}`
+    )
+
+    actionableDockerFiles.map(item => {
+      item.author = repoOwner
+      item.repo = repoName
+      item.downloadUrl = `https://${hostname}/${repoOwner}/${repoName}.git`
+      item.visibility = visibility
+      item.isFork = isFork
+      item.isArchived = isArchived
+    })
+
+    // Convert docker actions to ActionContent format
+    actionableDockerFiles.forEach(value => {
+      const dockerAction = new ActionContent()
+      dockerAction.name = value.name
+      dockerAction.repo = value.repo
+      dockerAction.forkedfrom = parentInfo
+      dockerAction.downloadUrl = value.downloadUrl
+      dockerAction.author = value.author
+      dockerAction.description = value.description
+      dockerAction.using = 'docker'
+      dockerAction.visibility = value.visibility
+      dockerAction.isFork = value.isFork
+      dockerAction.isArchived = value.isArchived
+      actions.push(dockerAction)
+    })
+  }
+
+  return actions
+}
+
 async function getAllActionsFromForkedRepos(
   client: Octokit,
   username: string,
   organization: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  excludedRepos: Set<string>,
+  forkedRepos: any[]
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+fork:only'
+  const searchResult = forkedRepos
+  core.info(
+    `Checking [${searchResult.length}] forked repos for action files and docker files`
   )
-  core.info(`Found [${searchResult.length}] repos, checking only the forks`)
   for (let index = 0; index < searchResult.length; index++) {
     const repo = searchResult[index]
 
@@ -644,13 +714,15 @@ async function getAllActionsFromForkedRepos(
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
 
-    const subActions = await findSubActionsInRepo(
+    // Scan the repo once for both action files and docker files
+    const repoActions = await scanForkedRepoForAllActions(
       client,
       repoName,
       repoOwner,
-      repo
+      repo,
+      excludedRepos
     )
-    actions.push(...subActions)
+    actions.push(...repoActions)
   }
 
   return actions
@@ -879,7 +951,8 @@ async function getAllActionsUsingSearch(
   client: Octokit,
   username: string,
   organization: string,
-  isEnterpriseServer: boolean
+  isEnterpriseServer: boolean,
+  excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
   const actions: ActionContent[] = []
   const reposWithRootAction = new Set<string>()
@@ -942,6 +1015,15 @@ async function getAllActionsUsingSearch(
         const repoKey = `${repoOwner}/${repoName}`
         if (!reposWithRootAction.has(repoKey)) {
           reposWithRootAction.add(repoKey)
+
+          // Skip excluded repos before cloning
+          if (isRepoExcluded(repoName, excludedRepos)) {
+            core.info(
+              `Skipping excluded repo for sub-action search: ${repoName}`
+            )
+            continue
+          }
+
           core.info(
             `Found root action in ${repoKey}, will search for sub-actions`
           )
@@ -951,7 +1033,8 @@ async function getAllActionsUsingSearch(
             client,
             repoName,
             repoOwner,
-            repoDetail
+            repoDetail,
+            excludedRepos
           )
 
           // Add sub-actions (filtering out the root action we already added)
