@@ -16,6 +16,9 @@ jobs:
   check-release:
     name: Check if release is needed
     uses: devops-actions/.github/.github/workflows/time-for-new-release.yml@main
+    permissions:
+      contents: read
+      issues: write
     # Workflow automatically detects:
     #   1. Code changes to the action (not just docs/tests)
     #   2. Security-related dependency updates
