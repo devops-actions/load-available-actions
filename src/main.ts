@@ -23,7 +23,8 @@ const getInputOrEnv = (input: string) =>
 
 function getHostName(): string {
   const hostName = process.env['GITHUB_SERVER_URL'] || 'github.com'
-  return hostName
+  // Strip protocol if present (e.g., 'https://github.com' -> 'github.com')
+  return hostName.replace(/^https?:\/\//, '')
 }
 
 //Optional values
@@ -730,7 +731,7 @@ async function getAllActionsFromForkedRepos(
 
 function cloneRepo(repo: string, owner: string): string {
   try {
-    const repolink = `${hostname}/${owner}/${repo}.git`
+    const repolink = `https://${hostname}/${owner}/${repo}.git`
     // create a temp directory
     const repoPath = 'actions'
     if (fs.existsSync(repoPath)) {
@@ -749,7 +750,7 @@ function cloneRepo(repo: string, owner: string): string {
 
     return path.join(repoPath, repo)
   } catch (error: any) {
-    core.info(`Error cloning repo [${repo}]: ${error}`)
+    core.warning(`Error cloning repo [${repo}]: ${error.message || error}`)
     // core.info(`Message: ${error?.stdout.toString()}`) // stdout is null
     return ''
   }
