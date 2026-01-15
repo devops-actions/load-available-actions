@@ -101,6 +101,8 @@ Regardless of the authentication method, the following permissions are needed:
 - **Administration**: Read
 - **Contents**: Read
 
+**Note:** To discover private and internal repositories, the token must have access to those repositories. For Personal Access Tokens (PAT), use the `repo` scope. For GitHub Apps, ensure the app is installed with access to the repositories you want to scan.
+
 ## Inputs
 
 | Name                      | Description                                              |
