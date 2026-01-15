@@ -363,7 +363,7 @@ const getSearchResult = async (
 
   // Add visibility qualifiers to search private and internal repositories
   // By default, GitHub Search API only searches public repositories
-  searchQuery = searchQuery.concat('+(is:public OR is:private OR is:internal)')
+  searchQuery = searchQuery.concat(' (is:public OR is:private OR is:internal)')
 
   let searchResult
   if (searchQuery.includes('fork')) {
