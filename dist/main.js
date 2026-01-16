@@ -46580,7 +46580,6 @@ var getSearchResult = async (client, username, organization, isEnterpriseServer,
     );
     searchQuery = searchQuery.concat("+org:", organization);
   }
-  searchQuery = searchQuery.concat(" (is:public OR is:private OR is:internal)");
   let searchResult;
   if (searchQuery.includes("fork")) {
     searchResult = await executeRepoSearch(
