@@ -1,3 +1,6 @@
+// @ts-expect-error - Mock @actions/core for testing (jest global not available in TS)
+jest.mock('@actions/core')
+
 import {expect, test} from '@jest/globals'
 import {GetDateFormatted} from '../src/utils'
 import {parseYAML} from '../src/utils'
