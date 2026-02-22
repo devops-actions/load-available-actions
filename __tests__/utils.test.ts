@@ -1,3 +1,6 @@
+// @ts-ignore - Mock @actions/core for testing
+jest.mock('@actions/core')
+
 import {expect, test} from '@jest/globals'
 import {GetDateFormatted} from '../src/utils'
 import {parseYAML} from '../src/utils'
