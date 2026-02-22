@@ -1,4 +1,4 @@
-// @ts-ignore - Mock @actions/core for testing
+// @ts-expect-error - Mock @actions/core for testing (jest global not available in TS)
 jest.mock('@actions/core')
 
 import {expect, test} from '@jest/globals'

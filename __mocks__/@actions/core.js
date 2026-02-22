@@ -1,3 +1,18 @@
+const summaryMock = {
+  addRaw: jest.fn().mockReturnThis(),
+  addCodeBlock: jest.fn().mockReturnThis(),
+  addHeading: jest.fn().mockReturnThis(),
+  addList: jest.fn().mockReturnThis(),
+  addQuote: jest.fn().mockReturnThis(),
+  addSeparator: jest.fn().mockReturnThis(),
+  addTable: jest.fn().mockReturnThis(),
+  clear: jest.fn().mockReturnThis(),
+  emptyBuffer: jest.fn().mockReturnThis(),
+  isEmptyBuffer: jest.fn(),
+  stringify: jest.fn(),
+  write: jest.fn(),
+}
+
 module.exports = {
   info: jest.fn(),
   warning: jest.fn(),
@@ -17,18 +32,5 @@ module.exports = {
   getState: jest.fn(),
   group: jest.fn(),
   notice: jest.fn(),
-  summary: {
-    addRaw: jest.fn(),
-    addCodeBlock: jest.fn(),
-    addHeading: jest.fn(),
-    addList: jest.fn(),
-    addQuote: jest.fn(),
-    addSeparator: jest.fn(),
-    addTable: jest.fn(),
-    clear: jest.fn(),
-    emptyBuffer: jest.fn(),
-    isEmptyBuffer: jest.fn(),
-    stringify: jest.fn(),
-    write: jest.fn(),
-  }
+  summary: summaryMock
 }
