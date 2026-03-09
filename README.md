@@ -8,6 +8,9 @@ The output is stored in a file with the name `actions`, which can be retrieved i
 
 We use the search API to find the following files in your repositories:
 
+
+
+
 - action.yml
 - action.yaml
 - Dockerfile
