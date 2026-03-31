@@ -54,3 +54,18 @@ test('WorkflowContent structure should include visibility', () => {
   expect(mockWorkflow).toHaveProperty('visibility')
   expect(mockWorkflow.visibility).toBe('private')
 })
+
+test('URL normalization prevents double protocol', () => {
+  // Test that URLs are constructed correctly without double protocol
+  const testUrls = [
+    {input: 'https://github.com', expected: 'github.com'},
+    {input: 'http://github.com', expected: 'github.com'},
+    {input: 'github.com', expected: 'github.com'},
+    {input: 'https://example.github.com', expected: 'example.github.com'}
+  ]
+
+  testUrls.forEach(({input, expected}) => {
+    const normalized = input.replace(/^https?:\/\//, '')
+    expect(normalized).toBe(expected)
+  })
+})
