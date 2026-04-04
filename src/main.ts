@@ -15,6 +15,7 @@ import {execSync} from 'child_process'
 import {Buffer} from 'buffer'
 import YAML from 'yaml'
 import fetch from 'node-fetch'
+import {findDuplicatesByNameRepo, reportDuplicateActions} from './duplicates'
 
 dotenv.config()
 
@@ -488,6 +489,7 @@ async function getAllNormalActions(
   core.debug(`Found [${actions.length}] actions in total`)
 
   // deduplicate the actions list
+  const beforeDedup = actions.length
   actions = actions.filter(
     (action, index, self) =>
       index ===
@@ -497,7 +499,18 @@ async function getAllNormalActions(
           `${action.name} ${action.repo} ${action.path || ''}`
       )
   )
-  core.debug(`After dedupliation we have [${actions.length}] actions in total`)
+  core.debug(`After deduplication we have [${actions.length}] actions in total`)
+
+  // Check for remaining duplicates by name+repo (ignoring path) and report them
+  const duplicatesByNameRepo = findDuplicatesByNameRepo(actions)
+  if (duplicatesByNameRepo.length > 0) {
+    await reportDuplicateActions(
+      duplicatesByNameRepo,
+      beforeDedup,
+      actions.length
+    )
+  }
+
   return actions
 }
 
