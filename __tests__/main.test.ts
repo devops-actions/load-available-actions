@@ -143,6 +143,19 @@ describe('findDuplicatesByNameRepo', () => {
     const result = findDuplicatesByNameRepo(actions)
     expect(result).toHaveLength(0)
   })
+
+  test('ignores actions with undefined name or repo and does not group them together', () => {
+    const actions: ActionLike[] = [
+      {name: undefined, repo: 'repo-a', path: 'path-1'},
+      {name: undefined, repo: 'repo-a', path: 'path-2'},
+      {name: 'action-b', repo: undefined, path: 'path-3'},
+      {name: 'action-b', repo: undefined, path: 'path-4'},
+      {name: undefined, repo: undefined, path: 'path-5'}
+    ]
+
+    const result = findDuplicatesByNameRepo(actions)
+    expect(result).toHaveLength(0)
+  })
 })
 
 describe('reportDuplicateActions', () => {
