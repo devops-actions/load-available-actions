@@ -10,7 +10,7 @@ const summaryMock = {
   emptyBuffer: jest.fn().mockReturnThis(),
   isEmptyBuffer: jest.fn(),
   stringify: jest.fn(),
-  write: jest.fn(),
+  write: jest.fn().mockResolvedValue(undefined),
 }
 
 module.exports = {

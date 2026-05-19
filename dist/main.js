@@ -657,6 +657,21 @@ var require_errors = __commonJS({
       }
       [kSecureProxyConnectionError] = true;
     };
+    var kMessageSizeExceededError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_WS_MESSAGE_SIZE_EXCEEDED");
+    var MessageSizeExceededError = class extends UndiciError {
+      constructor(message) {
+        super(message);
+        this.name = "MessageSizeExceededError";
+        this.message = message || "Max decompressed message size exceeded";
+        this.code = "UND_ERR_WS_MESSAGE_SIZE_EXCEEDED";
+      }
+      static [Symbol.hasInstance](instance) {
+        return instance && instance[kMessageSizeExceededError] === true;
+      }
+      get [kMessageSizeExceededError]() {
+        return true;
+      }
+    };
     module2.exports = {
       AbortError: AbortError2,
       HTTPParserError,
@@ -680,7 +695,8 @@ var require_errors = __commonJS({
       ResponseExceededMaxSizeError,
       RequestRetryError,
       ResponseError,
-      SecureProxyConnectionError
+      SecureProxyConnectionError,
+      MessageSizeExceededError
     };
   }
 });
@@ -1690,6 +1706,9 @@ var require_request = __commonJS({
         if (upgrade && typeof upgrade !== "string") {
           throw new InvalidArgumentError("upgrade must be a string");
         }
+        if (upgrade && !isValidHeaderValue(upgrade)) {
+          throw new InvalidArgumentError("invalid upgrade header");
+        }
         if (headersTimeout != null && (!Number.isFinite(headersTimeout) || headersTimeout < 0)) {
           throw new InvalidArgumentError("invalid headersTimeout");
         }
@@ -1922,12 +1941,18 @@ var require_request = __commonJS({
       } else {
         val = `${val}`;
       }
-      if (request2.host === null && headerName === "host") {
+      if (headerName === "host") {
+        if (request2.host !== null) {
+          throw new InvalidArgumentError("duplicate host header");
+        }
         if (typeof val !== "string") {
           throw new InvalidArgumentError("invalid host header");
         }
         request2.host = val;
-      } else if (request2.contentLength === null && headerName === "content-length") {
+      } else if (headerName === "content-length") {
+        if (request2.contentLength !== null) {
+          throw new InvalidArgumentError("duplicate content-length header");
+        }
         request2.contentLength = parseInt(val, 10);
         if (!Number.isFinite(request2.contentLength)) {
           throw new InvalidArgumentError("invalid content-length header");
@@ -16699,13 +16724,17 @@ var require_util7 = __commonJS({
       return extensionList;
     }
     function isValidClientWindowBits(value) {
+      if (value.length === 0) {
+        return false;
+      }
       for (let i2 = 0; i2 < value.length; i2++) {
         const byte = value.charCodeAt(i2);
         if (byte < 48 || byte > 57) {
           return false;
         }
       }
-      return true;
+      const num = Number.parseInt(value, 10);
+      return num >= 8 && num <= 15;
     }
     var hasIntl = typeof process.versions.icu === "string";
     var fatalDecoder = hasIntl ? new TextDecoder("utf-8", { fatal: true }) : void 0;
@@ -17004,18 +17033,35 @@ var require_permessage_deflate = __commonJS({
     "use strict";
     var { createInflateRaw, Z_DEFAULT_WINDOWBITS } = require("node:zlib");
     var { isValidClientWindowBits } = require_util7();
+    var { MessageSizeExceededError } = require_errors();
     var tail = Buffer.from([0, 0, 255, 255]);
     var kBuffer = /* @__PURE__ */ Symbol("kBuffer");
     var kLength = /* @__PURE__ */ Symbol("kLength");
+    var kDefaultMaxDecompressedSize = 4 * 1024 * 1024;
     var PerMessageDeflate = class {
       /** @type {import('node:zlib').InflateRaw} */
       #inflate;
       #options = {};
-      constructor(extensions) {
+      /** @type {number} */
+      #maxDecompressedSize;
+      /** @type {boolean} */
+      #aborted = false;
+      /** @type {Function|null} */
+      #currentCallback = null;
+      /**
+       * @param {Map<string, string>} extensions
+       * @param {{ maxDecompressedMessageSize?: number }} [options]
+       */
+      constructor(extensions, options = {}) {
         this.#options.serverNoContextTakeover = extensions.has("server_no_context_takeover");
         this.#options.serverMaxWindowBits = extensions.get("server_max_window_bits");
+        this.#maxDecompressedSize = options.maxDecompressedMessageSize ?? kDefaultMaxDecompressedSize;
       }
       decompress(chunk, fin, callback) {
+        if (this.#aborted) {
+          callback(new MessageSizeExceededError());
+          return;
+        }
         if (!this.#inflate) {
           let windowBits = Z_DEFAULT_WINDOWBITS;
           if (this.#options.serverMaxWindowBits) {
@@ -17025,26 +17071,51 @@ var require_permessage_deflate = __commonJS({
             }
             windowBits = Number.parseInt(this.#options.serverMaxWindowBits);
           }
-          this.#inflate = createInflateRaw({ windowBits });
+          try {
+            this.#inflate = createInflateRaw({ windowBits });
+          } catch (err) {
+            callback(err);
+            return;
+          }
           this.#inflate[kBuffer] = [];
           this.#inflate[kLength] = 0;
           this.#inflate.on("data", (data) => {
-            this.#inflate[kBuffer].push(data);
+            if (this.#aborted) {
+              return;
+            }
             this.#inflate[kLength] += data.length;
+            if (this.#inflate[kLength] > this.#maxDecompressedSize) {
+              this.#aborted = true;
+              this.#inflate.removeAllListeners();
+              this.#inflate.destroy();
+              this.#inflate = null;
+              if (this.#currentCallback) {
+                const cb = this.#currentCallback;
+                this.#currentCallback = null;
+                cb(new MessageSizeExceededError());
+              }
+              return;
+            }
+            this.#inflate[kBuffer].push(data);
           });
           this.#inflate.on("error", (err) => {
             this.#inflate = null;
             callback(err);
           });
         }
+        this.#currentCallback = callback;
         this.#inflate.write(chunk);
         if (fin) {
           this.#inflate.write(tail);
         }
         this.#inflate.flush(() => {
+          if (this.#aborted || !this.#inflate) {
+            return;
+          }
           const full = Buffer.concat(this.#inflate[kBuffer], this.#inflate[kLength]);
           this.#inflate[kBuffer].length = 0;
           this.#inflate[kLength] = 0;
+          this.#currentCallback = null;
           callback(null, full);
         });
       }
@@ -17084,12 +17155,20 @@ var require_receiver = __commonJS({
       #fragments = [];
       /** @type {Map<string, PerMessageDeflate>} */
       #extensions;
-      constructor(ws, extensions) {
+      /** @type {{ maxDecompressedMessageSize?: number }} */
+      #options;
+      /**
+       * @param {import('./websocket').WebSocket} ws
+       * @param {Map<string, string>|null} extensions
+       * @param {{ maxDecompressedMessageSize?: number }} [options]
+       */
+      constructor(ws, extensions, options = {}) {
         super();
         this.ws = ws;
         this.#extensions = extensions == null ? /* @__PURE__ */ new Map() : extensions;
+        this.#options = options;
         if (this.#extensions.has("permessage-deflate")) {
-          this.#extensions.set("permessage-deflate", new PerMessageDeflate(extensions));
+          this.#extensions.set("permessage-deflate", new PerMessageDeflate(extensions, options));
         }
       }
       /**
@@ -17187,12 +17266,12 @@ var require_receiver = __commonJS({
             }
             const buffer = this.consume(8);
             const upper = buffer.readUInt32BE(0);
-            if (upper > 2 ** 31 - 1) {
+            const lower2 = buffer.readUInt32BE(4);
+            if (upper !== 0 || lower2 > 2 ** 31 - 1) {
               failWebsocketConnection(this.ws, "Received payload length > 2^31 bytes.");
               return;
             }
-            const lower2 = buffer.readUInt32BE(4);
-            this.#info.payloadLength = (upper << 8) + lower2;
+            this.#info.payloadLength = lower2;
             this.#state = parserStates.READ_DATA;
           } else if (this.#state === parserStates.READ_DATA) {
             if (this.#byteOffset < this.#info.payloadLength) {
@@ -17214,7 +17293,7 @@ var require_receiver = __commonJS({
               } else {
                 this.#extensions.get("permessage-deflate").decompress(body, this.#info.fin, (error2, data) => {
                   if (error2) {
-                    closeWebSocketConnection(this.ws, 1007, error2.message, error2.message.length);
+                    failWebsocketConnection(this.ws, error2.message);
                     return;
                   }
                   this.#fragments.push(data);
@@ -17483,6 +17562,8 @@ var require_websocket = __commonJS({
       #extensions = "";
       /** @type {SendQueue} */
       #sendQueue;
+      /** @type {{ maxDecompressedMessageSize?: number }} */
+      #options;
       /**
        * @param {string} url
        * @param {string|string[]} protocols
@@ -17526,6 +17607,9 @@ var require_websocket = __commonJS({
           throw new DOMException("Invalid Sec-WebSocket-Protocol value", "SyntaxError");
         }
         this[kWebSocketURL] = new URL(urlRecord.href);
+        this.#options = {
+          maxDecompressedMessageSize: options.maxDecompressedMessageSize
+        };
         const client = environmentSettingsObject.settingsObject;
         this[kController] = establishWebSocketConnection(
           urlRecord,
@@ -17709,7 +17793,7 @@ var require_websocket = __commonJS({
        */
       #onConnectionEstablished(response, parsedExtensions) {
         this[kResponse] = response;
-        const parser = new ByteParser(this, parsedExtensions);
+        const parser = new ByteParser(this, parsedExtensions, this.#options);
         parser.on("drain", onParserDrain);
         parser.on("error", onParserError.bind(this));
         response.socket.ws = this;
@@ -17784,6 +17868,19 @@ var require_websocket = __commonJS({
       {
         key: "headers",
         converter: webidl.nullableConverter(webidl.converters.HeadersInit)
+      },
+      {
+        key: "maxDecompressedMessageSize",
+        converter: webidl.nullableConverter((V) => {
+          V = webidl.converters["unsigned long long"](V);
+          if (V <= 0) {
+            throw webidl.errors.exception({
+              header: "WebSocket constructor",
+              message: "maxDecompressedMessageSize must be greater than 0"
+            });
+          }
+          return V;
+        })
       }
     ]);
     webidl.converters["DOMString or sequence<DOMString> or WebSocketInit"] = function(V) {
@@ -25442,6 +25539,7 @@ var require_stringify = __commonJS({
         nullStr: "null",
         simpleKeys: false,
         singleQuote: null,
+        trailingComma: false,
         trueStr: "true",
         verifyAliasOrder: true
       }, doc.schema.toStringOptions, options);
@@ -25959,12 +26057,19 @@ ${indent}${line}` : "\n";
         if (comment)
           reqNewline = true;
         let str = stringify.stringify(item, itemCtx, () => comment = null);
-        if (i2 < items.length - 1)
+        reqNewline || (reqNewline = lines.length > linesAtValue || str.includes("\n"));
+        if (i2 < items.length - 1) {
           str += ",";
+        } else if (ctx.options.trailingComma) {
+          if (ctx.options.lineWidth > 0) {
+            reqNewline || (reqNewline = lines.reduce((sum, line) => sum + line.length + 2, 2) + (str.length + 2) > ctx.options.lineWidth);
+          }
+          if (reqNewline) {
+            str += ",";
+          }
+        }
         if (comment)
           str += stringifyComment.lineComment(str, itemIndent, commentString(comment));
-        if (!reqNewline && (lines.length > linesAtValue || str.includes("\n")))
-          reqNewline = true;
         lines.push(str);
         linesAtValue = lines.length;
       }
@@ -28978,17 +29083,22 @@ var require_compose_node = __commonJS({
         case "block-map":
         case "block-seq":
         case "flow-collection":
-          node = composeCollection.composeCollection(CN, ctx, token, props, onError);
-          if (anchor)
-            node.anchor = anchor.source.substring(1);
+          try {
+            node = composeCollection.composeCollection(CN, ctx, token, props, onError);
+            if (anchor)
+              node.anchor = anchor.source.substring(1);
+          } catch (error2) {
+            const message = error2 instanceof Error ? error2.message : String(error2);
+            onError(token, "RESOURCE_EXHAUSTION", message);
+          }
           break;
         default: {
           const message = token.type === "error" ? token.message : `Unsupported token (type: ${token.type})`;
           onError(token, "UNEXPECTED_TOKEN", message);
-          node = composeEmptyNode(ctx, token.offset, void 0, null, props, onError);
           isSrcToken = false;
         }
       }
+      node ?? (node = composeEmptyNode(ctx, token.offset, void 0, null, props, onError));
       if (anchor && node.anchor === "")
         onError(anchor, "BAD_ALIAS", "Anchor cannot be an empty string");
       if (atKey && ctx.options.stringKeys && (!identity.isScalar(node) || typeof node.value !== "string" || node.tag && node.tag !== "tag:yaml.org,2002:str")) {
@@ -31336,7 +31446,7 @@ var require_package = __commonJS({
   "node_modules/dotenv/package.json"(exports2, module2) {
     module2.exports = {
       name: "dotenv",
-      version: "17.2.3",
+      version: "17.3.1",
       description: "Loads environment variables from .env file",
       main: "lib/main.js",
       types: "lib/main.d.ts",
@@ -31412,12 +31522,9 @@ var require_main = __commonJS({
       "\u{1F510} encrypt with Dotenvx: https://dotenvx.com",
       "\u{1F510} prevent committing .env to code: https://dotenvx.com/precommit",
       "\u{1F510} prevent building .env in docker: https://dotenvx.com/prebuild",
-      "\u{1F4E1} add observability to secrets: https://dotenvx.com/ops",
-      "\u{1F465} sync secrets across teammates & machines: https://dotenvx.com/ops",
-      "\u{1F5C2}\uFE0F backup and recover secrets: https://dotenvx.com/ops",
-      "\u2705 audit secrets and track compliance: https://dotenvx.com/ops",
-      "\u{1F504} add secrets lifecycle management: https://dotenvx.com/ops",
-      "\u{1F511} add access controls to secrets: https://dotenvx.com/ops",
+      "\u{1F916} agentic secret storage: https://dotenvx.com/as2",
+      "\u26A1\uFE0F secrets for agents: https://dotenvx.com/as2",
+      "\u{1F6E1}\uFE0F auth for agents: https://vestauth.com",
       "\u{1F6E0}\uFE0F  run anywhere with `dotenvx run -- yourcommand`",
       "\u2699\uFE0F  specify custom .env file path with { path: '/custom/path/.env' }",
       "\u2699\uFE0F  enable debug logging with { debug: true }",
@@ -37231,6 +37338,7 @@ var Summary = class {
   }
 };
 var _summary = new Summary();
+var summary = _summary;
 
 // node_modules/@actions/core/lib/platform.js
 var import_os2 = __toESM(require("os"), 1);
@@ -45388,6 +45496,60 @@ function fixResponseChunkedTransferBadEnding(request2, errorCallback) {
   });
 }
 
+// src/duplicates.ts
+function findDuplicatesByNameRepo(actions) {
+  const grouped = /* @__PURE__ */ new Map();
+  for (const action of actions) {
+    const key = `${action.name} | ${action.repo}`;
+    const group = grouped.get(key);
+    if (group) {
+      group.push(action);
+    } else {
+      grouped.set(key, [action]);
+    }
+  }
+  const duplicates = [];
+  for (const [key, group] of grouped) {
+    if (group.length > 1) {
+      duplicates.push({ key, actions: group });
+    }
+  }
+  return duplicates;
+}
+async function reportDuplicateActions(duplicates, countBeforeDedup, countAfterDedup) {
+  const totalDuplicateEntries = duplicates.reduce(
+    (sum, group) => sum + group.actions.length,
+    0
+  );
+  const errorMessage = `Found ${duplicates.length} action(s) with duplicate name+repo combinations (${totalDuplicateEntries} entries total). Count before dedup: ${countBeforeDedup}, after dedup: ${countAfterDedup}`;
+  warning(errorMessage);
+  for (const group of duplicates) {
+    warning(
+      `Duplicate action: [${group.key}] found ${group.actions.length} times with paths: ${group.actions.map((a) => a.path || "(root)").join(", ")}`
+    );
+  }
+  try {
+    const summaryRows = duplicates.map((group) => [
+      group.actions[0].name || "Unknown",
+      group.actions[0].repo || "Unknown",
+      group.actions.map((a) => a.path || "(root)").join(", ")
+    ]);
+    await summary.addHeading("Duplicate Actions Detected", 3).addRaw(errorMessage, true).addRaw("", true).addRaw(
+      "These actions share the same name and repo but have different paths:",
+      true
+    ).addTable([
+      [
+        { data: "Action Name", header: true },
+        { data: "Repository", header: true },
+        { data: "Paths", header: true }
+      ],
+      ...summaryRows
+    ]).write();
+  } catch (error2) {
+    debug(`Failed to write step summary: ${error2}`);
+  }
+}
+
 // src/main.ts
 import_dotenv.default.config();
 var getInputOrEnv = (input) => getInput(input) || process.env[input] || "";
@@ -45700,12 +45862,21 @@ async function getAllNormalActions(client, username, organization, isEnterpriseS
   );
   actions = actions.concat(forkedActions);
   debug(`Found [${actions.length}] actions in total`);
+  const beforeDedup = actions.length;
   actions = actions.filter(
     (action, index, self2) => index === self2.findIndex(
       (t2) => `${t2.name} ${t2.repo} ${t2.path || ""}` === `${action.name} ${action.repo} ${action.path || ""}`
     )
   );
-  debug(`After dedupliation we have [${actions.length}] actions in total`);
+  debug(`After deduplication we have [${actions.length}] actions in total`);
+  const duplicatesByNameRepo = findDuplicatesByNameRepo(actions);
+  if (duplicatesByNameRepo.length > 0) {
+    await reportDuplicateActions(
+      duplicatesByNameRepo,
+      beforeDedup,
+      actions.length
+    );
+  }
   return actions;
 }
 function isRootAction(actionPath) {
