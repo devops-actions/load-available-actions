@@ -65,10 +65,10 @@ export function parseYAML(
       return {name, author, description, using, isWorkflow}
     }
 
-    name = parsed.name ? sanitize(parsed.name) : defaultValue
-    author = parsed.author ? sanitize(parsed.author) : defaultValue
+    name = parsed.name ? removeGreaterLessThan(parsed.name) : defaultValue
+    author = parsed.author ? removeGreaterLessThan(parsed.author) : defaultValue
     description = parsed.description
-      ? sanitize(parsed.description)
+      ? removeGreaterLessThan(parsed.description)
       : defaultValue
 
     if (parsed.runs) {
@@ -92,6 +92,9 @@ export function parseYAML(
 export function sanitize(value: string) {
   return string.sanitize.keepSpace(value)
 }
+
+export const removeGreaterLessThan = (item: string): string =>
+  item.replace(/>/g, '&#62;').replace(/</g, '&#60;')
 
 // Interface for a Dockerfile with actionable properties
 export interface DockerActionFiles {

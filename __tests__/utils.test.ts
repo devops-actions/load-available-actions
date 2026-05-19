@@ -5,6 +5,7 @@ import {expect, test} from '@jest/globals'
 import {GetDateFormatted} from '../src/utils'
 import {parseYAML} from '../src/utils'
 import {sanitize} from '../src/utils'
+import {removeGreaterLessThan} from '../src/utils'
 import {isInTestFolder} from '../src/utils'
 
 test('date parsing', () => {
@@ -24,8 +25,8 @@ test(`check parseYAML with normal strings`, () => {
   const filePath = 'test'
   const result = parseYAML(filePath, 'test', content)
 
-  expect(result.name).toBe('testname')
-  expect(result.author).toBe('testauthor')
+  expect(result.name).toBe('test-name')
+  expect(result.author).toBe('test-author')
   expect(result.description).toBe('testing')
   expect(result.using).toBe('test')
   expect(result.isWorkflow).toBe(false)
@@ -42,9 +43,9 @@ test(`check parseYAML with quoted strings`, () => {
   const filePath = 'test'
   const result = parseYAML(filePath, 'test', content)
 
-  expect(result.name).toBe('test name')
-  expect(result.author).toBe('test author')
-  expect(result.description).toBe('testing with quotes')
+  expect(result.name).toBe('test "name"')
+  expect(result.author).toBe('test "author"')
+  expect(result.description).toBe('testing "with quotes"')
   expect(result.using).toBe('testwithquote')
   expect(result.isWorkflow).toBe(false)
 })
@@ -90,6 +91,38 @@ test(`Check sanitization`, () => {
   const value = 'Abc$%#6- ZZpp'
   const cleaned = sanitize(value)
   expect(cleaned).toBe('Abc6 ZZpp')
+})
+
+test(`removeGreaterLessThan preserves hyphens`, () => {
+  expect(removeGreaterLessThan('test-name')).toBe('test-name')
+})
+
+test(`removeGreaterLessThan encodes angle brackets`, () => {
+  expect(removeGreaterLessThan('<script>')).toBe('&#60;script&#62;')
+})
+
+test(`check parseYAML with angle brackets in name`, () => {
+  const content = `
+  name: '<xss>'
+  author: 'some-author'
+  description: 'testing <b>bold</b>'
+  runs:\n    using: 'node20'`
+  const filePath = 'test'
+  const result = parseYAML(filePath, 'test', content)
+
+  expect(result.name).toBe('&#60;xss&#62;')
+  expect(result.description).toBe('testing &#60;b&#62;bold&#60;/b&#62;')
+})
+
+test(`check parseYAML falls back to defaultValue when name/author/description are undefined`, () => {
+  const content = `
+  runs:\n    using: 'node20'`
+  const filePath = 'test'
+  const result = parseYAML(filePath, 'test', content)
+
+  expect(result.name).toBe('Undefined')
+  expect(result.author).toBe('Undefined')
+  expect(result.description).toBe('Undefined')
 })
 
 test('isInTestFolder detects __tests__ directories', () => {
