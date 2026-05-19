@@ -248,30 +248,27 @@ async function run(): Promise<void> {
   }
 }
 
-export class ActionContent {
+export class ContentBase {
   name: string | undefined
-  owner: string | undefined
   repo: string | undefined
-  path: string | undefined
   downloadUrl: string | undefined
-  author: string | undefined
   description: string | undefined
   forkedfrom: string | undefined
+  isArchived: boolean | undefined
+}
+
+export class ActionContent extends ContentBase {
+  owner: string | undefined
+  path: string | undefined
+  author: string | undefined
   readme: string | undefined
   using: string | undefined
-  isArchived: boolean | undefined
   visibility: string | undefined
   isFork: boolean | undefined
 }
 
-export class WorkflowContent {
-  name: string | undefined
+export class WorkflowContent extends ContentBase {
   owner: string | undefined
-  repo: string | undefined
-  downloadUrl: string | undefined
-  description: string | undefined
-  forkedfrom: string | undefined
-  isArchived: boolean | undefined
   visibility: string | undefined
 }
 

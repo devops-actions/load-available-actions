@@ -36819,6 +36819,7 @@ var init_multipart_parser = __esm({
 var main_exports = {};
 __export(main_exports, {
   ActionContent: () => ActionContent,
+  ContentBase: () => ContentBase,
   WorkflowContent: () => WorkflowContent
 });
 module.exports = __toCommonJS(main_exports);
@@ -44061,9 +44062,9 @@ function parseYAML(filePath, repo, content) {
       isWorkflow = true;
       return { name, author, description, using, isWorkflow };
     }
-    name = parsed.name ? sanitize(parsed.name) : defaultValue;
-    author = parsed.author ? sanitize(parsed.author) : defaultValue;
-    description = parsed.description ? sanitize(parsed.description) : defaultValue;
+    name = parsed.name ? removeGreaterLessThan(parsed.name) : defaultValue;
+    author = parsed.author ? removeGreaterLessThan(parsed.author) : defaultValue;
+    description = parsed.description ? removeGreaterLessThan(parsed.description) : defaultValue;
     if (parsed.runs) {
       using = parsed.runs.using ? sanitize(parsed.runs.using) : defaultValue;
     }
@@ -44080,6 +44081,7 @@ function parseYAML(filePath, repo, content) {
 function sanitize(value) {
   return import_string_sanitizer.default.sanitize.keepSpace(value);
 }
+var removeGreaterLessThan = (item) => item.replace(/>/g, "&#62;").replace(/</g, "&#60;");
 var getActionableDockerFilesFromDisk = async (path2) => {
   const dockerFilesWithActionArray = [];
   const dockerFiles = (0, import_child_process.execSync)(
@@ -45635,9 +45637,11 @@ async function run() {
     setFailed(`Error running action: : ${error2.message}`);
   }
 }
-var ActionContent = class {
+var ContentBase = class {
 };
-var WorkflowContent = class {
+var ActionContent = class extends ContentBase {
+};
+var WorkflowContent = class extends ContentBase {
 };
 async function getAllActions(client, user, organization, isEnterpriseServer, excludedRepos) {
   const forkedRepos = await getSearchResult(
@@ -46290,6 +46294,7 @@ run();
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   ActionContent,
+  ContentBase,
   WorkflowContent
 });
 /*! Bundled license information:
