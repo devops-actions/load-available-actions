@@ -16,6 +16,7 @@ export function findDuplicatesByNameRepo(
 ): DuplicateGroup[] {
   const grouped = new Map<string, ActionLike[]>()
   for (const action of actions) {
+    if (!action.name || !action.repo) continue
     const key = `${action.name} | ${action.repo}`
     const group = grouped.get(key)
     if (group) {
