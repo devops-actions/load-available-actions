@@ -37,11 +37,14 @@ const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 const excludeReposInput = getInputOrEnv('exclude-repos')
 
 function isRecoverableSearchError(error: any): boolean {
-  // Check for rate limit errors via message
+  // Check for rate limit errors via message or 429 status
   const isRateLimitError =
+    error.status === 429 ||
     (error as Error).message?.includes(
       'SecondaryRateLimit detected for request'
-    ) || (error as Error).message?.includes('API rate limit exceeded for')
+    ) ||
+    (error as Error).message?.includes('API rate limit exceeded for') ||
+    (error as Error).message?.includes('Too many requests')
 
   // Check for validation errors via status code or message
   const isValidationError =
@@ -877,9 +880,8 @@ async function executeCodeSearch(
       `executeCodeSearch: catch! Error is: ${error} with message ${(error as Error).message}`
     )
     if (isRecoverableSearchError(error)) {
-      // Recoverable errors (rate limits, validation failures, etc.) - return empty result
-      core.warning(`Search error (recoverable): ${(error as Error).message}`)
-      return []
+      // Re-throw so callers (e.g. getAllNormalActions) can trigger REST API fallback
+      throw error
     } else {
       core.info(`Error executing code search: ${error}`)
       throw error

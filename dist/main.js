@@ -45492,9 +45492,9 @@ var scanForReusableWorkflows = getInputOrEnv("scanForReusableWorkflows");
 var includePrivateWorkflows = getInputOrEnv("includePrivateWorkflows");
 var excludeReposInput = getInputOrEnv("exclude-repos");
 function isRecoverableSearchError(error2) {
-  const isRateLimitError2 = error2.message?.includes(
+  const isRateLimitError2 = error2.status === 429 || error2.message?.includes(
     "SecondaryRateLimit detected for request"
-  ) || error2.message?.includes("API rate limit exceeded for");
+  ) || error2.message?.includes("API rate limit exceeded for") || error2.message?.includes("Too many requests");
   const isValidationError = error2.status === 422 || error2.message?.includes("Validation Failed");
   const isAuthActorError = error2.message?.includes(
     "cannot auth actor"
@@ -46068,8 +46068,7 @@ async function executeCodeSearch(client, searchQuery, isEnterpriseServer) {
       `executeCodeSearch: catch! Error is: ${error2} with message ${error2.message}`
     );
     if (isRecoverableSearchError(error2)) {
-      warning(`Search error (recoverable): ${error2.message}`);
-      return [];
+      throw error2;
     } else {
       info(`Error executing code search: ${error2}`);
       throw error2;
