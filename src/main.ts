@@ -37,18 +37,27 @@ const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 const excludeReposInput = getInputOrEnv('exclude-repos')
 
 function isRecoverableSearchError(error: any): boolean {
-  // Check for rate limit errors via message
+  // Check for rate limit errors via message or 429 status
   const isRateLimitError =
+    error.status === 429 ||
     (error as Error).message?.includes(
       'SecondaryRateLimit detected for request'
-    ) || (error as Error).message?.includes('API rate limit exceeded for')
+    ) ||
+    (error as Error).message?.includes('API rate limit exceeded for') ||
+    (error as Error).message?.includes('Too many requests')
 
   // Check for validation errors via status code or message
   const isValidationError =
     error.status === 422 ||
     (error as Error).message?.includes('Validation Failed')
 
-  return isRateLimitError || isValidationError
+  // Check for auth errors - GITHUB_TOKEN (GitHub App installation tokens) cannot
+  // use the Search Code API across user/org spaces outside their installation scope
+  const isAuthActorError = (error as Error).message?.includes(
+    'cannot auth actor'
+  )
+
+  return isRateLimitError || isValidationError || isAuthActorError
 }
 
 /**
@@ -465,15 +474,33 @@ async function getAllNormalActions(
   excludedRepos: Set<string>,
   forkedRepos: any[]
 ): Promise<ActionContent[]> {
-  let actions = await getAllActionsUsingSearch(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    excludedRepos
-  )
+  let actions: ActionContent[]
+  try {
+    actions = await getAllActionsUsingSearch(
+      client,
+      username,
+      organization,
+      isEnterpriseServer,
+      excludedRepos
+    )
+  } catch (error: any) {
+    if (isRecoverableSearchError(error)) {
+      core.warning(
+        `Search Code API unavailable (${error.message}). Falling back to repo listing via REST API. This may be slower for large users/orgs.`
+      )
+      actions = await getAllActionsViaRepoListing(
+        client,
+        username,
+        organization,
+        excludedRepos
+      )
+    } else {
+      throw error
+    }
+  }
+
   // search does not work on forked repos, so we need to loop over all forks manually
-  let forkedActions = await getAllActionsFromForkedRepos(
+  const forkedActions = await getAllActionsFromForkedRepos(
     client,
     username,
     organization,
@@ -506,6 +533,70 @@ async function getAllNormalActions(
       beforeDedup,
       actions.length
     )
+  }
+
+  return actions
+}
+
+/**
+ * Fallback: discover actions by listing all repos via REST API and checking each
+ * for a root action.yml/action.yaml file. Used when the Search Code API is unavailable
+ * (e.g. when using GITHUB_TOKEN which is a GitHub App installation token).
+ */
+async function getAllActionsViaRepoListing(
+  client: Octokit,
+  username: string,
+  organization: string,
+  excludedRepos: Set<string>
+): Promise<ActionContent[]> {
+  const actions: ActionContent[] = []
+
+  let repos: any[] = []
+  if (username) {
+    core.info(`Listing repos for user [${username}] via REST API`)
+    repos = await client.paginate(client.rest.repos.listForUser, {
+      username,
+      per_page: 100,
+      type: 'owner'
+    })
+  } else if (organization) {
+    core.info(`Listing repos for org [${organization}] via REST API`)
+    repos = await client.paginate(client.rest.repos.listForOrg, {
+      org: organization,
+      per_page: 100,
+      type: 'public'
+    })
+  }
+
+  core.info(`Found [${repos.length}] repos to scan for actions`)
+
+  for (const repo of repos) {
+    if (isRepoExcluded(repo.name, excludedRepos)) continue
+
+    const repoOwner = repo.owner.login
+    const repoName = repo.name
+    const isArchived = repo.archived
+    const visibility = repo.visibility || 'public'
+    const isFork = repo.fork || false
+
+    for (const actionFileName of ['action.yml', 'action.yaml']) {
+      try {
+        const result = await getActionInfo(
+          client,
+          repoOwner,
+          repoName,
+          actionFileName,
+          '',
+          isArchived,
+          visibility,
+          isFork
+        )
+        actions.push(result)
+        break // found one action file, no need to check the other name
+      } catch {
+        // File doesn't exist at this path, try next
+      }
+    }
   }
 
   return actions
@@ -789,9 +880,8 @@ async function executeCodeSearch(
       `executeCodeSearch: catch! Error is: ${error} with message ${(error as Error).message}`
     )
     if (isRecoverableSearchError(error)) {
-      // Recoverable errors (rate limits, validation failures, etc.) - return empty result
-      core.warning(`Search error (recoverable): ${(error as Error).message}`)
-      return []
+      // Re-throw so callers (e.g. getAllNormalActions) can trigger REST API fallback
+      throw error
     } else {
       core.info(`Error executing code search: ${error}`)
       throw error
@@ -1130,13 +1220,24 @@ async function getAllReusableWorkflowsUsingSearch(
 ): Promise<WorkflowContent[]> {
   const workflows: WorkflowContent[] = []
 
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+path:.github/workflows+extension:yml+workflow_call in:file'
-  )
+  let searchResult: any[]
+  try {
+    searchResult = await getSearchResult(
+      client,
+      username,
+      organization,
+      isEnterpriseServer,
+      '+path:.github/workflows+extension:yml+workflow_call in:file'
+    )
+  } catch (error: any) {
+    if (isRecoverableSearchError(error)) {
+      core.warning(
+        `Search Code API unavailable for reusable workflows (${error.message}). Skipping workflow discovery.`
+      )
+      return workflows
+    }
+    throw error
+  }
 
   for (let index = 0; index < searchResult.length; index++) {
     checkRateLimits(client, isEnterpriseServer)
