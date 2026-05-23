@@ -8,6 +8,7 @@ on:
 # Declare default GITHUB_TOKEN permissions as read only.
 permissions:
   contents: read
+  pull-requests: read
     
 jobs:
   build: # make sure build/ci work properly

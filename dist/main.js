@@ -45496,7 +45496,10 @@ function isRecoverableSearchError(error2) {
     "SecondaryRateLimit detected for request"
   ) || error2.message?.includes("API rate limit exceeded for");
   const isValidationError = error2.status === 422 || error2.message?.includes("Validation Failed");
-  return isRateLimitError2 || isValidationError;
+  const isAuthActorError = error2.message?.includes(
+    "cannot auth actor"
+  );
+  return isRateLimitError2 || isValidationError || isAuthActorError;
 }
 function parseExcludedRepos(excludeReposInput2) {
   const excludedRepos = /* @__PURE__ */ new Set();
@@ -45775,14 +45778,31 @@ async function checkRateLimits(client, isEnterpriseServer, limitToSearch = false
   }
 }
 async function getAllNormalActions(client, username, organization, isEnterpriseServer, excludedRepos, forkedRepos) {
-  let actions = await getAllActionsUsingSearch(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    excludedRepos
-  );
-  let forkedActions = await getAllActionsFromForkedRepos(
+  let actions;
+  try {
+    actions = await getAllActionsUsingSearch(
+      client,
+      username,
+      organization,
+      isEnterpriseServer,
+      excludedRepos
+    );
+  } catch (error2) {
+    if (isRecoverableSearchError(error2)) {
+      warning(
+        `Search Code API unavailable (${error2.message}). Falling back to repo listing via REST API. This may be slower for large users/orgs.`
+      );
+      actions = await getAllActionsViaRepoListing(
+        client,
+        username,
+        organization,
+        excludedRepos
+      );
+    } else {
+      throw error2;
+    }
+  }
+  const forkedActions = await getAllActionsFromForkedRepos(
     client,
     username,
     organization,
@@ -45806,6 +45826,52 @@ async function getAllNormalActions(client, username, organization, isEnterpriseS
       beforeDedup,
       actions.length
     );
+  }
+  return actions;
+}
+async function getAllActionsViaRepoListing(client, username, organization, excludedRepos) {
+  const actions = [];
+  let repos = [];
+  if (username) {
+    info(`Listing repos for user [${username}] via REST API`);
+    repos = await client.paginate(client.rest.repos.listForUser, {
+      username,
+      per_page: 100,
+      type: "owner"
+    });
+  } else if (organization) {
+    info(`Listing repos for org [${organization}] via REST API`);
+    repos = await client.paginate(client.rest.repos.listForOrg, {
+      org: organization,
+      per_page: 100,
+      type: "public"
+    });
+  }
+  info(`Found [${repos.length}] repos to scan for actions`);
+  for (const repo of repos) {
+    if (isRepoExcluded(repo.name, excludedRepos)) continue;
+    const repoOwner = repo.owner.login;
+    const repoName = repo.name;
+    const isArchived = repo.archived;
+    const visibility = repo.visibility || "public";
+    const isFork = repo.fork || false;
+    for (const actionFileName of ["action.yml", "action.yaml"]) {
+      try {
+        const result = await getActionInfo(
+          client,
+          repoOwner,
+          repoName,
+          actionFileName,
+          "",
+          isArchived,
+          visibility,
+          isFork
+        );
+        actions.push(result);
+        break;
+      } catch {
+      }
+    }
   }
   return actions;
 }
@@ -46234,13 +46300,24 @@ async function getActionInfo(client, owner, repo, actionFilePath, forkedFrom, is
 }
 async function getAllReusableWorkflowsUsingSearch(client, username, organization, isEnterpriseServer) {
   const workflows = [];
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    "+path:.github/workflows+extension:yml+workflow_call in:file"
-  );
+  let searchResult;
+  try {
+    searchResult = await getSearchResult(
+      client,
+      username,
+      organization,
+      isEnterpriseServer,
+      "+path:.github/workflows+extension:yml+workflow_call in:file"
+    );
+  } catch (error2) {
+    if (isRecoverableSearchError(error2)) {
+      warning(
+        `Search Code API unavailable for reusable workflows (${error2.message}). Skipping workflow discovery.`
+      );
+      return workflows;
+    }
+    throw error2;
+  }
   for (let index = 0; index < searchResult.length; index++) {
     checkRateLimits(client, isEnterpriseServer);
     const fileName = searchResult[index].name;
