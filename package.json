@@ -35,6 +35,7 @@
   "devDependencies": {
     "@types/node": "^26.1.0",
     "@typescript-eslint/parser": "^8.62.1",
+    "@babel/core": ">=7.29.6",
     "@vercel/ncc": "^0.44.1",
     "ansi-regex": ">=6.2.2",
     "dotenv": "^17.4.2",
