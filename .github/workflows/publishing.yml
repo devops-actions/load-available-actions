@@ -13,7 +13,7 @@ jobs:
   test-local-action:
     runs-on: ubuntu-latest
     steps: 
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - uses: ./
         name: Load used actions as a test
@@ -33,7 +33,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # get code
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       
       - name: Protect v* tags from changes
         # PAT must include repo scope so gh can upsert tag protections
@@ -58,7 +58,7 @@ jobs:
       # get tag for this release
       - name: Get tag value
         id: tag
-        uses: devops-actions/action-get-tag@7121a0d02be4cc926d0866b83de2a62688199687 # v1.0.1
+        uses: devops-actions/action-get-tag@72a6a37ed663481e5b8f89c6ad4820cd572def8e # v1.0.1
 
       # publish a release with the build assets
       - uses: rajbos-actions/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
