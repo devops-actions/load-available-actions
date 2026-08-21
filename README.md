@@ -2,31 +2,30 @@
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions/badge)](https://api.securityscorecards.dev/projects/github.com/devops-actions/load-available-actions) [![OpenSSF Best Practices](https://bestpractices.coreinfrastructure.org/projects/6813/badge)](https://bestpractices.coreinfrastructure.org/projects/6813)
 
-Load all actions and reusable workflows stored in the current organization, by calling the REST API with an Access Token and find the `action.yml` or `action.yaml` file in the root of all repositories in the user account or organization.
+Load all actions and reusable workflows stored in the current organization, by calling the REST API with an Access Token and finding the `action.yml` or `action.yaml` file in all repositories in the user account or organization.
 
 The output is stored in a file with the name `actions`, which can be retrieved in another action with `${{ steps.<step id>.outputs.outputFilename }}`.
 
-We use the search API to find the following files in your repositories:
+To find actions, this action lists all repositories of the user or organization via the REST API and then scans each repository (by cloning it) for the following files:
 
 - action.yml
 - action.yaml
 - Dockerfile
 - dockerfile
-- .github/workflows/<workflow file>.yml
 
 For the Dockerfiles we search for the required labels to identify them as actions.
 
-For the reusable workflow a search is done if the workflow file contains '`workflow_call:`'
+Repositories are scanned by listing instead of the (deprecated) code search API, because the search API returns incomplete and inconsistent results, which caused repositories to randomly disappear from the output.
 
-Note that the search API only supports up to a maximum of 1000 results, so we cannot return more actions than that at the moment.
+For reusable workflows a search is done on the workflow files containing '`workflow_call:`'. Note that the search API only supports up to a maximum of 1000 results, so we cannot return more reusable workflows than that at the moment.
 
 ## Finding Sub-Actions
 
-When a repository contains an `action.yml` or `action.yaml` file in its root directory, this action will clone the repository and search for additional action files in subdirectories. This allows discovery of repositories that contain multiple actions in different folders.
+This action clones every repository of the user or organization and searches it recursively for `action.yml` and `action.yaml` files. This allows discovery of repositories that contain multiple actions in different folders.
 
 **How it works:**
-1. The action uses GitHub's search API to find action files across all repositories
-2. When a root action file (`action.yml` or `action.yaml` in the repository root) is found, the repository is cloned
+1. The action lists all repositories of the user or organization via the REST API
+2. Each repository is cloned
 3. The action searches recursively for all `action.yml` and `action.yaml` files within the cloned repository
 4. Sub-actions found in subdirectories are added to the output with their path information
 5. Actions in test folders (e.g., `__tests__`, `test/`, `.test/`) are automatically excluded
