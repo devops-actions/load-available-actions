@@ -36,6 +36,10 @@ const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 const excludeReposInput = getInputOrEnv('exclude-repos')
 
+// Token used to authenticate git clone operations (set in run()).
+// Never log this value.
+let gitAuthToken = ''
+
 function isRecoverableSearchError(error: any): boolean {
   // Check for rate limit errors via message or 429 status
   const isRateLimitError =
@@ -177,6 +181,9 @@ async function run(): Promise<void> {
         fetch: fetch
       }
     })
+
+    // Store the token for authenticated git clones (private/internal repos)
+    gitAuthToken = PAT
 
     try {
       // this call fails from a GitHub App token, so we need a better way to validate this
@@ -484,7 +491,7 @@ async function getAllNormalActions(
     `Scanning [${normalRepos.length}] repos for action files and docker files`
   )
   for (const repo of normalRepos) {
-    checkRateLimits(client, isEnterpriseServer)
+    await checkRateLimits(client, isEnterpriseServer)
 
     const repoName = repo.name
     const repoOwner = repo.owner ? repo.owner.login : ''
@@ -694,16 +701,31 @@ function cloneRepo(repo: string, owner: string): string {
 
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
 
-    // clone the repo
-    execSync(`git clone ${repolink}`, {
+    // Authenticate the clone so private/internal repos that the PAT can read
+    // are also scanned. The token is passed via a git config header instead of
+    // the URL so it does not end up in remotes or logs. Disable any local
+    // credential helper so the provided token is always authoritative.
+    // Use a shallow clone: we only need the current file contents.
+    let authArgs = ''
+    if (gitAuthToken) {
+      const basic = Buffer.from(`x-access-token:${gitAuthToken}`).toString(
+        'base64'
+      )
+      authArgs = `-c credential.helper= -c http.extraHeader="Authorization: Basic ${basic}"`
+    }
+    execSync(`git ${authArgs} clone --depth 1 ${repolink}`, {
       stdio: [0, 1, 2], // we need this so node will print the command output
       cwd: repoPath // path to where you want to run the command
     })
 
     return path.join(repoPath, repo)
   } catch (error: any) {
-    core.warning(`Error cloning repo [${repo}]: ${error.message || error}`)
-    // core.info(`Message: ${error?.stdout.toString()}`) // stdout is null
+    // Note: do not print error.message, it contains the full command line
+    // (including the auth header). stderr from git does not contain the token.
+    const stderr = error?.stderr ? error.stderr.toString() : ''
+    core.warning(
+      `Error cloning repo [${repo}]: ${stderr || 'git clone failed'}`
+    )
     return ''
   }
 }

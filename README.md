@@ -64,8 +64,7 @@ When scanning for sub-actions, you can exclude specific repositories from being 
 - Specify only the repository name, not the full `owner/repo` format
 - One repository name per line
 - Repository names are case-insensitive
-- Only affects the cloning process for sub-action discovery
-- Root actions from excluded repos are still included in the output
+- Excluded repositories are skipped entirely: no actions from them (root or sub-actions) are included in the output
 
 ## Authentication
 
@@ -112,7 +111,7 @@ Regardless of the authentication method, the following permissions are needed:
 | _removeToken (optional)_  | Removes token from remote url.                           |
 | _fetchReadmes (optional_) | Adds readmes of repositories to json in a base64 format. |
 | outputFilename (optional) | The name of the output file. Defaults to `actions.json`  |
-| _exclude-repos (optional)_ | List of repository names to exclude from cloning (one per line). Use this to skip large repos that are not needed. |
+| _exclude-repos (optional)_ | List of repository names to exclude from scanning (one per line). Excluded repositories are skipped entirely. Use this to skip large repos that are not needed. |
 
 ## Outputs
 

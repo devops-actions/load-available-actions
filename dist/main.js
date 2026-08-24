@@ -45491,6 +45491,7 @@ var hostname = getHostName();
 var scanForReusableWorkflows = getInputOrEnv("scanForReusableWorkflows");
 var includePrivateWorkflows = getInputOrEnv("includePrivateWorkflows");
 var excludeReposInput = getInputOrEnv("exclude-repos");
+var gitAuthToken = "";
 function isRecoverableSearchError(error2) {
   const isRateLimitError2 = error2.status === 429 || error2.message?.includes(
     "SecondaryRateLimit detected for request"
@@ -45582,6 +45583,7 @@ async function run() {
         fetch
       }
     });
+    gitAuthToken = PAT;
     try {
     } catch (error2) {
       setFailed(
@@ -45773,7 +45775,7 @@ async function getAllNormalActions(client, isEnterpriseServer, excludedRepos, no
     `Scanning [${normalRepos.length}] repos for action files and docker files`
   );
   for (const repo of normalRepos) {
-    checkRateLimits(client, isEnterpriseServer);
+    await checkRateLimits(client, isEnterpriseServer);
     const repoName = repo.name;
     const repoOwner = repo.owner ? repo.owner.login : "";
     const repoActions = await scanRepoForAllActions(
@@ -45921,7 +45923,14 @@ function cloneRepo(repo, owner) {
     }
     import_fs3.default.mkdirSync(repoPath);
     debug(`Cloning repo [${repo}] to [${repoPath}]`);
-    (0, import_child_process2.execSync)(`git clone ${repolink}`, {
+    let authArgs = "";
+    if (gitAuthToken) {
+      const basic = import_buffer.Buffer.from(`x-access-token:${gitAuthToken}`).toString(
+        "base64"
+      );
+      authArgs = `-c credential.helper= -c http.extraHeader="Authorization: Basic ${basic}"`;
+    }
+    (0, import_child_process2.execSync)(`git ${authArgs} clone --depth 1 ${repolink}`, {
       stdio: [0, 1, 2],
       // we need this so node will print the command output
       cwd: repoPath
@@ -45929,7 +45938,10 @@ function cloneRepo(repo, owner) {
     });
     return import_path.default.join(repoPath, repo);
   } catch (error2) {
-    warning(`Error cloning repo [${repo}]: ${error2.message || error2}`);
+    const stderr = error2?.stderr ? error2.stderr.toString() : "";
+    warning(
+      `Error cloning repo [${repo}]: ${stderr || "git clone failed"}`
+    );
     return "";
   }
 }
