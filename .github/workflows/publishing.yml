@@ -37,6 +37,8 @@ jobs:
       
       - name: Protect v* tags from changes
         # PAT must include repo scope so gh can upsert tag protections
+        # Non-blocking: tag protection already exists and this is only a hardening step
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.PAT }}
         run: |
