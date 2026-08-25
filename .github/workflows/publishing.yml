@@ -36,7 +36,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       
       - name: Protect v* tags from changes
-        # PAT must include repo scope so gh can upsert tag protections
+        # Tag protection requires administration permission on the PAT; the rule
+        # already exists, so keep this hardening step non-blocking (missing
+        # permission should not fail the release)
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.PAT }}
         run: |
