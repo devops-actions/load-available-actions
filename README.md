@@ -112,6 +112,7 @@ Regardless of the authentication method, the following permissions are needed:
 | _fetchReadmes (optional_) | Adds readmes of repositories to json in a base64 format. |
 | outputFilename (optional) | The name of the output file. Defaults to `actions.json`  |
 | _exclude-repos (optional)_ | List of repository names to exclude from scanning (one per line). Excluded repositories are skipped entirely. Use this to skip large repos that are not needed. |
+| _max-repos (optional)_ | Maximum number of repositories to scan. Stops listing repositories once this limit is reached. Leave empty for no limit (default). Useful to keep test runs fast against very large organizations. |
 
 ## Outputs
 

@@ -32,6 +32,9 @@ inputs:
     description: 'Include Workflows from private repositories'
     default: 'false'
     required: false    
+  max-repos:
+    description: 'Maximum number of repositories to scan. Stops listing repositories once this limit is reached. Leave empty for no limit (default).'
+    required: false
   exclude-repos:
     description: 'List of repository names to exclude from scanning (one per line, case-insensitive). Excluded repositories are skipped entirely and contribute no actions to the output. Use this to skip large repos that are not needed. Format: repo-name (without owner/org prefix)'
     required: false
