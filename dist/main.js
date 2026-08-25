@@ -45914,7 +45914,7 @@ async function listAllRepos(client, username, organization) {
         break;
       }
     }
-    return response.data;
+    return [];
   });
   return collected;
 }

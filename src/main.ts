@@ -323,7 +323,10 @@ async function listAllRepos(
         break
       }
     }
-    return response.data
+    // Return an empty array: we accumulate into `collected` ourselves, and
+    // paginate concatenates whatever the callback returns into its own results
+    // array, which would otherwise hold a second copy of every repo.
+    return []
   })
 
   return collected
