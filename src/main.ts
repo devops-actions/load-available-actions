@@ -36,6 +36,10 @@ const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 const excludeReposInput = getInputOrEnv('exclude-repos')
 
+// Token used to authenticate git clone operations (set in run()).
+// Never log this value.
+let gitAuthToken = ''
+
 function isRecoverableSearchError(error: any): boolean {
   // Check for rate limit errors via message or 429 status
   const isRateLimitError =
@@ -178,6 +182,9 @@ async function run(): Promise<void> {
       }
     })
 
+    // Store the token for authenticated git clones (private/internal repos)
+    gitAuthToken = PAT
+
     try {
       // this call fails from a GitHub App token, so we need a better way to validate this
       //const currentUser = await octokit.rest.users.getAuthenticated()
@@ -281,6 +288,30 @@ export class WorkflowContent extends ContentBase {
   visibility: string | undefined
 }
 
+/**
+ * List all repositories for the given user or organization.
+ * This replaces the (deprecated and unreliable) code search API for
+ * discovering action repositories: search/code returns incomplete and
+ * inconsistent results, which caused repositories to randomly disappear
+ * from the results. The repos list API is complete and deterministic.
+ */
+async function listAllRepos(
+  client: Octokit,
+  username: string,
+  organization: string
+): Promise<any[]> {
+  if (organization) {
+    return await client.paginate(client.rest.repos.listForOrg, {
+      org: organization,
+      per_page: 100
+    })
+  }
+  return await client.paginate(client.rest.repos.listForUser, {
+    username,
+    per_page: 100
+  })
+}
+
 async function getAllActions(
   client: Octokit,
   user: string,
@@ -288,23 +319,20 @@ async function getAllActions(
   isEnterpriseServer: boolean,
   excludedRepos: Set<string>
 ): Promise<ActionContent[]> {
-  // Fetch forked repos once to avoid duplicate API calls
-  const forkedRepos = await getSearchResult(
-    client,
-    user,
-    organization,
-    isEnterpriseServer,
-    '+fork:only'
+  // List all repos of the user or organization and split them in normal and forked repos
+  const allRepos = await listAllRepos(client, user, organization)
+  const forkedRepos = allRepos.filter(repo => repo.fork)
+  const normalRepos = allRepos.filter(repo => !repo.fork)
+  core.info(
+    `Found [${allRepos.length}] repos to scan ([${forkedRepos.length}] forked)`
   )
-  core.info(`Found [${forkedRepos.length}] forked repos to scan`)
 
   // get all action files (action.yml and action.yaml) from the user or organization
   let actionFiles = await getAllNormalActions(
     client,
-    user,
-    organization,
     isEnterpriseServer,
     excludedRepos,
+    normalRepos,
     forkedRepos
   )
   // load the information inside of the action definition files
@@ -355,34 +383,15 @@ const getSearchResult = async (
   searchQuery: string
 ) => {
   if (username) {
-    core.info(
-      `Search for action files of the user [${username}] in forked repos`
-    )
     searchQuery = searchQuery.concat('+user:', username)
   }
 
   if (organization !== '') {
-    core.info(
-      `Search for action files under the organization [${organization}] in forked repos with the query [${searchQuery}]`
-    )
     searchQuery = searchQuery.concat('+org:', organization)
   }
 
-  let searchResult
-  if (searchQuery.includes('fork')) {
-    searchResult = await executeRepoSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer
-    )
-  } else {
-    searchResult = await executeCodeSearch(
-      client,
-      searchQuery,
-      isEnterpriseServer
-    )
-  }
-  return searchResult
+  core.info(`Searching with the query [${searchQuery}]`)
+  return await executeCodeSearch(client, searchQuery, isEnterpriseServer)
 }
 
 async function checkRateLimits(
@@ -468,53 +477,48 @@ async function checkRateLimits(
 
 async function getAllNormalActions(
   client: Octokit,
-  username: string,
-  organization: string,
   isEnterpriseServer: boolean,
   excludedRepos: Set<string>,
+  normalRepos: any[],
   forkedRepos: any[]
 ): Promise<ActionContent[]> {
-  let actions: ActionContent[]
-  try {
-    actions = await getAllActionsUsingSearch(
+  const actions: ActionContent[] = []
+
+  // Scan every non-forked repo by cloning it: the code search API is
+  // deprecated and returns incomplete results, so it cannot be trusted
+  // for discovery. Cloning gives us a complete and deterministic scan.
+  core.info(
+    `Scanning [${normalRepos.length}] repos for action files and docker files`
+  )
+  for (const repo of normalRepos) {
+    await checkRateLimits(client, isEnterpriseServer)
+
+    const repoName = repo.name
+    const repoOwner = repo.owner ? repo.owner.login : ''
+
+    const repoActions = await scanRepoForAllActions(
       client,
-      username,
-      organization,
-      isEnterpriseServer,
+      repoName,
+      repoOwner,
+      repo,
       excludedRepos
     )
-  } catch (error: any) {
-    if (isRecoverableSearchError(error)) {
-      core.warning(
-        `Search Code API unavailable (${error.message}). Falling back to repo listing via REST API. This may be slower for large users/orgs.`
-      )
-      actions = await getAllActionsViaRepoListing(
-        client,
-        username,
-        organization,
-        excludedRepos
-      )
-    } else {
-      throw error
-    }
+    actions.push(...repoActions)
   }
 
   // search does not work on forked repos, so we need to loop over all forks manually
   const forkedActions = await getAllActionsFromForkedRepos(
     client,
-    username,
-    organization,
-    isEnterpriseServer,
     excludedRepos,
     forkedRepos
   )
 
-  actions = actions.concat(forkedActions)
-  core.debug(`Found [${actions.length}] actions in total`)
+  let allActions = actions.concat(forkedActions)
+  core.debug(`Found [${allActions.length}] actions in total`)
 
   // deduplicate the actions list
-  const beforeDedup = actions.length
-  actions = actions.filter(
+  const beforeDedup = allActions.length
+  allActions = allActions.filter(
     (action, index, self) =>
       index ===
       self.findIndex(
@@ -523,166 +527,22 @@ async function getAllNormalActions(
           `${action.name} ${action.repo} ${action.path || ''}`
       )
   )
-  core.debug(`After deduplication we have [${actions.length}] actions in total`)
+  core.debug(`After deduplication we have [${allActions.length}] actions in total`)
 
   // Check for remaining duplicates by name+repo (ignoring path) and report them
-  const duplicatesByNameRepo = findDuplicatesByNameRepo(actions)
+  const duplicatesByNameRepo = findDuplicatesByNameRepo(allActions)
   if (duplicatesByNameRepo.length > 0) {
     await reportDuplicateActions(
       duplicatesByNameRepo,
       beforeDedup,
-      actions.length
+      allActions.length
     )
   }
 
-  return actions
+  return allActions
 }
 
-/**
- * Fallback: discover actions by listing all repos via REST API and checking each
- * for a root action.yml/action.yaml file. Used when the Search Code API is unavailable
- * (e.g. when using GITHUB_TOKEN which is a GitHub App installation token).
- */
-async function getAllActionsViaRepoListing(
-  client: Octokit,
-  username: string,
-  organization: string,
-  excludedRepos: Set<string>
-): Promise<ActionContent[]> {
-  const actions: ActionContent[] = []
-
-  let repos: any[] = []
-  if (username) {
-    core.info(`Listing repos for user [${username}] via REST API`)
-    repos = await client.paginate(client.rest.repos.listForUser, {
-      username,
-      per_page: 100,
-      type: 'owner'
-    })
-  } else if (organization) {
-    core.info(`Listing repos for org [${organization}] via REST API`)
-    repos = await client.paginate(client.rest.repos.listForOrg, {
-      org: organization,
-      per_page: 100,
-      type: 'public'
-    })
-  }
-
-  core.info(`Found [${repos.length}] repos to scan for actions`)
-
-  for (const repo of repos) {
-    if (isRepoExcluded(repo.name, excludedRepos)) continue
-
-    const repoOwner = repo.owner.login
-    const repoName = repo.name
-    const isArchived = repo.archived
-    const visibility = repo.visibility || 'public'
-    const isFork = repo.fork || false
-
-    for (const actionFileName of ['action.yml', 'action.yaml']) {
-      try {
-        const result = await getActionInfo(
-          client,
-          repoOwner,
-          repoName,
-          actionFileName,
-          '',
-          isArchived,
-          visibility,
-          isFork
-        )
-        actions.push(result)
-        break // found one action file, no need to check the other name
-      } catch {
-        // File doesn't exist at this path, try next
-      }
-    }
-  }
-
-  return actions
-}
-
-function isRootAction(actionPath: string | undefined): boolean {
-  return actionPath === '' || actionPath === '.' || actionPath === undefined
-}
-
-async function findSubActionsInRepo(
-  client: Octokit,
-  repoName: string,
-  repoOwner: string,
-  repoDetail: any,
-  excludedRepos: Set<string>
-): Promise<ActionContent[]> {
-  const actions: ActionContent[] = []
-  const isArchived = repoDetail.archived
-  const visibility = repoDetail.visibility || 'public'
-  const isFork = repoDetail.fork || false
-
-  // Skip excluded repos
-  if (isRepoExcluded(repoName, excludedRepos)) {
-    core.info(`Skipping excluded repo: ${repoName}`)
-    return actions
-  }
-
-  core.debug(`Checking repo [${repoName}] for sub-actions`)
-  // clone the repo
-  const repoPath = cloneRepo(repoName, repoOwner)
-  if (!repoPath) {
-    // error cloning the repo, skip it
-    return actions
-  }
-
-  // check with a shell command if the repo contains action files
-  const actionFiles = execSync(
-    `find ${repoPath} -name "action.yml" -o -name "action.yaml"`,
-    {encoding: 'utf8'}
-  ).split('\n')
-  core.debug(
-    `Found [${
-      actionFiles.length - 1
-    }] action files in repo [${repoName}] that was cloned to [${repoPath}]`
-  )
-
-  for (let index = 0; index < actionFiles.length - 1; index++) {
-    core.debug(
-      `Found action file [${actionFiles[index]}] in repo [${repoName}]`
-    )
-
-    // remove the actions/$repopath
-    const actionFile = actionFiles[index].substring(
-      `actions/${repoName}/`.length
-    )
-    core.debug(`Found action file [${actionFile}] in repo [${repoName}]`)
-
-    // Skip actions in test folders
-    if (isInTestFolder(actionFile)) {
-      core.info(
-        `Skipping action in ${repoName}/${actionFile} - detected in test folder`
-      )
-      continue
-    }
-
-    // Get "Forked from" info for the repo
-    const parentInfo = await getForkParent(repoDetail)
-
-    // get the action info
-    const action = await getActionInfo(
-      client,
-      repoOwner,
-      repoName,
-      actionFile,
-      parentInfo,
-      isArchived,
-      visibility,
-      isFork
-    )
-    actions.push(action)
-  }
-
-  return actions
-}
-
-async function scanForkedRepoForAllActions(
+async function scanRepoForAllActions(
   client: Octokit,
   repoName: string,
   repoOwner: string,
@@ -794,9 +654,6 @@ async function scanForkedRepoForAllActions(
 
 async function getAllActionsFromForkedRepos(
   client: Octokit,
-  username: string,
-  organization: string,
-  isEnterpriseServer: boolean,
   excludedRepos: Set<string>,
   forkedRepos: any[]
 ): Promise<ActionContent[]> {
@@ -818,7 +675,7 @@ async function getAllActionsFromForkedRepos(
     const repoOwner = repo.owner ? repo.owner.login : ''
 
     // Scan the repo once for both action files and docker files
-    const repoActions = await scanForkedRepoForAllActions(
+    const repoActions = await scanRepoForAllActions(
       client,
       repoName,
       repoOwner,
@@ -844,16 +701,31 @@ function cloneRepo(repo: string, owner: string): string {
 
     core.debug(`Cloning repo [${repo}] to [${repoPath}]`)
 
-    // clone the repo
-    execSync(`git clone ${repolink}`, {
+    // Authenticate the clone so private/internal repos that the PAT can read
+    // are also scanned. The token is passed via a git config header instead of
+    // the URL so it does not end up in remotes or logs. Disable any local
+    // credential helper so the provided token is always authoritative.
+    // Use a shallow clone: we only need the current file contents.
+    let authArgs = ''
+    if (gitAuthToken) {
+      const basic = Buffer.from(`x-access-token:${gitAuthToken}`).toString(
+        'base64'
+      )
+      authArgs = `-c credential.helper= -c http.extraHeader="Authorization: Basic ${basic}"`
+    }
+    execSync(`git ${authArgs} clone --depth 1 ${repolink}`, {
       stdio: [0, 1, 2], // we need this so node will print the command output
       cwd: repoPath // path to where you want to run the command
     })
 
     return path.join(repoPath, repo)
   } catch (error: any) {
-    core.warning(`Error cloning repo [${repo}]: ${error.message || error}`)
-    // core.info(`Message: ${error?.stdout.toString()}`) // stdout is null
+    // Note: do not print error.message, it contains the full command line
+    // (including the auth header). stderr from git does not contain the token.
+    const stderr = error?.stderr ? error.stderr.toString() : ''
+    core.warning(
+      `Error cloning repo [${repo}]: ${stderr || 'git clone failed'}`
+    )
     return ''
   }
 }
@@ -999,42 +871,6 @@ async function paginateSearchQuery(
   return items
 }
 
-async function executeRepoSearch(
-  client: Octokit,
-  searchQuery: string,
-  isEnterpriseServer: boolean
-): Promise<any> {
-  try {
-    core.debug(`searchQuery for repos: [${searchQuery}]`)
-    const searchResult = await paginateSearchQuery(
-      client,
-      searchQuery,
-      isEnterpriseServer,
-      true
-    )
-    core.debug(`Found [${searchResult.length}] repo search results`)
-    return searchResult
-  } catch (error) {
-    core.info(`executeRepoSearch: catch!`)
-    if (
-      (error as Error).message.includes(
-        'SecondaryRateLimit detected for request'
-      ) ||
-      (error as Error).message.includes(`API rate limit exceeded for`) ||
-      (error as Error).message.includes(
-        `You have exceeded a secondary rate limit`
-      )
-    ) {
-      return []
-    } else {
-      core.error(
-        `Error executing repo search: ${error} with message ${(error as Error).message}`
-      )
-      return []
-    }
-  }
-}
-
 // Get the Details of a Repository
 async function getRepoDetails(
   client: Octokit,
@@ -1047,111 +883,6 @@ async function getRepoDetails(
   })
 
   return repoDetails
-}
-
-async function getAllActionsUsingSearch(
-  client: Octokit,
-  username: string,
-  organization: string,
-  isEnterpriseServer: boolean,
-  excludedRepos: Set<string>
-): Promise<ActionContent[]> {
-  const actions: ActionContent[] = []
-  const reposWithRootAction = new Set<string>()
-
-  const searchResult = await getSearchResult(
-    client,
-    username,
-    organization,
-    isEnterpriseServer,
-    '+filename:action+language:YAML'
-  )
-
-  for (let index = 0; index < searchResult.length; index++) {
-    checkRateLimits(client, isEnterpriseServer)
-
-    const fileName = searchResult[index].name
-    const filePath = searchResult[index].path
-    const repoName = searchResult[index].repository.name
-    const repoOwner = searchResult[index].repository.owner.login
-
-    // Push file to action list if filename matches action.yaml or action.yml
-    if (fileName == 'action.yaml' || fileName == 'action.yml') {
-      // Skip actions in test folders
-      if (isInTestFolder(filePath)) {
-        core.info(
-          `Skipping action in ${repoName}/${filePath} - detected in test folder`
-        )
-        continue
-      }
-
-      core.info(`Found action in ${repoName}/${filePath}`)
-
-      // Get the Repository Details
-      const repoDetail = await getRepoDetails(client, repoOwner, repoName)
-      const isArchived = repoDetail.archived
-      const visibility = repoDetail.visibility || 'public'
-      const isFork = repoDetail.fork || false
-
-      // Get "Forked from" info for the repo
-      let parentInfo = ''
-
-      if (searchResult[index].repository.fork) {
-        parentInfo = await getForkParent(repoDetail)
-      }
-
-      const result = await getActionInfo(
-        client,
-        repoOwner,
-        repoName,
-        filePath,
-        parentInfo,
-        isArchived,
-        visibility,
-        isFork
-      )
-      actions.push(result)
-
-      // Check if this is a root action file (action.yml or action.yaml in the root)
-      if (filePath === 'action.yml' || filePath === 'action.yaml') {
-        const repoKey = `${repoOwner}/${repoName}`
-        if (!reposWithRootAction.has(repoKey)) {
-          reposWithRootAction.add(repoKey)
-
-          // Skip excluded repos before cloning
-          if (isRepoExcluded(repoName, excludedRepos)) {
-            core.info(
-              `Skipping excluded repo for sub-action search: ${repoName}`
-            )
-            continue
-          }
-
-          core.info(
-            `Found root action in ${repoKey}, will search for sub-actions`
-          )
-
-          // Find all sub-actions in this repo
-          const subActions = await findSubActionsInRepo(
-            client,
-            repoName,
-            repoOwner,
-            repoDetail,
-            excludedRepos
-          )
-
-          // Add sub-actions (filtering out the root action we already added)
-          for (const subAction of subActions) {
-            // Skip if this is the root action (already added)
-            if (isRootAction(subAction.path)) {
-              continue
-            }
-            actions.push(subAction)
-          }
-        }
-      }
-    }
-  }
-  return actions
 }
 
 async function getForkParent(repoDetails: any): Promise<string> {
