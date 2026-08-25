@@ -134,6 +134,8 @@ jobs:
         with: 
           PAT: ${{ secrets.GITHUB_TOKEN }}
           organization: ${{ env.organization }}
+          # cap the scan: the test org has ~32k repos which takes 6+ hours
+          max-repos: 200
         id: load-actions
 
       # check if the result file is not empty

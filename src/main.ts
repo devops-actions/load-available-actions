@@ -35,6 +35,7 @@ const hostname = getHostName()
 const scanForReusableWorkflows = getInputOrEnv('scanForReusableWorkflows')
 const includePrivateWorkflows = getInputOrEnv('includePrivateWorkflows')
 const excludeReposInput = getInputOrEnv('exclude-repos')
+const maxReposSetting = getInputOrEnv('max-repos')
 
 // Token used to authenticate git clone operations (set in run()).
 // Never log this value.
@@ -300,16 +301,35 @@ async function listAllRepos(
   username: string,
   organization: string
 ): Promise<any[]> {
-  if (organization) {
-    return await client.paginate(client.rest.repos.listForOrg, {
-      org: organization,
-      per_page: 100
-    })
-  }
-  return await client.paginate(client.rest.repos.listForUser, {
-    username,
-    per_page: 100
+  const maxRepos = parseInt(maxReposSetting, 10)
+  const hasLimit = !isNaN(maxRepos) && maxRepos > 0
+
+  const method = organization
+    ? client.rest.repos.listForOrg
+    : client.rest.repos.listForUser
+  const params = organization
+    ? {org: organization, per_page: 100}
+    : {username, per_page: 100}
+
+  const collected: any[] = []
+  await client.paginate(method, params, (response: any, done: () => void) => {
+    for (const repo of response.data) {
+      collected.push(repo)
+      if (hasLimit && collected.length >= maxRepos) {
+        core.info(
+          `Reached max-repos limit of [${maxRepos}], stopping repo listing`
+        )
+        done()
+        break
+      }
+    }
+    // Return an empty array: we accumulate into `collected` ourselves, and
+    // paginate concatenates whatever the callback returns into its own results
+    // array, which would otherwise hold a second copy of every repo.
+    return []
   })
+
+  return collected
 }
 
 async function getAllActions(
@@ -527,7 +547,9 @@ async function getAllNormalActions(
           `${action.name} ${action.repo} ${action.path || ''}`
       )
   )
-  core.debug(`After deduplication we have [${allActions.length}] actions in total`)
+  core.debug(
+    `After deduplication we have [${allActions.length}] actions in total`
+  )
 
   // Check for remaining duplicates by name+repo (ignoring path) and report them
   const duplicatesByNameRepo = findDuplicatesByNameRepo(allActions)
