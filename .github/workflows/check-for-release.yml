@@ -273,6 +273,11 @@ jobs:
           $maxAttempts = 3
           $success = $false
 
+          # write to temp files first so a partial failure never leaves a
+          # stale/incomplete SBOM file behind under the published name
+          $spdxTemp = "sbom-spdx.json.tmp"
+          $cyclonedxTemp = "sbom-cyclonedx.json.tmp"
+
           for ($attempt = 1; $attempt -le $maxAttempts; $attempt++) {
             try {
               Write-Host "SBOM generation attempt $attempt of $maxAttempts"
@@ -280,28 +285,33 @@ jobs:
               # run it for an SPDX SBOM
               $sbom = gh sbom -l | ConvertFrom-Json
               if ($LASTEXITCODE -ne 0) { throw "gh sbom (SPDX) failed with exit code $LASTEXITCODE" }
-              $sbom | ConvertTo-Json -Depth 100 | Out-File -FilePath sbom-spdx.json -Encoding utf8
+              $sbom | ConvertTo-Json -Depth 100 | Out-File -FilePath $spdxTemp -Encoding utf8
 
               # run it for a CycloneDX SBOM
               $sbom = gh sbom -c -l | ConvertFrom-Json
               if ($LASTEXITCODE -ne 0) { throw "gh sbom (CycloneDX) failed with exit code $LASTEXITCODE" }
-              $sbom | ConvertTo-Json -Depth 100 | Out-File -FilePath sbom-cyclonedx.json -Encoding utf8
+              $sbom | ConvertTo-Json -Depth 100 | Out-File -FilePath $cyclonedxTemp -Encoding utf8
 
               $success = $true
               break
             }
             catch {
               Write-Host "::warning::SBOM generation attempt $attempt failed: $_"
+              Remove-Item -Path $spdxTemp, $cyclonedxTemp -ErrorAction SilentlyContinue
               if ($attempt -lt $maxAttempts) {
-                Start-Sleep -Seconds ([Math]::Pow(2, $attempt) * 5)
+                Start-Sleep -Seconds ([Math]::Pow(2, $attempt - 1) * 5)
               }
             }
           }
 
           if ($success) {
+            # only publish under the real filenames once both formats succeeded
+            Move-Item -Path $spdxTemp -Destination sbom-spdx.json -Force
+            Move-Item -Path $cyclonedxTemp -Destination sbom-cyclonedx.json -Force
             echo "sbom_generated=true" >> $env:GITHUB_OUTPUT
             echo "✅ SBOM files generated" >> $env:GITHUB_STEP_SUMMARY
           } else {
+            Remove-Item -Path $spdxTemp, $cyclonedxTemp -ErrorAction SilentlyContinue
             echo "sbom_generated=false" >> $env:GITHUB_OUTPUT
             echo "⚠️ SBOM generation failed after $maxAttempts attempts (upstream service error). Continuing without SBOM files." >> $env:GITHUB_STEP_SUMMARY
           }
