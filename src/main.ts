@@ -42,14 +42,16 @@ const maxReposSetting = getInputOrEnv('max-repos')
 let gitAuthToken = ''
 
 function isRecoverableSearchError(error: any): boolean {
-  // Check for rate limit errors via message or 429 status
+  const message = (error as Error).message || ''
+  // Check for rate limit errors via message or 429 status.
+  // 'try again in Ns' is thrown by @octokit/plugin-retry when its retries on a
+  // secondary rate limit are exhausted.
   const isRateLimitError =
     error.status === 429 ||
-    (error as Error).message?.includes(
-      'SecondaryRateLimit detected for request'
-    ) ||
-    (error as Error).message?.includes('API rate limit exceeded for') ||
-    (error as Error).message?.includes('Too many requests')
+    message.includes('SecondaryRateLimit detected for request') ||
+    message.includes('API rate limit exceeded for') ||
+    message.includes('Too many requests') ||
+    /try again in [\d.]+s/.test(message)
 
   // Check for validation errors via status code or message
   const isValidationError =
@@ -814,10 +816,32 @@ async function callSearchQueryWithBackoff(
     core.info(
       `Error calling the search API with query [${searchQuery}] and page [${page}] `
     )
+    const message = (error as Error).message || ''
     // check if we hit the rate limit
-    if ((error as Error).message.includes('API rate limit exceeded for')) {
-      // todo: backoff and retry
-      checkRateLimits(client, isEnterpriseServer, true)
+    if (message.includes('API rate limit exceeded for')) {
+      await checkRateLimits(client, isEnterpriseServer, true)
+      return callSearchQueryWithBackoff(
+        client,
+        searchQuery,
+        page,
+        isEnterpriseServer,
+        searchRepos
+      )
+    }
+
+    // Secondary rate limit reported by @octokit/plugin-retry after its retries
+    // are exhausted: 'try again in 95.471806714s'. Wait the requested time
+    // (capped) and retry the search call.
+    const retryMatch = message.match(/try again in ([\d.]+)s/)
+    if ((error as any).status === 429 || retryMatch) {
+      const waitSeconds = retryMatch ? parseFloat(retryMatch[1]) : 60
+      const waitMs = Math.min(Math.ceil(waitSeconds) * 1000 + 1000, 120000)
+      core.info(
+        `Secondary rate limit hit on the search API, waiting ${(
+          waitMs / 1000
+        ).toFixed(0)} seconds before retrying`
+      )
+      await new Promise(r => setTimeout(r, waitMs))
       return callSearchQueryWithBackoff(
         client,
         searchQuery,
