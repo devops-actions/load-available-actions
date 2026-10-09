@@ -30,11 +30,23 @@ jobs:
           npm ci
           npm run all
 
+      # use a GitHub App installation token so the scan does not consume a personal account's rate limit.
+      # the token is scoped to this repo only: the target org's repos are public, so the token is only
+      # needed for its own (installation) rate limit, not for access
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          client-id: ${{ vars.DEVOPS_ACTIONS_APPLICATION_ID }} # app ID is accepted here as well
+          private-key: ${{ secrets.DEVOPS_ACTIONS_APPLICATION_KEY }}
+          repositories: ${{ github.event.repository.name }}
+          permission-metadata: read
+
       # run the test
       - uses: ./
         name: Load available actions
-        with: 
-          PAT: ${{ secrets.PAT }} 
+        with:
+          PAT: ${{ steps.app-token.outputs.token }}
           organization: ${{ env.organization }}
         id: load-actions 
 
