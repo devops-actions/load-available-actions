@@ -15,6 +15,11 @@ permissions:
   contents: read
   issues: write
 
+# Serialize runs so parallel pushes can't both miss the existing-issue check and open duplicates
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
 defaults:
   run:
     shell: pwsh
@@ -405,11 +410,28 @@ jobs:
             $labels += "security"
           }
           
+          $title = "🚀 Release ${{ steps.new-version.outputs.newtag }}"
+          $body | Out-File -FilePath release-issue-body.md -Encoding utf8
+
+          # Prevent duplicates: if an open release issue for this version already exists,
+          # refresh its body with the latest changelog instead of opening a new one
+          $existing = gh issue list --state open --label release --limit 100 --json number,title | ConvertFrom-Json |
+            Where-Object { $_.title -eq $title } |
+            Sort-Object number |
+            Select-Object -First 1
+
+          if ($existing) {
+            gh issue edit $existing.number --body-file release-issue-body.md
+            if ($LASTEXITCODE -ne 0) { throw "Failed to update issue #$($existing.number)" }
+            echo "ℹ️ Release issue #$($existing.number) for ${{ steps.new-version.outputs.newtag }} already exists, updated its body" >> $env:GITHUB_STEP_SUMMARY
+            return
+          }
+
           # Create the issue
-          $labelsArg = ($labels | ForEach-Object { "--label `"$_`"" }) -join " "
-          
-          Invoke-Expression "gh issue create --title `"🚀 Release ${{ steps.new-version.outputs.newtag }}`" --body `$body $labelsArg"
-          
+          $labelArgs = $labels | ForEach-Object { "--label"; $_ }
+          gh issue create --title $title --body-file release-issue-body.md @labelArgs
+          if ($LASTEXITCODE -ne 0) { throw "Failed to create release issue" }
+
           echo "✅ Release issue created" >> $env:GITHUB_STEP_SUMMARY
 
       - name: Upload SBOM artifacts
