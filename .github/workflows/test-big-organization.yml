@@ -39,6 +39,7 @@ jobs:
         with:
           client-id: ${{ vars.DEVOPS_ACTIONS_APPLICATION_ID }} # app ID is accepted here as well
           private-key: ${{ secrets.DEVOPS_ACTIONS_APPLICATION_KEY }}
+          repositories: ${{ github.event.repository.name }}
           permission-metadata: read
 
       # run the test
