@@ -415,15 +415,18 @@ jobs:
 
           # Prevent duplicates: if an open release issue for this version already exists,
           # refresh its body with the latest changelog instead of opening a new one
-          $existing = gh issue list --state open --label release --limit 100 --json number,title | ConvertFrom-Json |
+          $issueList = gh issue list --state open --label release --limit 100 --json number,title
+          if ($LASTEXITCODE -ne 0) { throw "Failed to list existing release issues, not creating a possible duplicate" }
+          $existing = $issueList | ConvertFrom-Json |
             Where-Object { $_.title -eq $title } |
             Sort-Object number |
             Select-Object -First 1
 
           if ($existing) {
-            gh issue edit $existing.number --body-file release-issue-body.md
+            $addLabelArgs = $labels | ForEach-Object { "--add-label"; $_ }
+            gh issue edit $existing.number --body-file release-issue-body.md @addLabelArgs
             if ($LASTEXITCODE -ne 0) { throw "Failed to update issue #$($existing.number)" }
-            echo "ℹ️ Release issue #$($existing.number) for ${{ steps.new-version.outputs.newtag }} already exists, updated its body" >> $env:GITHUB_STEP_SUMMARY
+            echo "ℹ️ Release issue #$($existing.number) for ${{ steps.new-version.outputs.newtag }} already exists, updated its body and labels" >> $env:GITHUB_STEP_SUMMARY
             return
           }
 
