@@ -79,11 +79,12 @@ jobs:
           # check if the file has actions in it 
           # this is WIP, it seems like there where duplicates of the actions results since we picked up the normal repos in the forks search as well (was fixed)
           echo "Actions array length = $(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
-          echo "Unique actions by name = $(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
-          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
+          # a repo can hold several actions with the same name in different folders (sub-actions), so include the path
+          echo "Unique actions by name, repo and path = $(jq '.actions | unique_by({name, repo, path}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
+          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by({name, repo, path}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
             echo "The result file contains duplicate actions" | tee "$GITHUB_STEP_SUMMARY"
             # group the actions to find the duplicates
-            jq '.actions | group_by({name, repo}) | map(select(length > 1))' "${{ steps.load-actions.outputs.actions-file-path }}"
+            jq '.actions | group_by({name, repo, path}) | map(select(length > 1))' "${{ steps.load-actions.outputs.actions-file-path }}"
             
             exit 1
           fi
