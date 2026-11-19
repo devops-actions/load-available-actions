@@ -16,9 +16,14 @@ jobs:
   test-load-from-user: # test the action for the user space
     name: Organization with lots of actions # testing the timeout / GitHub ratelimiting
     runs-on: ubuntu-latest
+    # the app installation token expires after 60 minutes, fail clearly before that happens
+    timeout-minutes: 55
     env:
       organization: actions-marketplace-validations
-    steps: 
+      # the org has 27k+ repos: a full scan takes many hours (it never finished within the 6h job limit)
+      # and outlives the 1h app installation token. Cap the scan so the test stays meaningful and fast.
+      max_repos: 1000
+    steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -48,7 +53,8 @@ jobs:
         with:
           PAT: ${{ steps.app-token.outputs.token }}
           organization: ${{ env.organization }}
-        id: load-actions 
+          max-repos: ${{ env.max_repos }}
+        id: load-actions
 
       # check if the result file is not empty
       - name: Check if the result file is not empty
