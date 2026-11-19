@@ -16,9 +16,14 @@ jobs:
   test-load-from-user: # test the action for the user space
     name: Organization with lots of actions # testing the timeout / GitHub ratelimiting
     runs-on: ubuntu-latest
+    # the app installation token expires after 60 minutes, fail clearly before that happens
+    timeout-minutes: 55
     env:
       organization: actions-marketplace-validations
-    steps: 
+      # the org has 27k+ repos: a full scan takes many hours (it never finished within the 6h job limit)
+      # and outlives the 1h app installation token. Cap the scan so the test stays meaningful and fast.
+      max_repos: 1000
+    steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -48,7 +53,8 @@ jobs:
         with:
           PAT: ${{ steps.app-token.outputs.token }}
           organization: ${{ env.organization }}
-        id: load-actions 
+          max-repos: ${{ env.max_repos }}
+        id: load-actions
 
       # check if the result file is not empty
       - name: Check if the result file is not empty
@@ -73,11 +79,12 @@ jobs:
           # check if the file has actions in it 
           # this is WIP, it seems like there where duplicates of the actions results since we picked up the normal repos in the forks search as well (was fixed)
           echo "Actions array length = $(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
-          echo "Unique actions by name = $(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
-          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by({name, repo}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
+          # a repo can hold several actions with the same name in different folders (sub-actions), so include the path
+          echo "Unique actions by name, repo and path = $(jq '.actions | unique_by({name, repo, path}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")"
+          if [ "$(jq '.actions | length' "${{ steps.load-actions.outputs.actions-file-path }}")" -ne "$(jq '.actions | unique_by({name, repo, path}) | length' "${{ steps.load-actions.outputs.actions-file-path }}")" ]; then
             echo "The result file contains duplicate actions" | tee "$GITHUB_STEP_SUMMARY"
             # group the actions to find the duplicates
-            jq '.actions | group_by({name, repo}) | map(select(length > 1))' "${{ steps.load-actions.outputs.actions-file-path }}"
+            jq '.actions | group_by({name, repo, path}) | map(select(length > 1))' "${{ steps.load-actions.outputs.actions-file-path }}"
             
             exit 1
           fi
